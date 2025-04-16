@@ -5,6 +5,7 @@ import dev.rubasace.linkedin.games_tracker.game.GameDetector;
 import dev.rubasace.linkedin.games_tracker.game.GameType;
 import dev.rubasace.linkedin.games_tracker.image.ImageHelper;
 import dev.rubasace.linkedin.games_tracker.image.ImageTimeExtractor;
+import dev.rubasace.linkedin.games_tracker.util.FormatUtils;
 import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.Rect;
@@ -57,13 +58,13 @@ class ChatService {
                 String fileName = "yellow_detected.png";
                 imwrite(fileName, cropped);
                 Duration duration = imageTimeExtractor.extractTime(new File(fileName));
-                sendMessage("@%s submitted a screenshot for todays %s taking a total time of %s".formatted(username, gameType.get().name(), formatDuration(duration)), chatId);
+                sendMessage("@%s submitted a screenshot for todays %s taking a total time of %s".formatted(username, gameType.get().name(), FormatUtils.formatDuration(duration)),
+                            chatId);
             });
 
         }
 
     }
-
 
     private void sendMessage(final String text, final Long chatId) {
         SendMessage message = SendMessage.builder()
@@ -77,21 +78,4 @@ class ChatService {
         }
     }
 
-    private String formatDuration(Duration duration) {
-        long minutes = duration.toMinutes();
-        long seconds = duration.minusMinutes(minutes).getSeconds();
-
-        StringBuilder sb = new StringBuilder();
-        if (minutes > 0) {
-            sb.append(minutes).append(" minute").append(minutes != 1 ? "s" : "");
-        }
-        if (minutes > 0 && seconds > 0) {
-            sb.append(" and ");
-        }
-        if (seconds > 0 || (minutes == 0 && seconds == 0)) {
-            sb.append(seconds).append(" second").append(seconds != 1 ? "s" : "");
-        }
-
-        return sb.toString();
-    }
 }
