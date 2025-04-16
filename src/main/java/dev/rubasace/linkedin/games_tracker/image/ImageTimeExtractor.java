@@ -37,7 +37,7 @@ import static org.bytedeco.opencv.global.opencv_imgproc.threshold;
 public class ImageTimeExtractor {
 
     public static final int PADDING = 40;
-    private static final Pattern TIMER_PATTERN = Pattern.compile("\\b(\\d{1,2}):(\\d{2})\\b");
+    private static final Pattern TIMER_PATTERN = Pattern.compile("\\b(\\d{1,2}):?(\\d{2})\\b");
     private final Tesseract tesseract;
 
     public ImageTimeExtractor() {
