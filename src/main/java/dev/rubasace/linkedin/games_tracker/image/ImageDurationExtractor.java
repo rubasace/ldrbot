@@ -1,5 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.image;
 
+import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.Rect;
 import org.slf4j.Logger;
@@ -13,8 +14,6 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 
 @Component
 class ImageDurationExtractor {
@@ -41,7 +40,7 @@ class ImageDurationExtractor {
         try {
             Mat cropped = new Mat(image, resultsBox.get());
             File temp = File.createTempFile("time-results-section", ".png");
-            imwrite(temp.getAbsolutePath(), cropped);
+            opencv_imgcodecs.imwrite(temp.getAbsolutePath(), cropped);
             String text = imageTextExtractor.extractText(temp);
             Matcher matcher = TIMER_PATTERN.matcher(text);
 
