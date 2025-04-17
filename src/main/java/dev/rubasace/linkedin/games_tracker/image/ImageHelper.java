@@ -27,20 +27,19 @@ public class ImageHelper {
     public static final int H_TOLERANCE = 10;
     public static final int S_TOLERANCE = 60;
     public static final int V_TOLERANCE = 60;
-    public static final double COLOR_PERCENTAGE_THRESHOLD = 0.33;
 
     private ImageHelper() {
         Loader.load(opencv_core.class);
     }
 
-    public boolean isColorDominant(Mat image, String color) {
+    public boolean isColorPresent(Mat image, String color, double percentage) {
         Mat mask = getColorMask(image, color);
 
         double count = countNonZero(mask);
         double totalPixels = image.rows() * image.cols();
 
         double colorRatio = (count / totalPixels);
-        return colorRatio >= COLOR_PERCENTAGE_THRESHOLD;
+        return colorRatio >= percentage;
     }
 
     @NotNull

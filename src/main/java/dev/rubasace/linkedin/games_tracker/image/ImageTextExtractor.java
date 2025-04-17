@@ -11,9 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.net.URL;
-import java.time.Duration;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.bytedeco.opencv.global.opencv_core.BORDER_CONSTANT;
 import static org.bytedeco.opencv.global.opencv_core.CV_32F;
@@ -34,13 +31,12 @@ import static org.bytedeco.opencv.global.opencv_imgproc.resize;
 import static org.bytedeco.opencv.global.opencv_imgproc.threshold;
 
 @Component
-public class ImageTimeExtractor {
+public class ImageTextExtractor {
 
     public static final int PADDING = 40;
-    private static final Pattern TIMER_PATTERN = Pattern.compile("\\b(\\d{1,2}):?(\\d{2})\\b");
     private final Tesseract tesseract;
 
-    public ImageTimeExtractor() {
+    public ImageTextExtractor() {
         //TODO fix when ready
         System.setProperty("jna.library.path", "/opt/homebrew/opt/tesseract/lib");
         this.tesseract = new Tesseract();
@@ -57,19 +53,10 @@ public class ImageTimeExtractor {
         tesseract.setVariable("user_defined_dpi", "300");
     }
 
-    public Duration extractTime(final File inputImage) {
+    public String extractText(final File inputImage) {
         try {
             File preprocessedImage = preprocessForOCR(inputImage);
-            String text = tesseract.doOCR(preprocessedImage);
-            Matcher matcher = TIMER_PATTERN.matcher(text);
-
-            if (matcher.find()) {
-                int minutes = Integer.parseInt(matcher.group(1));
-                int seconds = Integer.parseInt(matcher.group(2));
-                return Duration.ofMinutes(minutes).plusSeconds(seconds);
-            } else {
-                throw new RuntimeException("No timer found in OCR result");
-            }
+            return tesseract.doOCR(preprocessedImage);
         } catch (TesseractException e) {
             throw new RuntimeException(e);
         }

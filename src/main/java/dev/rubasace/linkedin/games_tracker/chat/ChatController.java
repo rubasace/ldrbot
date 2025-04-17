@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 
+//TODO improve threading (use virtual threads and allow parallel processing)
 @Component
 class ChatController implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
