@@ -1,4 +1,4 @@
-package dev.rubasace.linkedin.games_tracker.game;
+package dev.rubasace.linkedin.games_tracker.session;
 
 public enum GameType {
     QUEENS("#7C569F"),

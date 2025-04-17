@@ -1,6 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.image;
 
-import dev.rubasace.linkedin.games_tracker.game.GameType;
+import dev.rubasace.linkedin.games_tracker.session.GameType;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.springframework.stereotype.Component;
 
