@@ -15,7 +15,7 @@ public class ImageGameDurationExtractor {
     private final ImageGameExtractor imageGameExtractor;
     private final ImageDurationExtractor imageDurationExtractor;
 
-    public ImageGameDurationExtractor(final ImageGameExtractor imageGameExtractor, final ImageDurationExtractor imageDurationExtractor) {
+    ImageGameDurationExtractor(final ImageGameExtractor imageGameExtractor, final ImageDurationExtractor imageDurationExtractor) {
         this.imageGameExtractor = imageGameExtractor;
         this.imageDurationExtractor = imageDurationExtractor;
     }

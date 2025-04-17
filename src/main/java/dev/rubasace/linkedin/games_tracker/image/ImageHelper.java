@@ -23,16 +23,16 @@ import static org.opencv.imgproc.Imgproc.CHAIN_APPROX_SIMPLE;
 import static org.opencv.imgproc.Imgproc.RETR_EXTERNAL;
 
 @Component
-public class ImageHelper {
-    public static final int H_TOLERANCE = 10;
-    public static final int S_TOLERANCE = 60;
-    public static final int V_TOLERANCE = 60;
+class ImageHelper {
+    private static final int H_TOLERANCE = 10;
+    private static final int S_TOLERANCE = 60;
+    private static final int V_TOLERANCE = 60;
 
     private ImageHelper() {
         Loader.load(opencv_core.class);
     }
 
-    public boolean isColorPresent(Mat image, String color, double percentage) {
+    boolean isColorPresent(Mat image, String color, double percentage) {
         Mat mask = getColorMask(image, color);
 
         double count = countNonZero(mask);
@@ -56,7 +56,7 @@ public class ImageHelper {
         return mask;
     }
 
-    public Optional<Rect> findLargestRegionOfColor(Mat image, String color) {
+    Optional<Rect> findLargestRegionOfColor(Mat image, String color) {
         Mat mask = getColorMask(image, color);
 
         // Find contours

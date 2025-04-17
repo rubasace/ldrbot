@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 
 @Component
-public class ImageDurationExtractor {
+class ImageDurationExtractor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageDurationExtractor.class);
     private static final Pattern TIMER_PATTERN = Pattern.compile("\\b(\\d{1,2}):?(\\d{2})\\b");
@@ -27,12 +27,12 @@ public class ImageDurationExtractor {
     private final ImageHelper imageHelper;
     private final ImageTextExtractor imageTextExtractor;
 
-    public ImageDurationExtractor(final ImageHelper imageHelper, final ImageTextExtractor imageTextExtractor) {
+    ImageDurationExtractor(final ImageHelper imageHelper, final ImageTextExtractor imageTextExtractor) {
         this.imageHelper = imageHelper;
         this.imageTextExtractor = imageTextExtractor;
     }
 
-    public Optional<Duration> extractDuration(final Mat image) {
+    Optional<Duration> extractDuration(final Mat image) {
         Optional<Rect> resultsBox = imageHelper.findLargestRegionOfColor(image, RESULTS_COLOR);
         if (resultsBox.isEmpty()) {
             LOGGER.warn("Couldn't find the results area on the image");

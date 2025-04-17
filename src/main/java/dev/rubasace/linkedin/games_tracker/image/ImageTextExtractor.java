@@ -31,12 +31,12 @@ import static org.bytedeco.opencv.global.opencv_imgproc.resize;
 import static org.bytedeco.opencv.global.opencv_imgproc.threshold;
 
 @Component
-public class ImageTextExtractor {
+class ImageTextExtractor {
 
-    public static final int PADDING = 40;
+    private static final int PADDING = 40;
     private final Tesseract tesseract;
 
-    public ImageTextExtractor() {
+    ImageTextExtractor() {
         //TODO fix when ready
         System.setProperty("jna.library.path", "/opt/homebrew/opt/tesseract/lib");
         this.tesseract = new Tesseract();
@@ -53,7 +53,7 @@ public class ImageTextExtractor {
         tesseract.setVariable("user_defined_dpi", "300");
     }
 
-    public String extractText(final File inputImage) {
+    String extractText(final File inputImage) {
         try {
             File preprocessedImage = preprocessForOCR(inputImage);
             return tesseract.doOCR(preprocessedImage);
@@ -64,7 +64,7 @@ public class ImageTextExtractor {
     }
 
     @NotNull
-    private static File preprocessForOCR(final File inputImage) {
+    private File preprocessForOCR(final File inputImage) {
         try (Mat original = imread(inputImage.getAbsolutePath())) {
             // Step 1: Grayscale
             Mat gray = new Mat();
