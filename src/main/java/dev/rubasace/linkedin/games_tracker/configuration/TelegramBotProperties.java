@@ -7,5 +7,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("dev.rubasace.linkedin.bot")
 public class TelegramBotProperties {
 
+    private final String username;
     private final String token;
 }

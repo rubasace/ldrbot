@@ -1,5 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.group;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,6 +30,7 @@ public class TelegramGroup {
     @Column(nullable = false)
     private ZoneId timezone;
 
+    @JsonIgnoreProperties("groups")
     @ManyToMany
     Set<TelegramUser> members;
 

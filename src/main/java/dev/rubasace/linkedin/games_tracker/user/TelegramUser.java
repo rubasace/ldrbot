@@ -1,5 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -24,6 +25,7 @@ public class TelegramUser {
     private String userName;
     private String firstName;
     private String lastName;
+    @JsonIgnoreProperties("members")
     @ManyToMany(mappedBy = "members")
     private Set<TelegramGroup> groups;
 
