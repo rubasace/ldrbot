@@ -7,6 +7,8 @@ import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.List;
+
 @Component
 class ChatController implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
@@ -33,10 +35,11 @@ class ChatController implements SpringLongPollingBot, LongPollingSingleThreadUpd
         if (!update.hasMessage()) {
             return;
         }
-        if (!update.getMessage().hasPhoto()) {
-            return;
-        }
-        chatService.processPhoto(update.getMessage().getPhoto(), update.getMessage().getFrom().getUserName(), update.getMessage().getChatId());
+        if (update.getMessage().hasPhoto()) {
+            chatService.processPhoto(update.getMessage().getPhoto(), update.getMessage().getFrom().getUserName(), update.getMessage().getChatId());
+        } else if (update.getMessage().hasDocument() && update.getMessage().getDocument().getThumbnail() != null) {
+            chatService.processPhoto(List.of(update.getMessage().getDocument().getThumbnail()), update.getMessage().getFrom().getUserName(), update.getMessage().getChatId());
 
+        }
     }
 }

@@ -18,6 +18,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +30,7 @@ import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 class ChatService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
+    public static final String RESULTS_COLOR = "#FDE4A5";
 
     private final GameDetector gameDetector;
     private final AssetsDownloader assetsDownloader;
@@ -52,14 +55,19 @@ class ChatService {
             return;
         }
         try (Mat image = opencv_imgcodecs.imread(imageFile.getAbsolutePath())) {
-            Optional<Rect> yellowBox = imageHelper.findLargestRegionOfColor(image, "#FDE4A5");
+            Optional<Rect> yellowBox = imageHelper.findLargestRegionOfColor(image, RESULTS_COLOR);
             yellowBox.ifPresent(rect -> {
-                Mat cropped = new Mat(image, rect);
-                String fileName = "yellow_detected.png";
-                imwrite(fileName, cropped);
-                Duration duration = imageTimeExtractor.extractTime(new File(fileName));
-                sendMessage("@%s submitted a screenshot for todays %s taking a total time of %s".formatted(username, gameType.get().name(), FormatUtils.formatDuration(duration)),
+                try {
+                    Mat cropped = new Mat(image, rect);
+                    File temp = File.createTempFile("time-results-section", ".png");
+                    imwrite(temp.getAbsolutePath(), cropped);
+                    Duration duration = imageTimeExtractor.extractTime(temp);
+                    sendMessage(
+                            "@%s submitted a screenshot for todays %s taking a total time of %s".formatted(username, gameType.get().name(), FormatUtils.formatDuration(duration)),
                             chatId);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             });
 
         }

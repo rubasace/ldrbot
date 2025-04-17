@@ -41,6 +41,7 @@ public class ImageTimeExtractor {
     private final Tesseract tesseract;
 
     public ImageTimeExtractor() {
+        //TODO fix when ready
         System.setProperty("jna.library.path", "/opt/homebrew/opt/tesseract/lib");
         this.tesseract = new Tesseract();
 
