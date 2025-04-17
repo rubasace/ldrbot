@@ -30,7 +30,7 @@ import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 class ChatService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
-    public static final String RESULTS_COLOR = "#FDE4A5";
+    private static final String RESULTS_COLOR = "#FDE4A5";
 
     private final GameDetector gameDetector;
     private final AssetsDownloader assetsDownloader;
