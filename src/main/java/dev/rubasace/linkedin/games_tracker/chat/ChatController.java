@@ -1,6 +1,7 @@
 package dev.rubasace.linkedin.games_tracker.chat;
 
 import dev.rubasace.linkedin.games_tracker.configuration.TelegramBotProperties;
+import dev.rubasace.linkedin.games_tracker.session.UnrecognizedGameException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
@@ -40,9 +41,9 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
             return;
         }
         if (update.getMessage().hasPhoto()) {
-            chatService.processPhoto(update.getMessage().getPhoto(), update.getMessage().getFrom().getUserName(), update.getMessage().getChatId());
+            chatService.processMessage(update.getMessage().getPhoto(), update.getMessage().getFrom(), update.getMessage().getChat());
         } else if (update.getMessage().hasDocument() && update.getMessage().getDocument().getThumbnail() != null) {
-            chatService.processPhoto(List.of(update.getMessage().getDocument().getThumbnail()), update.getMessage().getFrom().getUserName(), update.getMessage().getChatId());
+            chatService.processMessage(List.of(update.getMessage().getDocument().getThumbnail()), update.getMessage().getFrom(), update.getMessage().getChat());
         }
 
     }
@@ -85,7 +86,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                 .info("Makes the bot start tracking the results of the group members, giving daily summaries")
                 .locality(Locality.GROUP)
                 .privacy(Privacy.PUBLIC)
-                .action(context -> chatService.setupGroup(context.update().getMessage()))
+                .action(context -> chatService.setupGroup(context.update().getMessage().getChat()))
                 .build();
     }
 
@@ -96,7 +97,31 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                 .info("Register yourself as a participant of the group. Alternatively, users will be registered the moment they submit their first result")
                 .locality(Locality.GROUP)
                 .privacy(Privacy.PUBLIC)
-                .action(context -> chatService.addUserToGroup(context.update().getMessage()))
+                .action(context -> chatService.addUserToGroup(context.update().getMessage().getChatId(), context.user()))
                 .build();
+    }
+
+    public Ability delete() {
+        return Ability.builder()
+                      .name("delete")
+                      .info("Delete your existing game submission. Usage: /delete <game>")
+                      .input(1)
+                      .locality(Locality.ALL)
+                      .privacy(Privacy.PUBLIC)
+                      .action(ctx -> {
+                          if (ctx.arguments() == null || ctx.arguments().length == 0) {
+                              silent.send("❌ You must provide a game name. Example: /delete queens", ctx.chatId());
+                              return;
+                          }
+
+                          String game = ctx.arguments()[0]; // expecting something like 'QUEENS'
+                          try {
+                              chatService.deleteGameRecord(ctx.update().getMessage(), game);
+                              silent.send("✅ Your record for %s has been deleted.".formatted(game), ctx.chatId());
+                          } catch (UnrecognizedGameException e) {
+                              silent.send("%s isn't a valid game".formatted(e.getGameName()), ctx.chatId());
+                          }
+                      })
+                      .build();
     }
 }

@@ -1,7 +1,7 @@
 package dev.rubasace.linkedin.games_tracker.user;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-interface TelegramUserRepository extends CrudRepository<TelegramUser, Long> {
+public interface TelegramUserRepository extends JpaRepository<TelegramUser, Long> {
 
 }

@@ -9,13 +9,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Duration;
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
+@NoArgsConstructor
 @Setter
 @Getter
 @Entity
@@ -36,11 +38,7 @@ public class GameSession {
     private Duration duration;
 
     @Column(nullable = false)
-    private OffsetDateTime registrationTime;
-
-    public GameSession() {
-        this.registrationTime = OffsetDateTime.now();
-    }
+    private LocalDate gameDay;
 
     @Override
     public boolean equals(Object o) {

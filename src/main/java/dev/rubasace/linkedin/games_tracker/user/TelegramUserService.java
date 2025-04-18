@@ -33,6 +33,6 @@ public class TelegramUserService {
 
     private TelegramUser createUser(final User user) {
         TelegramUser telegramUser = new TelegramUser(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), Set.of());
-        return telegramUserRepository.save(telegramUser);
+        return telegramUserRepository.saveAndFlush(telegramUser);
     }
 }
