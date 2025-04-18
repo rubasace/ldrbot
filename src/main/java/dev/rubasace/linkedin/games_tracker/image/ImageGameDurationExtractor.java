@@ -20,7 +20,8 @@ public class ImageGameDurationExtractor {
         this.imageDurationExtractor = imageDurationExtractor;
     }
 
-    public Optional<GameDuration> extractGameDuration(final File imageFile) {
+    //TODO improve using blockingQueue or something similar
+    public synchronized Optional<GameDuration> extractGameDuration(final File imageFile) {
         try (Mat image = opencv_imgcodecs.imread(imageFile.getAbsolutePath())) {
             Optional<GameType> gameType = imageGameExtractor.extractGame(image);
             return gameType.flatMap(type -> imageDurationExtractor.extractDuration(image)

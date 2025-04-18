@@ -10,4 +10,6 @@ public interface GameSessionRepository extends CrudRepository<GameSession, UUID>
     boolean existsByTelegramUserIdAndGameAndGameDay(Long telegramUserId, GameType game, LocalDate gameDay);
 
     void deleteByTelegramUserIdAndGameAndGameDay(Long telegramUserId, GameType game, LocalDate gameDay);
+
+    void deleteByTelegramUserIdAndGameDay(Long telegramUserId, LocalDate gameDay);
 }

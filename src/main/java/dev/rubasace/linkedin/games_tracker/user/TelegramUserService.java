@@ -2,7 +2,6 @@ package dev.rubasace.linkedin.games_tracker.user;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.util.Set;
 
@@ -17,22 +16,21 @@ public class TelegramUserService {
     }
 
     @Transactional
-    public TelegramUser findOrCreate(final User user) {
-        return telegramUserRepository.findById(user.getId())
-                                     .map(telegramUser -> updateUserData(telegramUser, user))
-                                     .orElseGet(() -> this.createUser(user));
+    public TelegramUser findOrCreate(final Long userId, final String userName) {
+        return telegramUserRepository.findById(userId)
+                                     .map(telegramUser -> updateUserData(telegramUser, userName))
+                                     .orElseGet(() -> this.createUser(userId, userName));
     }
 
-    private TelegramUser updateUserData(TelegramUser telegramUser, final User user) {
-        if (telegramUser.getUserName().equals(user.getUserName())) {
+    private TelegramUser updateUserData(TelegramUser telegramUser, final String userName) {
+        if (telegramUser.getUserName().equals(userName)) {
             return telegramUser;
         }
-        telegramUser.setUserName(user.getUserName());
+        telegramUser.setUserName(userName);
         return telegramUserRepository.save(telegramUser);
     }
 
-    private TelegramUser createUser(final User user) {
-        TelegramUser telegramUser = new TelegramUser(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), Set.of());
-        return telegramUserRepository.saveAndFlush(telegramUser);
+    private TelegramUser createUser(final Long userId, final String userName) {
+        return telegramUserRepository.saveAndFlush(new TelegramUser(userId, userName, Set.of()));
     }
 }

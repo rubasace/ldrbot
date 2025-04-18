@@ -4,7 +4,6 @@ import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -26,11 +25,11 @@ public class GameSessionService {
     }
 
     @Transactional
-    public GameSession recordGameSession(final User user, final GameDuration gameDuration) throws AlreadyRegisteredSession {
-        TelegramUser telegramUser = telegramUserService.findOrCreate(user);
+    public GameSession recordGameSession(final Long userId, final String userName, final GameDuration gameDuration) throws AlreadyRegisteredSession {
+        TelegramUser telegramUser = telegramUserService.findOrCreate(userId, userName);
         LocalDate gameDay = todayGameDay();
         if (gameSessionRepository.existsByTelegramUserIdAndGameAndGameDay(telegramUser.getId(), gameDuration.type(), gameDay)) {
-            throw new AlreadyRegisteredSession(user.getUserName(), gameDuration.type());
+            throw new AlreadyRegisteredSession(userName, gameDuration.type());
         }
         GameSession gameSession = new GameSession();
         gameSession.setGame(gameDuration.type());
@@ -44,8 +43,12 @@ public class GameSessionService {
         return ZonedDateTime.now(PACIFIC_ZONE_ID).toLocalDate();
     }
 
-    public void deleteTodaysSession(final User user, final GameType game) {
-        gameSessionRepository.deleteByTelegramUserIdAndGameAndGameDay(user.getId(), game, todayGameDay());
+    public void deleteTodaySession(final Long userId, final GameType game) {
+        gameSessionRepository.deleteByTelegramUserIdAndGameAndGameDay(userId, game, todayGameDay());
+    }
+
+    public void deleteTodaySessions(final Long userId) {
+        gameSessionRepository.deleteByTelegramUserIdAndGameDay(userId, todayGameDay());
     }
 
 }

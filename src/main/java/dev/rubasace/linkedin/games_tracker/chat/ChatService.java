@@ -13,17 +13,11 @@ import dev.rubasace.linkedin.games_tracker.session.UnrecognizedGameException;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUserService;
 import dev.rubasace.linkedin.games_tracker.util.FormatUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
-import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.io.File;
 import java.util.List;
@@ -33,7 +27,6 @@ import java.util.Optional;
 @Service
 class ChatService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
     public static final String SUBMISSION_MESSAGE_TEMPLATE = "@%s submitted a screenshot for todays %s taking a total time of %s";
 
     private final ImageGameDurationExtractor imageGameDurationExtractor;
@@ -41,48 +34,61 @@ class ChatService {
     private final GameSessionService gameSessionService;
     private final TelegramGroupService telegramGroupService;
     private final TelegramUserService telegramUserService;
-    private final TelegramClient telegramClient;
+    private final MessageService messageService;
 
-    ChatService(final ImageGameDurationExtractor imageGameDurationExtractor, final AssetsDownloader assetsDownloader, final GameSessionService gameSessionService, final TelegramGroupService telegramGroupService, final TelegramClient telegramClient, final TelegramUserService telegramUserService) {
+    ChatService(final ImageGameDurationExtractor imageGameDurationExtractor,
+                final AssetsDownloader assetsDownloader,
+                final GameSessionService gameSessionService,
+                final TelegramGroupService telegramGroupService,
+                final MessageService messageService, final TelegramUserService telegramUserService) {
         this.imageGameDurationExtractor = imageGameDurationExtractor;
         this.assetsDownloader = assetsDownloader;
         this.gameSessionService = gameSessionService;
         this.telegramGroupService = telegramGroupService;
-        this.telegramClient = telegramClient;
+        this.messageService = messageService;
         this.telegramUserService = telegramUserService;
     }
 
     @Transactional
     void setupGroup(final Chat chat) {
-        telegramGroupService.registerOrUpdateGroup(chat);
-        sendMessage("Now I'll monitor this group and keep track of your linkedin games times. You can /join or start sending your screenshots", chat.getId());
+        if (!chat.isGroupChat()) {
+            throw new IllegalArgumentException("Chat must be a group");
+        }
+        telegramGroupService.registerOrUpdateGroup(chat.getId(), chat.getTitle());
+        messageService.info("Now I'll monitor this group and keep track of your linkedin games times. You can explicitely /join or send a message on the group to be added to it",
+                            chat.getId());
     }
 
     @Transactional
-    void addUserToGroup(final Long chatId, final User user) {
-        Optional<TelegramGroup> group = telegramGroupService.findGroup(chatId);
+    void addUserToGroup(final Message message) {
+        Optional<TelegramGroup> group = telegramGroupService.findGroup(message.getChatId());
         if (group.isEmpty()) {
-            sendMessage("Group not registered. Must execute /start command first", chatId);
+            messageService.error("Group not registered. Must execute /start command first", message.getChatId());
             return;
         }
-        TelegramUser telegramUser = telegramUserService.findOrCreate(user);
+        TelegramUser telegramUser = telegramUserService.findOrCreate(message.getFrom().getId(), message.getFrom().getUserName());
         if (group.get().getMembers().contains(telegramUser)) {
             return;
         }
         group.get().getMembers().add(telegramUser);
         telegramGroupService.save(group.get());
-        sendMessage("User @%s joined this group".formatted(telegramUser.getUserName()), chatId);
+        messageService.info("User @%s joined this group".formatted(telegramUser.getUserName()), message.getChatId());
     }
 
-    //TODO improve this and make it photo specific using the message. Override should also accept documents same as normal messages
     @Transactional
-    void processMessage(final List<PhotoSize> photoSizeList, final User user, final Chat chat) {
-        if (chat.isGroupChat()) {
-            Optional<TelegramGroup> group = telegramGroupService.findGroup(chat.getId());
+    void processMessage(final Message message) {
+
+        if (message.getChat().isGroupChat()) {
+            Optional<TelegramGroup> group = telegramGroupService.findGroup(message.getChat().getId());
             if (group.isEmpty()) {
                 return;
             }
-            addUserToGroup(chat.getId(), user);
+            addUserToGroup(message);
+        }
+
+        List<PhotoSize> photoSizeList = getPhotos(message);
+        if (photoSizeList.isEmpty()) {
+            return;
         }
 
         File imageFile = assetsDownloader.getImage(photoSizeList);
@@ -91,38 +97,41 @@ class ChatService {
             return;
         }
         try {
-            GameSession gameSession = gameSessionService.recordGameSession(user, gameDuration.get());
-            sendMessage(SUBMISSION_MESSAGE_TEMPLATE.formatted(gameSession.getTelegramUser().getUserName(), gameSession.getGame().name(),
+            GameSession gameSession = gameSessionService.recordGameSession(message.getFrom().getId(), message.getFrom().getUserName(), gameDuration.get());
+            messageService.info(SUBMISSION_MESSAGE_TEMPLATE.formatted(gameSession.getTelegramUser().getUserName(), gameSession.getGame().name(),
                                                               FormatUtils.formatDuration(gameSession.getDuration())),
-                        chat.getId());
+                                message.getChat().getId());
         } catch (AlreadyRegisteredSession e) {
-            sendMessage(
-                    "@%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s".formatted(
-                            e.getUsername(), e.getGame().name(), e.getGame().name().toLowerCase()), chat.getId());
+            messageService.error(
+                    "@%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall".formatted(
+                            e.getUsername(), e.getGame().name(), e.getGame().name().toLowerCase()), message.getChat().getId());
         }
 
+    }
+
+    private List<PhotoSize> getPhotos(final Message message) {
+        if (message.hasPhoto()) {
+            return message.getPhoto();
+        } else if (message.hasDocument() && message.getDocument().getThumbnail() != null) {
+            return List.of(message.getDocument().getThumbnail());
+        }
+        return List.of();
     }
 
     @Transactional
-    public void deleteGameRecord(final Message message, final String gameName) throws UnrecognizedGameException {
+    public void deleteTodayRecord(final Message message, final String gameName) throws UnrecognizedGameException {
+        GameType gameType;
         try {
-            GameType gameType = GameType.valueOf(gameName.toUpperCase());
-            gameSessionService.deleteTodaysSession(message.getFrom(), gameType);
+            gameType = GameType.valueOf(gameName.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new UnrecognizedGameException(gameName);
         }
+        gameSessionService.deleteTodaySession(message.getFrom().getId(), gameType);
     }
 
-    private void sendMessage(final String text, final Long chatId) {
-        SendMessage message = SendMessage.builder()
-                                         .chatId(chatId)
-                                         .text(text)
-                                         .build();
-        try {
-            telegramClient.execute(message);
-        } catch (TelegramApiException e) {
-            LOGGER.error("Error sending message", e);
-        }
+    @Transactional
+    public void deleteTodayRecords(final Message message) {
+        gameSessionService.deleteTodaySessions(message.getFrom().getId());
     }
 
 }

@@ -3,6 +3,8 @@ package dev.rubasace.linkedin.games_tracker.chat;
 import dev.rubasace.linkedin.games_tracker.configuration.TelegramBotProperties;
 import dev.rubasace.linkedin.games_tracker.session.UnrecognizedGameException;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
@@ -17,18 +19,33 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
-//TODO improve threading (use virtual threads and allow parallel processing)
 @Component
 public class ChatController extends AbilityBot implements SpringLongPollingBot {
 
-    private final ChatService chatService;
-    private final String token;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatController.class);
 
-    ChatController(final TelegramClient telegramClient, final ChatService chatService, final TelegramBotProperties telegramBotProperties) {
+    private final ChatService chatService;
+    private final MessageService messageService;
+    private final String token;
+    private final Executor controllerExecutor = Executors.newVirtualThreadPerTaskExecutor();
+
+    ChatController(final TelegramClient telegramClient,
+                   final ChatService chatService,
+                   final MessageService messageService,
+                   final TelegramBotProperties telegramBotProperties) {
         super(telegramClient, telegramBotProperties.getUsername());
         this.chatService = chatService;
+        this.messageService = messageService;
         this.token = telegramBotProperties.getToken();
+    }
+
+
+    @Override
+    public void consume(final List<Update> updates) {
+        updates.forEach(update -> controllerExecutor.execute(() -> consume(update)));
     }
 
     @Override
@@ -40,12 +57,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
         if (update.getMessage().isCommand()) {
             return;
         }
-        if (update.getMessage().hasPhoto()) {
-            chatService.processMessage(update.getMessage().getPhoto(), update.getMessage().getFrom(), update.getMessage().getChat());
-        } else if (update.getMessage().hasDocument() && update.getMessage().getDocument().getThumbnail() != null) {
-            chatService.processMessage(List.of(update.getMessage().getDocument().getThumbnail()), update.getMessage().getFrom(), update.getMessage().getChat());
-        }
-
+        chatService.processMessage(update.getMessage());
     }
 
 
@@ -59,7 +71,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
         try {
             telegramClient.execute(new SetMyCommands(commands));
         } catch (TelegramApiException e) {
-            System.err.println("❌ Failed to register bot commands");
+            LOGGER.error("Failed to register bot commands", e);
         }
     }
 
@@ -97,7 +109,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                 .info("Register yourself as a participant of the group. Alternatively, users will be registered the moment they submit their first result")
                 .locality(Locality.GROUP)
                 .privacy(Privacy.PUBLIC)
-                .action(context -> chatService.addUserToGroup(context.update().getMessage().getChatId(), context.user()))
+                .action(context -> chatService.addUserToGroup(context.update().getMessage()))
                 .build();
     }
 
@@ -110,17 +122,30 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .privacy(Privacy.PUBLIC)
                       .action(ctx -> {
                           if (ctx.arguments() == null || ctx.arguments().length == 0) {
-                              silent.send("❌ You must provide a game name. Example: /delete queens", ctx.chatId());
+                              messageService.error("You must provide a game name. Example: /delete queens", ctx.chatId());
                               return;
                           }
 
                           String game = ctx.arguments()[0]; // expecting something like 'QUEENS'
                           try {
-                              chatService.deleteGameRecord(ctx.update().getMessage(), game);
-                              silent.send("✅ Your record for %s has been deleted.".formatted(game), ctx.chatId());
+                              chatService.deleteTodayRecord(ctx.update().getMessage(), game);
+                              messageService.info("Your record for %s has been deleted.".formatted(game), ctx.chatId());
                           } catch (UnrecognizedGameException e) {
-                              silent.send("%s isn't a valid game".formatted(e.getGameName()), ctx.chatId());
+                              messageService.error("%s isn't a valid game".formatted(e.getGameName()), ctx.chatId());
                           }
+                      })
+                      .build();
+    }
+
+    public Ability deleteAll() {
+        return Ability.builder()
+                      .name("deleteall")
+                      .info("Delete all your game submissions for today")
+                      .locality(Locality.ALL)
+                      .privacy(Privacy.PUBLIC)
+                      .action(ctx -> {
+                          chatService.deleteTodayRecords(ctx.update().getMessage());
+                          messageService.info("Your records for today have been deleted.", ctx.chatId());
                       })
                       .build();
     }
