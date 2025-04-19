@@ -65,8 +65,11 @@ class ChatService {
     @Transactional
     void addUserToGroup(final Message message) {
         try {
-            telegramGroupService.addUserToGroup(message.getChatId(), message.getFrom().getId(), message.getFrom().getUserName());
-            messageService.info("User @%s joined this group".formatted(message.getFrom().getUserName()), message.getChatId());
+            boolean joined = telegramGroupService.addUserToGroup(message.getChatId(), message.getFrom().getId(), message.getFrom().getUserName());
+            if (joined) {
+                messageService.info("User @%s joined this group".formatted(message.getFrom().getUserName()), message.getChatId());
+
+            }
         } catch (GroupNotFoundException e) {
             messageService.error("Group not registered. Must execute /start command first", message.getChatId());
         }
