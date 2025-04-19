@@ -5,7 +5,6 @@ import dev.rubasace.linkedin.games_tracker.session.GameSession;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -18,25 +17,21 @@ class DailyGameScoreCalculator {
         List<GameSession> sessionsByDuration = gameSessions.stream()
                                                            .sorted(Comparator.comparing(GameSession::getDuration))
                                                            .toList();
-        List<Duration> durations = gameSessions.stream()
-                                               .map(GameSession::getDuration)
-                                               .distinct()
-                                               .sorted()
-                                               .toList();
 
 
         List<DailyGameScore> dailyGameScores = new ArrayList<>();
         for (int i = 0; i < sessionsByDuration.size(); i++) {
             GameSession gameSession = sessionsByDuration.get(i);
-            DailyGameScore dailyGameScore = createDailyScore(group, gameSession, calculatePoints(gameSession, durations));
+            int points;
+            if (i != 0 && gameSession.getDuration().equals(sessionsByDuration.get(i - 1).getDuration())) {
+                points = dailyGameScores.get(i - 1).getPoints();
+            } else {
+                points = Math.max(3 - i, 0);
+            }
+            DailyGameScore dailyGameScore = createDailyScore(group, gameSession, points);
             dailyGameScores.add(dailyGameScore);
         }
         return dailyGameScores;
-    }
-
-    private int calculatePoints(GameSession gameSession, List<Duration> durations) {
-        int index = durations.indexOf(gameSession.getDuration());
-        return Math.max(0, 3 - index);
     }
 
     @NotNull

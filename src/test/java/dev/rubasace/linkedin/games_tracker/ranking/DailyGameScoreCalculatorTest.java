@@ -69,8 +69,8 @@ class DailyGameScoreCalculatorTest {
         assertAll(
                 () -> assertScore(scores.getFirst(), first, telegramGroup, 3),
                 () -> assertScore(scores.get(1), first2, telegramGroup, 3),
-                () -> assertScore(scores.get(2), second, telegramGroup, 2),
-                () -> assertScore(scores.get(3), third, telegramGroup, 1),
+                () -> assertScore(scores.get(2), second, telegramGroup, 1),
+                () -> assertScore(scores.get(3), third, telegramGroup, 0),
                 () -> assertScore(scores.get(4), fourth, telegramGroup, 0)
         );
     }
@@ -96,9 +96,9 @@ class DailyGameScoreCalculatorTest {
         assertAll(
                 () -> assertScore(scores.getFirst(), first, telegramGroup, 3),
                 () -> assertScore(scores.get(1), first2, telegramGroup, 3),
-                () -> assertScore(scores.get(2), second, telegramGroup, 2),
-                () -> assertScore(scores.get(3), second2, telegramGroup, 2),
-                () -> assertScore(scores.get(4), third, telegramGroup, 1)
+                () -> assertScore(scores.get(2), second, telegramGroup, 1),
+                () -> assertScore(scores.get(3), second2, telegramGroup, 1),
+                () -> assertScore(scores.get(4), third, telegramGroup, 0)
         );
     }
 
