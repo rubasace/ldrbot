@@ -33,15 +33,16 @@ public class TelegramGroupService {
     }
 
     @Transactional
-    public void addUserToGroup(final Long chatId, final Long userId, final String username) throws GroupNotFoundException {
+    public boolean addUserToGroup(final Long chatId, final Long userId, final String username) throws GroupNotFoundException {
         TelegramGroup telegramGroup = this.findGroup(chatId).orElseThrow(GroupNotFoundException::new);
 
         TelegramUser telegramUser = telegramUserService.findOrCreate(userId, username);
         if (telegramGroup.getMembers().contains(telegramUser)) {
-            return;
+            return false;
         }
         telegramGroup.getMembers().add(telegramUser);
         telegramGroupRepository.save(telegramGroup);
+        return true;
     }
 
     private TelegramGroup udpateGroupData(final TelegramGroup telegramGroup, final String title) {
