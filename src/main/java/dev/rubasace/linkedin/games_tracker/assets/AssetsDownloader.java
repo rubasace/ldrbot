@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -33,5 +34,14 @@ public class AssetsDownloader {
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private List<PhotoSize> getPhotos(final Message message) {
+        if (message.hasPhoto()) {
+            return message.getPhoto();
+        } else if (message.hasDocument() && message.getDocument().getThumbnail() != null) {
+            return List.of(message.getDocument().getThumbnail());
+        }
+        return List.of();
     }
 }

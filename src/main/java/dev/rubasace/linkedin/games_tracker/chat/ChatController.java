@@ -43,6 +43,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
     }
 
 
+    //TODO improve this so we only allocate one virtual thread per user and not per image/message from the user
     @Override
     public void consume(final List<Update> updates) {
         updates.forEach(update -> controllerExecutor.execute(() -> consume(update)));
@@ -59,7 +60,6 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
         }
         chatService.processMessage(update.getMessage());
     }
-
 
     @PostConstruct
     public void registerCommands() {
@@ -147,6 +147,16 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                           chatService.deleteTodayRecords(ctx.update().getMessage());
                           messageService.info("Your records for today have been deleted.", ctx.chatId());
                       })
+                      .build();
+    }
+
+    public Ability dailyRanking() {
+        return Ability.builder()
+                      .name("daily")
+                      .info("Calculate the daily score ranking")
+                      .locality(Locality.ALL)
+                      .privacy(Privacy.PUBLIC)
+                      .action(ctx -> chatService.dailyRanking(ctx.update().getMessage()))
                       .build();
     }
 }

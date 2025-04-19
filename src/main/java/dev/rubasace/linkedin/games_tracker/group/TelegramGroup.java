@@ -1,11 +1,13 @@
 package dev.rubasace.linkedin.games_tracker.group;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.rubasace.linkedin.games_tracker.session.GameType;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +31,10 @@ public class TelegramGroup {
 
     @Column(nullable = false)
     private ZoneId timezone;
+
+    //TODO make configurable
+    @Transient
+    private final Set<GameType> trackedGames = Set.of(GameType.values());
 
     @JsonIgnoreProperties("groups")
     @ManyToMany

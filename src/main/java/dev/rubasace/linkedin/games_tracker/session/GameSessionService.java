@@ -2,53 +2,68 @@ package dev.rubasace.linkedin.games_tracker.session;
 
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUserService;
+import dev.rubasace.linkedin.games_tracker.util.LinkedinTimeUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @Transactional(readOnly = true)
 @Service
 public class GameSessionService {
 
-    //Games are released at midnight pacific time, so we use that ZoneId to set the day
-    public static final ZoneId PACIFIC_ZONE_ID = ZoneId.of("America/Los_Angeles");
+
 
     private final GameSessionRepository gameSessionRepository;
     private final TelegramUserService telegramUserService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public GameSessionService(final GameSessionRepository gameSessionRepository, final TelegramUserService telegramUserService) {
+    public GameSessionService(final GameSessionRepository gameSessionRepository, final TelegramUserService telegramUserService, final ApplicationEventPublisher applicationEventPublisher) {
         this.gameSessionRepository = gameSessionRepository;
         this.telegramUserService = telegramUserService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Transactional
     public GameSession recordGameSession(final Long userId, final String userName, final GameDuration gameDuration) throws AlreadyRegisteredSession {
         TelegramUser telegramUser = telegramUserService.findOrCreate(userId, userName);
-        LocalDate gameDay = todayGameDay();
-        if (gameSessionRepository.existsByTelegramUserIdAndGameAndGameDay(telegramUser.getId(), gameDuration.type(), gameDay)) {
+        LocalDate gameDay = LinkedinTimeUtils.todayGameDay();
+        if (gameSessionRepository.existsByUserIdAndGameAndGameDay(telegramUser.getId(), gameDuration.type(), gameDay)) {
             throw new AlreadyRegisteredSession(userName, gameDuration.type());
         }
         GameSession gameSession = new GameSession();
         gameSession.setGame(gameDuration.type());
-        gameSession.setTelegramUser(telegramUser);
+        gameSession.setUser(telegramUser);
         gameSession.setGameDay(gameDay);
         gameSession.setDuration(gameDuration.duration());
-        return gameSessionRepository.save(gameSession);
+        GameSession savedSession = gameSessionRepository.save(gameSession);
+        //TODO think of reacting to this event to notify on the channels when a new time is registered?
+        applicationEventPublisher.publishEvent(new GameSessionRegistrationEvent(this, userId));
+        return savedSession;
     }
 
-    private static LocalDate todayGameDay() {
-        return ZonedDateTime.now(PACIFIC_ZONE_ID).toLocalDate();
-    }
 
+    @Transactional
     public void deleteTodaySession(final Long userId, final GameType game) {
-        gameSessionRepository.deleteByTelegramUserIdAndGameAndGameDay(userId, game, todayGameDay());
+        gameSessionRepository.deleteByUserIdAndGameAndGameDay(userId, game, LinkedinTimeUtils.todayGameDay());
     }
 
-    public void deleteTodaySessions(final Long userId) {
-        gameSessionRepository.deleteByTelegramUserIdAndGameDay(userId, todayGameDay());
+    public Stream<GameSession> getTodaySessions(final Long userId) {
+        return gameSessionRepository.getByUserIdAndGameDay(userId, LinkedinTimeUtils.todayGameDay());
     }
+
+    public Stream<GameSession> getTodaySessions(final Set<Long> userIds) {
+        return gameSessionRepository.getByUserIdInAndGameDay(userIds, LinkedinTimeUtils.todayGameDay());
+    }
+
+
+    @Transactional
+    public void deleteTodaySessions(final Long userId) {
+        gameSessionRepository.deleteByUserIdAndGameDay(userId, LinkedinTimeUtils.todayGameDay());
+    }
+
 
 }

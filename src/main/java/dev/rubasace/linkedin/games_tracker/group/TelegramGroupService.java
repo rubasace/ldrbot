@@ -1,5 +1,7 @@
 package dev.rubasace.linkedin.games_tracker.group;
 
+import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
+import dev.rubasace.linkedin.games_tracker.user.TelegramUserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,9 +14,11 @@ import java.util.Set;
 public class TelegramGroupService {
 
     private final TelegramGroupRepository telegramGroupRepository;
+    private final TelegramUserService telegramUserService;
 
-    public TelegramGroupService(final TelegramGroupRepository telegramGroupRepository) {
+    TelegramGroupService(final TelegramGroupRepository telegramGroupRepository, final TelegramUserService telegramUserService) {
         this.telegramGroupRepository = telegramGroupRepository;
+        this.telegramUserService = telegramUserService;
     }
 
     public Optional<TelegramGroup> findGroup(final Long chatId) {
@@ -29,8 +33,15 @@ public class TelegramGroupService {
     }
 
     @Transactional
-    public <S extends TelegramGroup> S save(final S entity) {
-        return telegramGroupRepository.save(entity);
+    public void addUserToGroup(final Long chatId, final Long userId, final String username) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = this.findGroup(chatId).orElseThrow(GroupNotFoundException::new);
+
+        TelegramUser telegramUser = telegramUserService.findOrCreate(userId, username);
+        if (telegramGroup.getMembers().contains(telegramUser)) {
+            return;
+        }
+        telegramGroup.getMembers().add(telegramUser);
+        telegramGroupRepository.save(telegramGroup);
     }
 
     private TelegramGroup udpateGroupData(final TelegramGroup telegramGroup, final String title) {

@@ -1,17 +1,17 @@
 package dev.rubasace.linkedin.games_tracker.chat;
 
 import dev.rubasace.linkedin.games_tracker.assets.AssetsDownloader;
+import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroupService;
 import dev.rubasace.linkedin.games_tracker.image.ImageGameDurationExtractor;
+import dev.rubasace.linkedin.games_tracker.ranking.GroupRankingService;
 import dev.rubasace.linkedin.games_tracker.session.AlreadyRegisteredSession;
 import dev.rubasace.linkedin.games_tracker.session.GameDuration;
 import dev.rubasace.linkedin.games_tracker.session.GameSession;
 import dev.rubasace.linkedin.games_tracker.session.GameSessionService;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
 import dev.rubasace.linkedin.games_tracker.session.UnrecognizedGameException;
-import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
-import dev.rubasace.linkedin.games_tracker.user.TelegramUserService;
 import dev.rubasace.linkedin.games_tracker.util.FormatUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,30 +23,32 @@ import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
+//TODO revisit if it makes sense after we revisit all logic in this service
 @Transactional(readOnly = true)
 @Service
 class ChatService {
 
-    public static final String SUBMISSION_MESSAGE_TEMPLATE = "@%s submitted a screenshot for todays %s taking a total time of %s";
+    public static final String SUBMISSION_MESSAGE_TEMPLATE = "@%s submitted a screenshot for todays %s with a time of %s";
 
     private final ImageGameDurationExtractor imageGameDurationExtractor;
     private final AssetsDownloader assetsDownloader;
     private final GameSessionService gameSessionService;
     private final TelegramGroupService telegramGroupService;
-    private final TelegramUserService telegramUserService;
     private final MessageService messageService;
+    private final GroupRankingService groupRankingService;
 
     ChatService(final ImageGameDurationExtractor imageGameDurationExtractor,
                 final AssetsDownloader assetsDownloader,
                 final GameSessionService gameSessionService,
                 final TelegramGroupService telegramGroupService,
-                final MessageService messageService, final TelegramUserService telegramUserService) {
+                final MessageService messageService,
+                final GroupRankingService groupRankingService) {
         this.imageGameDurationExtractor = imageGameDurationExtractor;
         this.assetsDownloader = assetsDownloader;
         this.gameSessionService = gameSessionService;
         this.telegramGroupService = telegramGroupService;
         this.messageService = messageService;
-        this.telegramUserService = telegramUserService;
+        this.groupRankingService = groupRankingService;
     }
 
     @Transactional
@@ -55,29 +57,25 @@ class ChatService {
             throw new IllegalArgumentException("Chat must be a group");
         }
         telegramGroupService.registerOrUpdateGroup(chat.getId(), chat.getTitle());
-        messageService.info("Now I'll monitor this group and keep track of your linkedin games times. You can explicitely /join or send a message on the group to be added to it",
+        messageService.info("Now I'll monitor this group and keep track of your linkedin games times. You can explicitly /join or send a message on the group to be added to it",
                             chat.getId());
     }
 
+    //TODO revisit if this logic should be moved down to group package
     @Transactional
     void addUserToGroup(final Message message) {
-        Optional<TelegramGroup> group = telegramGroupService.findGroup(message.getChatId());
-        if (group.isEmpty()) {
+        try {
+            telegramGroupService.addUserToGroup(message.getChatId(), message.getFrom().getId(), message.getFrom().getUserName());
+            messageService.info("User @%s joined this group".formatted(message.getFrom().getUserName()), message.getChatId());
+        } catch (GroupNotFoundException e) {
             messageService.error("Group not registered. Must execute /start command first", message.getChatId());
-            return;
         }
-        TelegramUser telegramUser = telegramUserService.findOrCreate(message.getFrom().getId(), message.getFrom().getUserName());
-        if (group.get().getMembers().contains(telegramUser)) {
-            return;
-        }
-        group.get().getMembers().add(telegramUser);
-        telegramGroupService.save(group.get());
-        messageService.info("User @%s joined this group".formatted(telegramUser.getUserName()), message.getChatId());
     }
 
+    //TODO track users join/leave
+    //TODO annotate number of members when started?
     @Transactional
     void processMessage(final Message message) {
-
         if (message.getChat().isGroupChat()) {
             Optional<TelegramGroup> group = telegramGroupService.findGroup(message.getChat().getId());
             if (group.isEmpty()) {
@@ -98,8 +96,8 @@ class ChatService {
         }
         try {
             GameSession gameSession = gameSessionService.recordGameSession(message.getFrom().getId(), message.getFrom().getUserName(), gameDuration.get());
-            messageService.info(SUBMISSION_MESSAGE_TEMPLATE.formatted(gameSession.getTelegramUser().getUserName(), gameSession.getGame().name(),
-                                                              FormatUtils.formatDuration(gameSession.getDuration())),
+            messageService.info(SUBMISSION_MESSAGE_TEMPLATE.formatted(gameSession.getUser().getUserName(), gameSession.getGame().name().toLowerCase(),
+                                                                      FormatUtils.formatDuration(gameSession.getDuration())),
                                 message.getChat().getId());
         } catch (AlreadyRegisteredSession e) {
             messageService.error(
@@ -132,6 +130,11 @@ class ChatService {
     @Transactional
     public void deleteTodayRecords(final Message message) {
         gameSessionService.deleteTodaySessions(message.getFrom().getId());
+    }
+
+    public void dailyRanking(final Message message) {
+        telegramGroupService.findGroup(message.getChat().getId())
+                            .ifPresent(groupRankingService::createDailyRanking);
     }
 
 }
