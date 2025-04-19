@@ -46,7 +46,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
     //TODO improve this so we only allocate one virtual thread per user and not per image/message from the user
     @Override
     public void consume(final List<Update> updates) {
-        updates.forEach(update -> controllerExecutor.execute(() -> consume(update)));
+        controllerExecutor.execute(() -> updates.forEach(this::consume));
     }
 
     @Override
