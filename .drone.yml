@@ -3,6 +3,11 @@ kind: pipeline
 type: kubernetes
 name: default
 
+resources:
+  requests:
+    cpu: 1000
+    memory: 4000MiB
+
 steps:
   - name: build
     image: maven:3.9.9-eclipse-temurin-21-alpine@sha256:4cbb8bf76c46b97e028998f2486ed014759a8e932480431039bdb93dffe6813e
@@ -24,6 +29,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: c28a0fd6feb980f9435b38992595d2bed4b43d6449e6361581b1b414fa589977
+hmac: 519a974fca0f60f9c1bea9872694aee211a47826d93a83c37a6f8fcf5fa676be
 
 ...
