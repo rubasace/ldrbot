@@ -4,10 +4,13 @@ import dev.rubasace.linkedin.games_tracker.configuration.AsyncConfiguration;
 import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games_tracker.ranking.GroupDailyScoreCreatedEvent;
 import dev.rubasace.linkedin.games_tracker.session.AlreadyRegisteredSession;
+import dev.rubasace.linkedin.games_tracker.session.GameNameNotFoundException;
+import dev.rubasace.linkedin.games_tracker.session.GameSessionRegistrationEvent;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
 import dev.rubasace.linkedin.games_tracker.summary.GameScoreData;
 import dev.rubasace.linkedin.games_tracker.summary.GlobalScoreData;
 import dev.rubasace.linkedin.games_tracker.summary.GroupDailyScore;
+import dev.rubasace.linkedin.games_tracker.user.UsernameNotFoundException;
 import dev.rubasace.linkedin.games_tracker.util.FormatUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -21,7 +24,8 @@ import java.util.Map;
 @Component
 public class NotificationService {
 
-    public static final String ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE = "@%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall";
+    private static final String ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE = "@%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall";
+    private static final String SUBMISSION_MESSAGE_TEMPLATE = "@%s submitted their result for today's %s with a time of %s";
 
     private final MessageService messageService;
 
@@ -37,11 +41,14 @@ public class NotificationService {
                                  alreadyRegisteredSession.getChatId());
         } else if (userFeedbackException instanceof GroupNotFoundException groupNotFoundException) {
             messageService.error("Group not registered. Must execute /start command first", groupNotFoundException.getChatId());
+        } else if (userFeedbackException instanceof UsernameNotFoundException usernameNotFoundException) {
+            messageService.error("User @%s not found".formatted(usernameNotFoundException.getUsername()), usernameNotFoundException.getChatId());
+        } else if (userFeedbackException instanceof GameNameNotFoundException gameNameNotFoundException) {
+            messageService.error("'%s' is not a valid game.".formatted(gameNameNotFoundException.getGameName()), gameNameNotFoundException.getChatId());
         }
     }
 
-
-    @Async(AsyncConfiguration.EVENT_LISTENER_EXECUTOR_NAME)
+    @Async(AsyncConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void notifyDailyRanking(final GroupDailyScoreCreatedEvent groupDailyScoreCreatedEvent) {
         GroupDailyScore groupDailyScore = groupDailyScoreCreatedEvent.getGroupDailyScore();
@@ -52,6 +59,15 @@ public class NotificationService {
 
         String htmlSummary = toHtmlSummary(groupDailyScore);
         messageService.html(htmlSummary, groupDailyScore.chatId());
+    }
+
+    @Async(AsyncConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void handleSessionRegistration(final GameSessionRegistrationEvent gameSessionRegistrationEvent) {
+        messageService.info(SUBMISSION_MESSAGE_TEMPLATE.formatted(gameSessionRegistrationEvent.getUserName(),
+                                                                  gameSessionRegistrationEvent.getGame().name().toLowerCase(),
+                                                                  FormatUtils.formatDuration(gameSessionRegistrationEvent.getDuration())),
+                            gameSessionRegistrationEvent.getChatId());
     }
 
     private String toHtmlSummary(GroupDailyScore groupScore) {

@@ -8,10 +8,11 @@ import dev.rubasace.linkedin.games_tracker.group.TelegramGroupService;
 import dev.rubasace.linkedin.games_tracker.image.ImageGameDurationExtractor;
 import dev.rubasace.linkedin.games_tracker.ranking.GroupRankingService;
 import dev.rubasace.linkedin.games_tracker.session.GameDuration;
-import dev.rubasace.linkedin.games_tracker.session.GameSession;
+import dev.rubasace.linkedin.games_tracker.session.GameNameNotFoundException;
 import dev.rubasace.linkedin.games_tracker.session.GameSessionService;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
 import dev.rubasace.linkedin.games_tracker.util.FormatUtils;
+import dev.rubasace.linkedin.games_tracker.util.ParseUtils;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -30,8 +32,6 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @Service
 class ChatService {
-
-    public static final String SUBMISSION_MESSAGE_TEMPLATE = "@%s submitted a screenshot for todays %s with a time of %s";
 
     private final ImageGameDurationExtractor imageGameDurationExtractor;
     private final AssetsDownloader assetsDownloader;
@@ -98,13 +98,8 @@ class ChatService {
         if (gameDuration.isEmpty()) {
             return;
         }
-        Optional<GameSession> gameSession = gameSessionService.recordGameSession(message.getFrom().getId(), message.getChatId(), message.getFrom().getUserName(),
+        gameSessionService.recordGameSession(message.getFrom().getId(), message.getChatId(), message.getFrom().getUserName(),
                                                                                  gameDuration.get());
-
-        gameSession.ifPresent(session -> messageService.info(SUBMISSION_MESSAGE_TEMPLATE.formatted(session.getUser().getUserName(),
-                                                                                                   session.getGame().name().toLowerCase(),
-                                                                                                   FormatUtils.formatDuration(session.getDuration())),
-                                                             message.getChat().getId()));
 
     }
 
@@ -117,23 +112,29 @@ class ChatService {
         return List.of();
     }
 
+    @SneakyThrows
     @Transactional
     public void deleteTodayRecord(final Message message, final String[] arguments) {
+        //TODO think if controlling actions arguments with input() or via explicit arguments check like here
         if (arguments == null || arguments.length == 0) {
             messageService.error("Please provide a game name. Example: /delete queens", message.getChatId());
             return;
         }
 
         String gameName = arguments[0];
+        GameType gameType = getGameType(gameName, message.getChatId());
+        gameSessionService.deleteTodaySession(message.getFrom().getId(), message.getChatId(), gameType);
+        messageService.info("Your result for *%s* has been deleted.".formatted(gameName.toUpperCase()), message.getChatId());
+    }
+
+    private GameType getGameType(final String gameName, final Long chatId) throws GameNameNotFoundException {
         GameType gameType;
         try {
             gameType = GameType.valueOf(gameName.toUpperCase());
         } catch (IllegalArgumentException e) {
-            messageService.error("'%s' is not a valid game.".formatted(gameName), message.getChatId());
-            return;
+            throw new GameNameNotFoundException(chatId, gameName);
         }
-        gameSessionService.deleteTodaySession(message.getFrom().getId(), message.getChatId(), gameType);
-        messageService.info("Your result for *%s* has been deleted.".formatted(gameName.toUpperCase()), message.getChatId());
+        return gameType;
     }
 
     @Transactional
@@ -164,5 +165,16 @@ class ChatService {
         } catch (GroupNotFoundException e) {
             messageService.error("Group not registered. Must execute /start command first", message.getChatId());
         }
+    }
+
+    @SneakyThrows
+    public void registerSessionManually(final Message message, final String[] arguments) {
+        String username = arguments[0].startsWith("@") ? arguments[0].substring(1) : arguments[0];
+        GameType gameType = getGameType(arguments[1], message.getChatId());
+        Optional<Duration> duration = ParseUtils.parseDuration(arguments[2]);
+        if (duration.isEmpty()) {
+            messageService.error("Invalid time format. Use `mm:ss`, e.g. `1:30` or `12:05`", message.getChatId());
+        }
+        gameSessionService.manuallRrecordGameSession(message.getChatId(), username, new GameDuration(gameType, duration.get()));
     }
 }

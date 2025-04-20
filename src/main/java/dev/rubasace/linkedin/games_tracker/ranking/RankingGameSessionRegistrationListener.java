@@ -17,7 +17,7 @@ class RankingGameSessionRegistrationListener {
         this.groupsRankingReadinessCheckService = groupsRankingReadinessCheckService;
     }
 
-    @Async(AsyncConfiguration.EVENT_LISTENER_EXECUTOR_NAME)
+    @Async(AsyncConfiguration.BACKGROUND_TASKS_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleSessionRegistration(final GameSessionRegistrationEvent gameSessionRegistrationEvent) {
         groupsRankingReadinessCheckService.process(gameSessionRegistrationEvent);

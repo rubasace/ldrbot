@@ -3,6 +3,7 @@ package dev.rubasace.linkedin.games_tracker.user;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Transactional(readOnly = true)
@@ -25,6 +26,10 @@ public class TelegramUserService {
             return telegramUserRepository.findById(userId)
                                          .map(telegramUser -> updateUserData(telegramUser, userName))
                                          .orElseGet(() -> this.createUser(userId, userName));
+    }
+
+    public Optional<TelegramUser> findByUserName(final String userName) {
+        return telegramUserRepository.findByUserName(userName);
     }
 
     private TelegramUser updateUserData(TelegramUser telegramUser, final String userName) {

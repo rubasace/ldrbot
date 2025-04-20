@@ -1,6 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.session;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-public interface GameSessionRepository extends CrudRepository<GameSession, UUID> {
+public interface GameSessionRepository extends JpaRepository<GameSession, UUID> {
 
     boolean existsByUserIdAndGroupChatIdAndGameAndGameDay(Long UserId, Long chatId, GameType game, LocalDate gameDay);
 

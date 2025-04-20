@@ -1,5 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.image;
 
+import dev.rubasace.linkedin.games_tracker.util.ParseUtils;
 import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.Rect;
@@ -11,15 +12,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Component
 class ImageDurationExtractor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageDurationExtractor.class);
-    private static final Pattern TIMER_PATTERN = Pattern.compile("\\b(\\d{1,2}):?(\\d{2})\\b");
 
     private static final String RESULTS_COLOR = "#FDE4A5";
 
@@ -42,16 +41,15 @@ class ImageDurationExtractor {
             File temp = File.createTempFile("time-results-section", ".png");
             opencv_imgcodecs.imwrite(temp.getAbsolutePath(), cropped);
             String text = imageTextExtractor.extractText(temp);
-            Matcher matcher = TIMER_PATTERN.matcher(text);
-
-            if (matcher.find()) {
-                int minutes = Integer.parseInt(matcher.group(1));
-                int seconds = Integer.parseInt(matcher.group(2));
-                return Optional.of(Duration.ofMinutes(minutes).plusSeconds(seconds));
-            } else {
+            Optional<Duration> duration = Arrays.stream(text.split("\n"))
+                                                .map(durationText -> ParseUtils.parseDuration(durationText.trim()))
+                                                .filter(Optional::isPresent)
+                                                .map(Optional::get)
+                                                .findFirst();
+            if (duration.isEmpty()) {
                 LOGGER.warn("No timer found in OCR result");
-                return Optional.empty();
             }
+            return duration;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

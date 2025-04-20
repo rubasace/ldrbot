@@ -149,4 +149,15 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .action(ctx -> chatService.listTrackedGames(ctx.update().getMessage()))
                       .build();
     }
+
+    public Ability override() {
+        return Ability.builder()
+                      .name("override")
+                      .info("Admin-only: Manually override a user's game time (mm:ss) in case the bot fails to detect it. Usage: /override @<username> <game> <duration>")
+                      .input(3)
+                      .locality(Locality.GROUP)
+                      .privacy(Privacy.GROUP_ADMIN)
+                      .action(ctx -> chatService.registerSessionManually(ctx.update().getMessage(), ctx.arguments()))
+                      .build();
+    }
 }

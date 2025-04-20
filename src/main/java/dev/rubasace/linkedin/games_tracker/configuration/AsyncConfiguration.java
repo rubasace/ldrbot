@@ -11,10 +11,16 @@ import java.util.concurrent.Executors;
 @Configuration
 public class AsyncConfiguration {
 
-    public static final String EVENT_LISTENER_EXECUTOR_NAME = "eventListenerExecutor";
+    public static final String BACKGROUND_TASKS_EXECUTOR_NAME = "backgroundTasksExecutor";
+    public static final String NOTIFICATION_LISTENER_EXECUTOR_NAME = "notificationListenerExecutor";
 
-    @Bean(EVENT_LISTENER_EXECUTOR_NAME)
+    @Bean(BACKGROUND_TASKS_EXECUTOR_NAME)
     public Executor eventListenerExecutor() {
         return Executors.newVirtualThreadPerTaskExecutor();
+    }
+
+    @Bean(NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    public Executor notificationListenerExecutor() {
+        return Executors.newSingleThreadExecutor(Thread.ofVirtual().factory());
     }
 }
