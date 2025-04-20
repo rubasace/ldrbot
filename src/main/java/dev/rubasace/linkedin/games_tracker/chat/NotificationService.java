@@ -1,6 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.chat;
 
-import dev.rubasace.linkedin.games_tracker.configuration.AsyncConfiguration;
+import dev.rubasace.linkedin.games_tracker.configuration.ExecutorsConfiguration;
 import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games_tracker.ranking.GroupDailyScoreCreatedEvent;
 import dev.rubasace.linkedin.games_tracker.session.AlreadyRegisteredSession;
@@ -48,7 +48,7 @@ public class NotificationService {
         }
     }
 
-    @Async(AsyncConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void notifyDailyRanking(final GroupDailyScoreCreatedEvent groupDailyScoreCreatedEvent) {
         GroupDailyScore groupDailyScore = groupDailyScoreCreatedEvent.getGroupDailyScore();
@@ -61,7 +61,7 @@ public class NotificationService {
         messageService.html(htmlSummary, groupDailyScore.chatId());
     }
 
-    @Async(AsyncConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleSessionRegistration(final GameSessionRegistrationEvent gameSessionRegistrationEvent) {
         messageService.info(SUBMISSION_MESSAGE_TEMPLATE.formatted(gameSessionRegistrationEvent.getUserName(),

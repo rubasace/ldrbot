@@ -1,6 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.ranking;
 
-import dev.rubasace.linkedin.games_tracker.configuration.AsyncConfiguration;
+import dev.rubasace.linkedin.games_tracker.configuration.ExecutorsConfiguration;
 import dev.rubasace.linkedin.games_tracker.session.GameSessionRegistrationEvent;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ class RankingGameSessionRegistrationListener {
         this.groupsRankingReadinessCheckService = groupsRankingReadinessCheckService;
     }
 
-    @Async(AsyncConfiguration.BACKGROUND_TASKS_EXECUTOR_NAME)
+    @Async(ExecutorsConfiguration.BACKGROUND_TASKS_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleSessionRegistration(final GameSessionRegistrationEvent gameSessionRegistrationEvent) {
         groupsRankingReadinessCheckService.process(gameSessionRegistrationEvent);
