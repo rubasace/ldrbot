@@ -1,7 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.chat;
 
 import dev.rubasace.linkedin.games_tracker.configuration.TelegramBotProperties;
-import dev.rubasace.linkedin.games_tracker.exception.HandleBotExceptions;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-@HandleBotExceptions
 @Component
 public class ChatController extends AbilityBot implements SpringLongPollingBot {
 
