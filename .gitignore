@@ -2,5 +2,7 @@
 
 !src
 !src/**
+!.drone.yml
 !.gitignore
+!Dockerfile
 !pom.xml
