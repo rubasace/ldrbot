@@ -39,14 +39,14 @@ public class GroupRankingService {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
-
+    //TODO make sure this gets performed before the day is over too, in case the ranking wasn't created
     @Transactional
     public void createDailyRanking(TelegramGroup telegramGroup) {
         Set<Long> userIds = telegramGroup.getMembers().stream()
                                          .map(TelegramUser::getId)
                                          .collect(Collectors.toSet());
 
-        Map<GameType, List<GameSession>> groupSessions = gameSessionService.getTodaySessions(userIds)
+        Map<GameType, List<GameSession>> groupSessions = gameSessionService.getTodaySessions(userIds, telegramGroup.getChatId())
                                                                            .collect(Collectors.groupingBy(GameSession::getGame));
 
 
@@ -58,14 +58,11 @@ public class GroupRankingService {
             gameScores.put(gameType, dailyScoreService.updateDailyScores(dailyGameScores, telegramGroup.getChatId(), gameType));
         }
         notifyRankingCreation(telegramGroup.getChatId(), gameScores);
-
     }
 
     private void notifyRankingCreation(final Long chatId, final Map<GameType, List<DailyGameScore>> gameScores) {
         GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, gameScores);
         applicationEventPublisher.publishEvent(new GroupDailyScoreCreatedEvent(this, groupDailyScore));
-
     }
-
 
 }

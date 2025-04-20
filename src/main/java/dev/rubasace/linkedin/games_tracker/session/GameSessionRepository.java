@@ -10,15 +10,15 @@ import java.util.stream.Stream;
 
 public interface GameSessionRepository extends CrudRepository<GameSession, UUID> {
 
-    boolean existsByUserIdAndGameAndGameDay(Long UserId, GameType game, LocalDate gameDay);
+    boolean existsByUserIdAndGroupChatIdAndGameAndGameDay(Long UserId, Long chatId, GameType game, LocalDate gameDay);
 
     @Transactional
-    void deleteByUserIdAndGameAndGameDay(Long UserId, GameType game, LocalDate gameDay);
+    void deleteByUserIdAndGroupChatIdAndGameAndGameDay(Long UserId, Long chatId, GameType game, LocalDate gameDay);
 
-    Stream<GameSession> getByUserIdAndGameDay(Long UserId, LocalDate gameDay);
+    Stream<GameSession> getByUserIdAndGroupChatIdAndGameDay(Long UserId, Long chatId, LocalDate gameDay);
 
-    Stream<GameSession> getByUserIdInAndGameDay(Set<Long> UserIds, LocalDate gameDay);
+    Stream<GameSession> getByUserIdInAndGroupChatIdAndGameDay(Set<Long> UserIds, Long chatId, LocalDate gameDay);
 
     @Transactional
-    void deleteByUserIdAndGameDay(Long UserId, LocalDate gameDay);
+    void deleteByUserIdAndGroupChatIdAndGameDay(Long UserId, Long chatId, LocalDate gameDay);
 }

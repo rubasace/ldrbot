@@ -7,10 +7,12 @@ import org.springframework.context.ApplicationEvent;
 public class GameSessionRegistrationEvent extends ApplicationEvent {
 
     private final Long userId;
+    private final Long chatId;
 
-    public GameSessionRegistrationEvent(final Object source, final Long userId) {
+    public GameSessionRegistrationEvent(final Object source, final Long userId, final Long chatId) {
         super(source);
         this.userId = userId;
+        this.chatId = chatId;
     }
 
 }

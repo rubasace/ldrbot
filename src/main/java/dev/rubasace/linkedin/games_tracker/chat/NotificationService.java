@@ -1,7 +1,9 @@
 package dev.rubasace.linkedin.games_tracker.chat;
 
 import dev.rubasace.linkedin.games_tracker.configuration.AsyncConfiguration;
+import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games_tracker.ranking.GroupDailyScoreCreatedEvent;
+import dev.rubasace.linkedin.games_tracker.session.AlreadyRegisteredSession;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
 import dev.rubasace.linkedin.games_tracker.summary.GameScoreData;
 import dev.rubasace.linkedin.games_tracker.summary.GlobalScoreData;
@@ -19,10 +21,23 @@ import java.util.Map;
 @Component
 public class NotificationService {
 
+    public static final String ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE = "@%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall";
+
     private final MessageService messageService;
 
-    public NotificationService(final MessageService messageService) {
+    NotificationService(final MessageService messageService) {
         this.messageService = messageService;
+    }
+
+    public void notifyUserFeedbackException(final UserFeedbackException userFeedbackException) {
+        if (userFeedbackException instanceof AlreadyRegisteredSession alreadyRegisteredSession) {
+            messageService.error(ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE.formatted(alreadyRegisteredSession.getUsername(),
+                                                                                       alreadyRegisteredSession.getGame().name(),
+                                                                                       alreadyRegisteredSession.getGame().name().toLowerCase()),
+                                 alreadyRegisteredSession.getChatId());
+        } else if (userFeedbackException instanceof GroupNotFoundException groupNotFoundException) {
+            messageService.error("Group not registered. Must execute /start command first", groupNotFoundException.getChatId());
+        }
     }
 
 
@@ -57,7 +72,7 @@ public class NotificationService {
     }
 
     private void toHtmlGameRanking(final GameType gameType, final List<GameScoreData> scores, final StringBuilder sb) {
-        sb.append(toTile(gameIcon(gameType), gameType.name()));
+        sb.append(toTile(FormatUtils.gameIcon(gameType), gameType.name()));
 
         for (int i = 0; i < scores.size(); i++) {
             GameScoreData score = scores.get(i);
@@ -79,6 +94,7 @@ public class NotificationService {
         }
     }
 
+    //TODO allow admin to make message configurable
     private void toHtmlFinalMessage(final List<String> winners, final StringBuilder sb) {
         sb.append("\n<b>🎉🎉🎉 Congratulations @%s, you are today's champion%s! 🎉🎉🎉</b>"
                           .formatted(String.join(" and @", winners), winners.size() > 1 ? "s" : ""));
@@ -107,12 +123,5 @@ public class NotificationService {
         };
     }
 
-    private String gameIcon(final GameType gameType) {
-        return switch (gameType) {
-            case ZIP -> "🏁";
-            case TANGO -> "🌙";
-            case QUEENS -> "👑";
-        };
-    }
 
 }

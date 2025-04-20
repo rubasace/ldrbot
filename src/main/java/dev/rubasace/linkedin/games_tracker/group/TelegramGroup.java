@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,6 +23,7 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
+@AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
@@ -40,7 +42,7 @@ public class TelegramGroup {
     @Enumerated(EnumType.STRING)
     @Column(name = "tracked_game")
     @CollectionTable(name = "telegram_group_tracked_games", joinColumns = @JoinColumn(name = "group_id"))
-    private Set<GameType> trackedGames = EnumSet.noneOf(GameType.class);
+    private Set<GameType> trackedGames = EnumSet.allOf(GameType.class);
 
     @JsonIgnoreProperties("groups")
     @ManyToMany

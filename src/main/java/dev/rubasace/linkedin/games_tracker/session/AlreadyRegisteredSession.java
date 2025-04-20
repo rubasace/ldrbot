@@ -1,16 +1,18 @@
 package dev.rubasace.linkedin.games_tracker.session;
 
 
+import dev.rubasace.linkedin.games_tracker.chat.UserFeedbackException;
 import lombok.Getter;
 
 @Getter
-public class AlreadyRegisteredSession extends Exception {
+public class AlreadyRegisteredSession extends UserFeedbackException {
 
     private final String username;
     private final GameType game;
 
 
-    public AlreadyRegisteredSession(final String username, final GameType game) {
+    public AlreadyRegisteredSession(final String username, final GameType game, final Long chatId) {
+        super(chatId);
         this.username = username;
         this.game = game;
     }

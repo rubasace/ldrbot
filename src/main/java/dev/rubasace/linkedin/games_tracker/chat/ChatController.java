@@ -1,7 +1,7 @@
 package dev.rubasace.linkedin.games_tracker.chat;
 
 import dev.rubasace.linkedin.games_tracker.configuration.TelegramBotProperties;
-import dev.rubasace.linkedin.games_tracker.session.UnrecognizedGameException;
+import dev.rubasace.linkedin.games_tracker.exception.HandleBotExceptions;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,28 +22,24 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+@HandleBotExceptions
 @Component
 public class ChatController extends AbilityBot implements SpringLongPollingBot {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatController.class);
 
     private final ChatService chatService;
-    private final MessageService messageService;
     private final String token;
     private final Executor controllerExecutor = Executors.newVirtualThreadPerTaskExecutor();
 
     ChatController(final TelegramClient telegramClient,
                    final ChatService chatService,
-                   final MessageService messageService,
                    final TelegramBotProperties telegramBotProperties) {
         super(telegramClient, telegramBotProperties.getUsername());
         this.chatService = chatService;
-        this.messageService = messageService;
         this.token = telegramBotProperties.getToken();
     }
 
-
-    //TODO improve this so we only allocate one virtual thread per user and not per image/message from the user
     @Override
     public void consume(final List<Update> updates) {
         controllerExecutor.execute(() -> updates.forEach(this::consume));
@@ -62,7 +58,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
     }
 
     @PostConstruct
-    public void registerCommands() {
+    void registerCommands() {
         super.onRegister();
         List<BotCommand> commands = getAbilities().values().stream()
                                                   .filter(ability -> ability.info() != null)
@@ -91,72 +87,66 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
         return -1;
     }
 
+    //TODO allow to submit and delete/deleteall on private chat, affecting all joined groups
+    //TODO move actions to separate classes to control a bit better the implementation (probably move away from main chatService into dedicated components)
     public Ability start() {
-        return Ability
-                .builder()
-                .name("start")
-                .info("Makes the bot start tracking the results of the group members, giving daily summaries")
-                .locality(Locality.GROUP)
-                .privacy(Privacy.PUBLIC)
-                .action(context -> chatService.setupGroup(context.update().getMessage().getChat()))
-                .build();
+        return Ability.builder()
+                      .name("start")
+                      .info("Initialize the bot for this group and start tracking game results.")
+                      .locality(Locality.GROUP)
+                      .privacy(Privacy.PUBLIC)
+                      .action(ctx -> chatService.setupGroup(ctx.update().getMessage().getChat()))
+                      .build();
     }
 
     public Ability join() {
-        return Ability
-                .builder()
-                .name("join")
-                .info("Register yourself as a participant of the group. Alternatively, users will be registered the moment they submit their first result")
-                .locality(Locality.GROUP)
-                .privacy(Privacy.PUBLIC)
-                .action(context -> chatService.addUserToGroup(context.update().getMessage()))
-                .build();
+        return Ability.builder()
+                      .name("join")
+                      .info("Register yourself as a participant in the group. (This happens automatically when you submit your first message in the group.)")
+                      .locality(Locality.GROUP)
+                      .privacy(Privacy.PUBLIC)
+                      .action(ctx -> chatService.addUserToGroup(ctx.update().getMessage()))
+                      .build();
     }
 
     public Ability delete() {
         return Ability.builder()
                       .name("delete")
-                      .info("Delete your existing game submission. Usage: /delete <game>")
+                      .info("Delete your game result for today. Usage: /delete <game>")
                       .input(1)
-                      .locality(Locality.ALL)
+                      .locality(Locality.GROUP)
                       .privacy(Privacy.PUBLIC)
-                      .action(ctx -> {
-                          if (ctx.arguments() == null || ctx.arguments().length == 0) {
-                              messageService.error("You must provide a game name. Example: /delete queens", ctx.chatId());
-                              return;
-                          }
-
-                          String game = ctx.arguments()[0]; // expecting something like 'QUEENS'
-                          try {
-                              chatService.deleteTodayRecord(ctx.update().getMessage(), game);
-                              messageService.info("Your record for %s has been deleted.".formatted(game), ctx.chatId());
-                          } catch (UnrecognizedGameException e) {
-                              messageService.error("%s isn't a valid game".formatted(e.getGameName()), ctx.chatId());
-                          }
-                      })
+                      .action(ctx -> chatService.deleteTodayRecord(ctx.update().getMessage(), ctx.arguments()))
                       .build();
     }
 
     public Ability deleteAll() {
         return Ability.builder()
                       .name("deleteall")
-                      .info("Delete all your game submissions for today")
-                      .locality(Locality.ALL)
+                      .info("Delete all your submitted results for today.")
+                      .locality(Locality.GROUP)
                       .privacy(Privacy.PUBLIC)
-                      .action(ctx -> {
-                          chatService.deleteTodayRecords(ctx.update().getMessage());
-                          messageService.info("Your records for today have been deleted.", ctx.chatId());
-                      })
+                      .action(ctx -> chatService.deleteTodayRecords(ctx.update().getMessage()))
                       .build();
     }
 
     public Ability dailyRanking() {
         return Ability.builder()
                       .name("daily")
-                      .info("Calculate the daily score ranking")
-                      .locality(Locality.ALL)
+                      .info("Manually trigger today's group ranking summary.")
+                      .locality(Locality.GROUP)
                       .privacy(Privacy.PUBLIC)
                       .action(ctx -> chatService.dailyRanking(ctx.update().getMessage()))
+                      .build();
+    }
+
+    public Ability games() {
+        return Ability.builder()
+                      .name("games")
+                      .info("Show the list of games currently tracked by this group.")
+                      .locality(Locality.GROUP)
+                      .privacy(Privacy.PUBLIC)
+                      .action(ctx -> chatService.listTrackedGames(ctx.update().getMessage()))
                       .build();
     }
 }

@@ -72,7 +72,6 @@ class ImageHelper {
     Optional<Rect> findLargestRegionOfColor(Mat image, String color) {
         Mat mask = getColorMask(image, color);
 
-        // Find contours
         MatVector contours = new MatVector();
         opencv_imgproc.findContours(mask.clone(), contours, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 

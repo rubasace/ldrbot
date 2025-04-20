@@ -1,18 +1,18 @@
 package dev.rubasace.linkedin.games_tracker.chat;
 
 import dev.rubasace.linkedin.games_tracker.assets.AssetsDownloader;
+import dev.rubasace.linkedin.games_tracker.exception.HandleBotExceptions;
 import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroupService;
 import dev.rubasace.linkedin.games_tracker.image.ImageGameDurationExtractor;
 import dev.rubasace.linkedin.games_tracker.ranking.GroupRankingService;
-import dev.rubasace.linkedin.games_tracker.session.AlreadyRegisteredSession;
 import dev.rubasace.linkedin.games_tracker.session.GameDuration;
 import dev.rubasace.linkedin.games_tracker.session.GameSession;
 import dev.rubasace.linkedin.games_tracker.session.GameSessionService;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
-import dev.rubasace.linkedin.games_tracker.session.UnrecognizedGameException;
 import dev.rubasace.linkedin.games_tracker.util.FormatUtils;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
@@ -22,7 +22,10 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+@HandleBotExceptions
 //TODO revisit if it makes sense after we revisit all logic in this service
 @Transactional(readOnly = true)
 @Service
@@ -61,22 +64,20 @@ class ChatService {
                             chat.getId());
     }
 
-    //TODO revisit if this logic should be moved down to group package
+    //TODO revisit if SneakyThrows makes sense here, probably will be kept if logic extracted into specific action component
+    @SneakyThrows
     @Transactional
     void addUserToGroup(final Message message) {
-        try {
-            boolean joined = telegramGroupService.addUserToGroup(message.getChatId(), message.getFrom().getId(), message.getFrom().getUserName());
-            if (joined) {
-                messageService.info("User @%s joined this group".formatted(message.getFrom().getUserName()), message.getChatId());
+        boolean joined = telegramGroupService.addUserToGroup(message.getChatId(), message.getFrom().getId(), message.getFrom().getUserName());
+        if (joined) {
+            messageService.info("User @%s joined this group".formatted(message.getFrom().getUserName()), message.getChatId());
 
-            }
-        } catch (GroupNotFoundException e) {
-            messageService.error("Group not registered. Must execute /start command first", message.getChatId());
         }
     }
 
     //TODO track users join/leave
     //TODO annotate number of members when started?
+    @SneakyThrows
     @Transactional
     void processMessage(final Message message) {
         if (message.getChat().isGroupChat()) {
@@ -97,16 +98,13 @@ class ChatService {
         if (gameDuration.isEmpty()) {
             return;
         }
-        try {
-            GameSession gameSession = gameSessionService.recordGameSession(message.getFrom().getId(), message.getFrom().getUserName(), gameDuration.get());
-            messageService.info(SUBMISSION_MESSAGE_TEMPLATE.formatted(gameSession.getUser().getUserName(), gameSession.getGame().name().toLowerCase(),
-                                                                      FormatUtils.formatDuration(gameSession.getDuration())),
-                                message.getChat().getId());
-        } catch (AlreadyRegisteredSession e) {
-            messageService.error(
-                    "@%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall".formatted(
-                            e.getUsername(), e.getGame().name(), e.getGame().name().toLowerCase()), message.getChat().getId());
-        }
+        Optional<GameSession> gameSession = gameSessionService.recordGameSession(message.getFrom().getId(), message.getChatId(), message.getFrom().getUserName(),
+                                                                                 gameDuration.get());
+
+        gameSession.ifPresent(session -> messageService.info(SUBMISSION_MESSAGE_TEMPLATE.formatted(session.getUser().getUserName(),
+                                                                                                   session.getGame().name().toLowerCase(),
+                                                                                                   FormatUtils.formatDuration(session.getDuration())),
+                                                             message.getChat().getId()));
 
     }
 
@@ -120,19 +118,28 @@ class ChatService {
     }
 
     @Transactional
-    public void deleteTodayRecord(final Message message, final String gameName) throws UnrecognizedGameException {
+    public void deleteTodayRecord(final Message message, final String[] arguments) {
+        if (arguments == null || arguments.length == 0) {
+            messageService.error("Please provide a game name. Example: /delete queens", message.getChatId());
+            return;
+        }
+
+        String gameName = arguments[0];
         GameType gameType;
         try {
             gameType = GameType.valueOf(gameName.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new UnrecognizedGameException(gameName);
+            messageService.error("'%s' is not a valid game.".formatted(gameName), message.getChatId());
+            return;
         }
-        gameSessionService.deleteTodaySession(message.getFrom().getId(), gameType);
+        gameSessionService.deleteTodaySession(message.getFrom().getId(), message.getChatId(), gameType);
+        messageService.info("Your result for *%s* has been deleted.".formatted(gameName.toUpperCase()), message.getChatId());
     }
 
     @Transactional
     public void deleteTodayRecords(final Message message) {
-        gameSessionService.deleteTodaySessions(message.getFrom().getId());
+        gameSessionService.deleteTodaySessions(message.getFrom().getId(), message.getChatId());
+        messageService.success("All your records for today have been deleted.", message.getChatId());
     }
 
     public void dailyRanking(final Message message) {
@@ -140,4 +147,22 @@ class ChatService {
                             .ifPresent(groupRankingService::createDailyRanking);
     }
 
+    public void listTrackedGames(final Message message) {
+        Long chatId = message.getChatId();
+        try {
+            Set<GameType> trackedGames = telegramGroupService.listTrackedGames(chatId);
+            if (trackedGames == null || trackedGames.isEmpty()) {
+                messageService.error("This group is not tracking any games.", chatId);
+            } else {
+                String text = trackedGames.stream()
+                                          .sorted()
+                                          .map(game -> "%s %s".formatted(FormatUtils.gameIcon(game), game.name()))
+                                          .collect(Collectors.joining("\n"));
+
+                messageService.info("This group is currently tracking:\n" + text, chatId);
+            }
+        } catch (GroupNotFoundException e) {
+            messageService.error("Group not registered. Must execute /start command first", message.getChatId());
+        }
+    }
 }

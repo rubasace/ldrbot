@@ -1,11 +1,13 @@
 package dev.rubasace.linkedin.games_tracker.group;
 
+import dev.rubasace.linkedin.games_tracker.session.GameType;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -25,6 +27,11 @@ public class TelegramGroupService {
         return telegramGroupRepository.findById(chatId);
     }
 
+    public TelegramGroup findGroupOrThrow(final Long chatId) throws GroupNotFoundException {
+        return this.findGroup(chatId).orElseThrow(() -> new GroupNotFoundException(chatId));
+    }
+
+
     @Transactional
     public TelegramGroup registerOrUpdateGroup(final Long chatId, final String title) {
         return telegramGroupRepository.findById(chatId)
@@ -34,7 +41,7 @@ public class TelegramGroupService {
 
     @Transactional
     public boolean addUserToGroup(final Long chatId, final Long userId, final String username) throws GroupNotFoundException {
-        TelegramGroup telegramGroup = this.findGroup(chatId).orElseThrow(GroupNotFoundException::new);
+        TelegramGroup telegramGroup = findGroupOrThrow(chatId);
 
         TelegramUser telegramUser = telegramUserService.findOrCreate(userId, username);
         if (telegramGroup.getMembers().contains(telegramUser)) {
@@ -56,7 +63,12 @@ public class TelegramGroupService {
 
     private TelegramGroup createGroup(final Long chatId, final String title) {
         //TODO stop hardcoding the timezone and request it as part of the command interaction
-        TelegramGroup telegramGroup = new TelegramGroup(chatId, title, ZoneId.of("Europe/Madrid"), Set.of());
+        TelegramGroup telegramGroup = new TelegramGroup(chatId, title, ZoneId.of("Europe/Madrid"), EnumSet.allOf(GameType.class), Set.of());
         return telegramGroupRepository.save(telegramGroup);
+    }
+
+    public Set<GameType> listTrackedGames(final Long chatId) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatId);
+        return telegramGroup.getTrackedGames();
     }
 }

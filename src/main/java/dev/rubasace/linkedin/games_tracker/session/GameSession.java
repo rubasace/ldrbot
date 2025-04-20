@@ -1,5 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.session;
 
+import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,6 +30,9 @@ public class GameSession {
 
     @ManyToOne
     private TelegramUser user;
+
+    @ManyToOne(optional = false)
+    private TelegramGroup group;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

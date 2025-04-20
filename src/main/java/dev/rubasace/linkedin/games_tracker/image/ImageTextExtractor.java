@@ -59,10 +59,10 @@ class ImageTextExtractor {
             Mat binary = new Mat();
             opencv_imgproc.threshold(gray, binary, 0, 255, opencv_imgproc.THRESH_BINARY + opencv_imgproc.THRESH_OTSU);
 
-            // Step 3: Invert if needed (optional, try both)
+            // Step 3: Invert colors
             opencv_core.bitwise_not(binary, binary);
 
-            // Step 4: Morphology (optional)
+            // Step 4: Morphology
             Mat kernel = opencv_imgproc.getStructuringElement(opencv_imgproc.MORPH_RECT, new Size(2, 2));
             opencv_imgproc.morphologyEx(binary, binary, opencv_imgproc.MORPH_CLOSE, kernel);
 
@@ -81,11 +81,8 @@ class ImageTextExtractor {
             ));
             opencv_imgproc.filter2D(upscaled, sharpened, upscaled.depth(), sharpKernel);
 
-            Mat finalInput = upscaled;
-
-            // Step 8: Write to temp file
             File temp = File.createTempFile("ocr-preprocessed", ".png");
-            opencv_imgcodecs.imwrite(temp.getAbsolutePath(), finalInput);
+            opencv_imgcodecs.imwrite(temp.getAbsolutePath(), upscaled);
             return temp;
         } catch (Exception e) {
             throw new RuntimeException("OCR failed", e);

@@ -62,21 +62,21 @@ public class TestController {
         telegramGroupService.addUserToGroup(chatId, johnId, "john");
         telegramGroupService.addUserToGroup(chatId, georgeId, "george");
 
-        gameSessionService.recordGameSession(aliceId, "alice", new GameDuration(GameType.ZIP, Duration.ofSeconds(20)));
-        gameSessionService.recordGameSession(aliceId, "alice", new GameDuration(GameType.QUEENS, Duration.ofSeconds(33)));
-        gameSessionService.recordGameSession(aliceId, "alice", new GameDuration(GameType.TANGO, Duration.ofSeconds(27)));
+        gameSessionService.recordGameSession(aliceId, chatId, "alice", new GameDuration(GameType.ZIP, Duration.ofSeconds(20)));
+        gameSessionService.recordGameSession(aliceId, chatId, "alice", new GameDuration(GameType.QUEENS, Duration.ofSeconds(33)));
+        gameSessionService.recordGameSession(aliceId, chatId, "alice", new GameDuration(GameType.TANGO, Duration.ofSeconds(27)));
 
-        gameSessionService.recordGameSession(benId, "ben", new GameDuration(GameType.ZIP, Duration.ofSeconds(21)));
-        gameSessionService.recordGameSession(benId, "ben", new GameDuration(GameType.QUEENS, Duration.ofSeconds(32)));
-        gameSessionService.recordGameSession(benId, "ben", new GameDuration(GameType.TANGO, Duration.ofSeconds(27)));
+        gameSessionService.recordGameSession(benId, chatId, "ben", new GameDuration(GameType.ZIP, Duration.ofSeconds(21)));
+        gameSessionService.recordGameSession(benId, chatId, "ben", new GameDuration(GameType.QUEENS, Duration.ofSeconds(32)));
+        gameSessionService.recordGameSession(benId, chatId, "ben", new GameDuration(GameType.TANGO, Duration.ofSeconds(27)));
 
-        gameSessionService.recordGameSession(johnId, "john", new GameDuration(GameType.ZIP, Duration.ofSeconds(21)));
-        gameSessionService.recordGameSession(johnId, "john", new GameDuration(GameType.QUEENS, Duration.ofSeconds(33)));
-        gameSessionService.recordGameSession(johnId, "john", new GameDuration(GameType.TANGO, Duration.ofSeconds(19)));
+        gameSessionService.recordGameSession(johnId, chatId, "john", new GameDuration(GameType.ZIP, Duration.ofSeconds(21)));
+        gameSessionService.recordGameSession(johnId, chatId, "john", new GameDuration(GameType.QUEENS, Duration.ofSeconds(33)));
+        gameSessionService.recordGameSession(johnId, chatId, "john", new GameDuration(GameType.TANGO, Duration.ofSeconds(19)));
 
-        gameSessionService.recordGameSession(georgeId, "george", new GameDuration(GameType.ZIP, Duration.ofSeconds(21)));
-        gameSessionService.recordGameSession(georgeId, "george", new GameDuration(GameType.QUEENS, Duration.ofSeconds(40)));
-        gameSessionService.recordGameSession(georgeId, "george", new GameDuration(GameType.TANGO, Duration.ofSeconds(29)));
+        gameSessionService.recordGameSession(georgeId, chatId, "george", new GameDuration(GameType.ZIP, Duration.ofSeconds(21)));
+        gameSessionService.recordGameSession(georgeId, chatId, "george", new GameDuration(GameType.QUEENS, Duration.ofSeconds(40)));
+        gameSessionService.recordGameSession(georgeId, chatId, "george", new GameDuration(GameType.TANGO, Duration.ofSeconds(29)));
 
 
     }
