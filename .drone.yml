@@ -4,11 +4,24 @@ type: kubernetes
 name: default
 
 steps:
+  - name: prepare-tesseract
+    image: franky1/tesseract:5.5.0
+    commands:
+      - mkdir -p tesseract-dist/usr/bin
+      - mkdir -p tesseract-dist/usr/share
+      - mkdir -p tesseract-dist/usr/lib
+
+      - cp /usr/bin/tesseract tesseract-dist/usr/bin/
+      - cp -r /usr/lib/x86_64-linux-gnu tesseract-dist/usr/lib/
+    when:
+      event:
+        - push
+
   - name: build
     image: maven:3.9.6-eclipse-temurin-21
     commands:
       - ./install/install-tesseract-ubuntu.sh
-      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/lib/x86_64-linux-gnu
+      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/drone/src/tesseract-dist/usr/lib/
     volumes:
       - name: m2-cache
         path: /root/.m2/repository
@@ -54,6 +67,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 04611b036e126044e598ba72748ca7546cfa6d43bdece09dbd2bde8794bf0f9b
+hmac: f5b9c960652d122429404a989724cfba87fe088d3835ff3ac89a8f707b3a9f66
 
 ...
