@@ -34,6 +34,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
     ChatController(final TelegramClient telegramClient,
                    final ChatService chatService,
                    final TelegramBotProperties telegramBotProperties) {
+        //TODO investigate if DB has/can be made persistent against real DB
         super(telegramClient, telegramBotProperties.getUsername(), MapDBContext.onlineInstance("/tmp/" + telegramBotProperties.getUsername()));
         this.chatService = chatService;
         this.token = telegramBotProperties.getToken();

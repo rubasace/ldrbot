@@ -167,6 +167,7 @@ class ChatService {
         }
     }
 
+    @Transactional
     @SneakyThrows
     public void registerSessionManually(final Message message, final String[] arguments) {
         String username = arguments[0].startsWith("@") ? arguments[0].substring(1) : arguments[0];
