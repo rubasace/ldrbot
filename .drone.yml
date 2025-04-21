@@ -18,7 +18,6 @@ steps:
   - name: build
     image: maven:3.9.6-eclipse-temurin-21
     commands:
-      - ./install/install-tesseract-ubuntu.sh
       - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/drone/src/tesseract-dist/usr/lib/
     volumes:
       - name: m2-cache
