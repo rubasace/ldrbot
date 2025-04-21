@@ -1,16 +1,12 @@
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre-jammy
 
-# Install tesseract
-RUN apk add --no-cache tesseract-ocr
+# TODO think of using language data
+RUN apt-get update && \
+    apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-spa && \
+    rm -rf /var/lib/apt/lists/*
 
-# Create app directory
 WORKDIR /app
 
-# Copy pre-built JAR (adjust name if needed)
-COPY build/libs/*.jar app.jar
+COPY target/*.jar /app/linkedin-games-tracker.jar
 
-# Set environment variable so JNA finds native libs
-ENV JNA_LIBRARY_PATH=/usr/lib
-
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "linkedin-games-tracker.jar"]

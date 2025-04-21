@@ -13,6 +13,36 @@ steps:
       - name: m2-cache
         path: /root/.m2/repository
 
+  - name: deploy-beta
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: dockerhub_user
+      password:
+        from_secret: dockerhub_pass
+      repo: rubasace/linkedin-games-tracker
+      tags: beta
+    when:
+      branch:
+        - main
+      event:
+        - push
+
+  - name: deploy-release
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: dockerhub_user
+      password:
+        from_secret: dockerhub_pass
+      repo: rubasace/linkedin-games-tracker
+      tags:
+        - latest
+        - ${CI_BUILD_TARGET}
+    when:
+      event:
+        - promote
+
 volumes:
   - name: m2-cache
     host:
@@ -24,6 +54,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: eacedb1319a7cdb59fe0945e3b2af24f980bec45f43fe7fa709fb72046fa37d5
+hmac: 0264c0cb7bc140f688432f9e6b1f906a8c57016d809ceddae9ed5818b8b49b30
 
 ...
