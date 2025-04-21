@@ -60,6 +60,8 @@ volumes:
   - name: m2-cache
     host:
       path: /var/lib/cache/.m2
+  - name: tesseract-dist
+    temp: { }
 trigger:
   event:
     - push
@@ -67,6 +69,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 43d539119c9cab99cd02d645404bd1abb3109100f5cddf1ddd5ddc20d69bdb7b
+hmac: 2fe949bbf99eff6b00bb44bfc31f144b9323d12e75113abcbe9df8fd5654967f
 
 ...
