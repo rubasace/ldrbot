@@ -8,7 +8,7 @@ steps:
     image: eclipse-temurin:21-jdk
     commands:
       - apt-get update && apt-get install -y tesseract-ocr
-      - mvn package -Dtesseract.data-path=/usr/share/tessdata -Dtesseract.lib-path=/usr/lib/x86_64-linux-gnu
+      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/lib/x86_64-linux-gnu
     volumes:
       - name: m2-cache
         path: /root/.m2/repository
@@ -24,6 +24,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 23f2c5f897be2927b497be29ba115b0fa3498d88c09efd79285732ea380eddd8
+hmac: 6c8b214c7f69de46a7b26ddf50d0a6d4599d6806e580aacab21800472fa5d98a
 
 ...
