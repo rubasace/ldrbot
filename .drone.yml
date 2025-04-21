@@ -17,7 +17,8 @@ steps:
   - name: build
     image: maven:3.9.6-eclipse-temurin-21
     commands:
-      - cp -R /tesseract-dist/* /
+      - apt-get update && apt-get install -y rsync
+      - rsync -a /tesseract-dist/ /
       - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/local/lib
     volumes:
       - name: m2-cache
@@ -68,6 +69,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 0756037f73d82fb526811ee438e179f0faaa5680a5348000ece9792abacbc02e
+hmac: 9f4ab15a916669a21270d0ab2dd220d955be020dcf44edcf2b8b327fe0a33cdd
 
 ...
