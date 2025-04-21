@@ -18,6 +18,7 @@ steps:
   - name: build
     image: maven:3.9.6-eclipse-temurin-21
     commands:
+      - ldconfig
       - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/drone/src/tesseract-dist/usr/lib/
     volumes:
       - name: m2-cache
@@ -64,6 +65,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: a0d9728ea1eddd46ef0dbb962d65bee44f8dfaf0e44c4bd685349c58464b0efd
+hmac: 6e3b536dde0fb0dab8f5384e5f24079d89eb4975b6695e2c25b6d6abdb44e319
 
 ...
