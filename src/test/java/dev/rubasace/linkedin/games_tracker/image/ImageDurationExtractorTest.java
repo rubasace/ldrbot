@@ -9,8 +9,6 @@ import org.junit.jupiter.params.converter.SimpleArgumentConverter;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.telegram.telegrambots.longpolling.starter.TelegramBotInitializer;
 
 import java.io.File;
 import java.time.Duration;
@@ -18,11 +16,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest
+@SpringBootTest(classes = ImageTestConfiguration.class)
 class ImageDurationExtractorTest {
-
-    @MockitoBean
-    private TelegramBotInitializer telegramBotInitializer;
 
     @Autowired
     private ImageDurationExtractor imageDurationExtractor;
@@ -48,7 +43,7 @@ class ImageDurationExtractorTest {
             if (targetType != Duration.class) {
                 throw new ArgumentConversionException("Only Duration supported");
             }
-            return Duration.parse("PT" + source.toString().toUpperCase()); // Converts "55s" -> PT55S, "2m51s" -> PT2M51S
+            return Duration.parse("PT" + source.toString().toUpperCase());
         }
     }
 }

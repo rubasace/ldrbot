@@ -1,12 +1,15 @@
 package dev.rubasace.linkedin.games_tracker.image;
 
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
+@ComponentScan(basePackageClasses = ImageGameDurationExtractor.class)
+@ImportAutoConfiguration(ConfigurationPropertiesAutoConfiguration.class)
 @EnableConfigurationProperties(TesseractProperties.class)
-@TestConfiguration
-@ComponentScan
 class ImageTestConfiguration {
 
 }
