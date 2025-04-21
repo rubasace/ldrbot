@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.net.URL;
 
 @Component
 class ImageTextExtractor {
@@ -21,18 +20,11 @@ class ImageTextExtractor {
     private static final int PADDING = 40;
     private final Tesseract tesseract;
 
-    ImageTextExtractor() {
-        //TODO fix when ready
-        System.setProperty("jna.library.path", "/opt/homebrew/opt/tesseract/lib");
+    ImageTextExtractor(final TesseractProperties tesseractProperties) {
+        System.setProperty("jna.library.path", tesseractProperties.getLibPath());
+
         this.tesseract = new Tesseract();
-
-        URL resource = getClass().getClassLoader().getResource("tessdata");
-        if (resource != null) {
-            tesseract.setDatapath(new File(resource.getFile()).getAbsolutePath());
-        } else {
-            throw new RuntimeException("tessdata folder not found in resources!");
-        }
-
+        tesseract.setDatapath(tesseractProperties.getDataPath());
         tesseract.setLanguage("eng+spa");
         tesseract.setPageSegMode(11);
         tesseract.setVariable("user_defined_dpi", "300");
@@ -45,7 +37,6 @@ class ImageTextExtractor {
         } catch (TesseractException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @NotNull

@@ -10,12 +10,11 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties("dev.rubasace.linkedin.bot")
 public class TelegramBotProperties {
 
-    @NotBlank
+
     private final String username;
-    @NotBlank
     private final String token;
 
-    public TelegramBotProperties(final String username, final String token) {
+    public TelegramBotProperties(@NotBlank final String username, @NotBlank final String token) {
         this.username = username;
         this.token = token;
     }

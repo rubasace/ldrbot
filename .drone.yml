@@ -4,18 +4,39 @@ type: kubernetes
 name: default
 
 steps:
+  - name: prepare-tesseract
+    image: alpine:3.19
+    commands:
+      - apk add --no-cache tesseract-ocr
+      - cp -r /usr/lib/libtesseract* /tesslib/
+      - cp -r ./tessdata/* /tessdata
+    volumes:
+      - name: tessdata
+        path: /tessdata
+      - name: tesslib
+        path: /tesslib
+
   - name: build
     image: maven:3.9.9-eclipse-temurin-21-alpine@sha256:4cbb8bf76c46b97e028998f2486ed014759a8e932480431039bdb93dffe6813e
     commands:
-      - mvn package
+      - mvn package -Dtesseract.data-path=/usr/share/tessdata -Dtesseract.lib-path=/usr/lib/tesseract
     volumes:
       - name: m2-cache
         path: /root/.m2/repository
+      - name: tessdata
+        path: /usr/share/tessdata
+      - name: tesslib
+        path: /usr/lib/tesseract
 
 volumes:
   - name: m2-cache
     host:
       path: /var/lib/cache/.m2
+  - name: tessdata
+    temp: { }
+  - name: tesslib
+    temp: { }
+
 
 trigger:
   event:
@@ -24,6 +45,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: c28a0fd6feb980f9435b38992595d2bed4b43d6449e6361581b1b414fa589977
+hmac: f3536e419f0a71621991bccd848623adea3e4e1ebb7ecde5c41f90f261b3a452
 
 ...

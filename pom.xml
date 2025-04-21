@@ -6,13 +6,13 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.4</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <groupId>dev.rubasace.linkedin</groupId>
-    <artifactId>games-tracker</artifactId>
+    <artifactId>linkedin-games-tracker</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>games-tracker</name>
-    <description>Telegram bot to keep track of each person&apos;s Linkedin games results</description>
+    <name>linkedin-games-tracker</name>
+    <description>Telegram bot to keep track of each user Linkedin games results</description>
     <properties>
         <java.version>21</java.version>
         <telegrambots.version>8.3.0</telegrambots.version>
