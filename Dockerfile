@@ -1,8 +1,10 @@
+FROM franky1/tesseract:5.5.0 as tesseract
+
 FROM eclipse-temurin:21-jre-jammy
 
-#Install Tesseract
-COPY install/install-tesseract-ubuntu.sh /tmp/install-tesseract.sh
-RUN chmod +x /tmp/install-tesseract.sh && /tmp/install-tesseract.sh && rm /tmp/install-tesseract.sh
+#Copy Tesseract
+COPY --from=tesseract /usr/local/bin/tesseract /usr/local/bin/tesseract
+COPY --from=tesseract /usr/local/lib/libtesseract.so* /usr/local/lib/
 
 WORKDIR /app
 

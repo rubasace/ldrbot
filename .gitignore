@@ -1,7 +1,5 @@
 *
 
-!install
-!install/**
 !src
 !src/**
 !tessdata
