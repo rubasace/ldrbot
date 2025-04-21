@@ -1,8 +1,8 @@
 FROM franky1/tesseract:5.5.0 as tesseract
 
 RUN mkdir -p /tesseract-dist && \
-    ldd /usr/local/bin/tesseract | awk '{print $3}' | grep -E '^/' | xargs -I{} cp --parents {} /tesseract-dist\ && \
-    ldd /usr/local/lib/libtesseract.so | awk '{print $3}' | grep -E '^/' | xargs -I{} cp --parents {} /tesseract-dist\
+    ldd /usr/local/bin/tesseract | awk '{print $3}' | grep -E '^/' | xargs -I{} cp --parents {} /tesseract-dist/ && \
+    ldd /usr/local/lib/libtesseract.so | awk '{print $3}' | grep -E '^/' | xargs -I{} cp --parents {} /tesseract-dist/
 
 FROM eclipse-temurin:21-jre-jammy
 
