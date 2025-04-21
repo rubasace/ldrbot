@@ -17,23 +17,10 @@ steps:
   - name: build
     image: maven:3.9.6-eclipse-temurin-21
     commands:
-      - mkdir -p /opt/tesseract/lib
-      - cp /tesseract-dist/usr/local/lib/libtesseract.so* /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/liblept.so.5 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libLerc.so.4 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libopenjp2.so.7 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libjpeg.so.62 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libpng16.so.16 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libtiff.so.6 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libwebpmux.so.3 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libwebp.so.7 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libz.so.1 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libzstd.so.1 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/liblzma.so.5 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libjbig.so.0 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libdeflate.so.0 /opt/tesseract/lib/
-      - cp /tesseract-dist/lib/x86_64-linux-gnu/libgomp.so.1 /opt/tesseract/lib/
-
+      - ln -sfn /usr/lib /lib
+      - apt-get update && apt-get install -y rsync
+      - rsync -a --ignore-existing /tesseract-dist/lib/ /usr/lib/
+      - rsync -a --ignore-existing /tesseract-dist/usr/ /usr/
       - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/opt/tesseract/lib
     volumes:
       - name: m2-cache
@@ -84,6 +71,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 68316a544820c6ae0af999b91b57e807bb54f6d63dd2a58038c0cf910bed8133
+hmac: 413080689919945b1951541b71d5858b749dfb3571a4296f6f64d8fe657ca381
 
 ...
