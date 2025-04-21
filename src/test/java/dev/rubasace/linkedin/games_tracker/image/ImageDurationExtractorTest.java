@@ -1,7 +1,7 @@
 package dev.rubasace.linkedin.games_tracker.image;
 
-import org.bytedeco.opencv.global.opencv_imgcodecs;
-import org.bytedeco.opencv.opencv_core.Mat;
+import dev.rubasace.linkedin.games_tracker.session.GameDuration;
+import dev.rubasace.linkedin.games_tracker.session.GameType;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.converter.ArgumentConversionException;
 import org.junit.jupiter.params.converter.ConvertWith;
@@ -14,27 +14,33 @@ import java.io.File;
 import java.time.Duration;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(classes = ImageTestConfiguration.class)
 class ImageDurationExtractorTest {
 
     @Autowired
-    private ImageDurationExtractor imageDurationExtractor;
+    private ImageGameDurationExtractor imageGameDurationExtractor;
 
     @CsvSource({
-            "1.jpeg,28s",
-            "2.jpeg,47s",
-            "3.jpeg,2m51s"
+            "1.jpeg,QUEENS,28s",
+            "2.jpeg,TANGO,47s",
+            "3.jpeg,ZIP,2m51s",
+            "4.jpeg,QUEENS,23s",
+            "5.jpeg,TANGO,1m20s"
     })
     @ParameterizedTest
-    void shouldExtractDuration(final String imageName, @ConvertWith(DurationConverter.class) final Duration expectedDuration) {
+    void shouldExtractDuration(final String imageName, final GameType game, @ConvertWith(DurationConverter.class) final Duration expectedDuration) {
 
         File imageFile = new File("src/test/resources/images/" + imageName);
-        try (Mat image = opencv_imgcodecs.imread(imageFile.getAbsolutePath())) {
-            Optional<Duration> duration = imageDurationExtractor.extractDuration(image);
-            assertEquals(Optional.of(expectedDuration), duration);
-        }
+        Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile);
+        assertAll(
+                () -> assertEquals(Optional.of(expectedDuration), gameDuration.map(GameDuration::duration)),
+                () -> assertEquals(Optional.of(game), gameDuration.map(GameDuration::type))
+        );
+
+
     }
 
     private static class DurationConverter extends SimpleArgumentConverter {
