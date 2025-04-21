@@ -7,4 +7,6 @@
 !.drone.yml
 !.gitignore
 !Dockerfile
+!LICENSE
 !pom.xml
+!README.md
