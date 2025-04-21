@@ -8,7 +8,7 @@ steps:
     image: maven:3.9.9-eclipse-temurin-21-alpine@sha256:4cbb8bf76c46b97e028998f2486ed014759a8e932480431039bdb93dffe6813e
     commands:
       - apk add --no-cache tesseract-ocr
-      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/lib/tesseract
+      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/lib
     volumes:
       - name: m2-cache
         path: /root/.m2/repository
@@ -17,7 +17,6 @@ volumes:
   - name: m2-cache
     host:
       path: /var/lib/cache/.m2
-
 trigger:
   event:
     - push
@@ -25,6 +24,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 9f03a6f585e2425a564b5f10fad5c0f80914fe3bfa23d42dc2e0b9d392a56f71
+hmac: 199c46983f7051a2dcf974b33e15e7ca68cfa212846da06059196c106cd8a2ed
 
 ...
