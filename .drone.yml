@@ -7,21 +7,24 @@ steps:
   - name: prepare-tesseract
     image: franky1/tesseract:5.5.0
     commands:
-      - mkdir -p tesseract-dist/all-libs
-      - cp /usr/local/lib/libtesseract.so* tesseract-dist/all-libs/
-      - ldd /usr/local/bin/tesseract | awk '{print $3}' | grep -E '^/' | xargs -I{} cp {} tesseract-dist/all-libs/
-    when:
-      event:
-        - push
+      - cp /usr/local/lib/libtesseract.so* /tesseract-dist
+      - ldd /usr/local/bin/tesseract | awk '{print $3}' | grep -E '^/' | xargs -I{} cp {} /tesseract-dist
+      - ldd /usr/local/lib/libtesseract.so | awk '{print $3}' | grep -E '^/' | xargs -I{} cp {} /tesseract-dist
+    volumes:
+      - name: tesseract-dist
+        path: /tesseract-dist
 
   - name: build
     image: maven:3.9.6-eclipse-temurin-21
     commands:
       - ldconfig
-      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/drone/src/tesseract-dist/all-libs/
+      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/local/lib/tesseract
     volumes:
       - name: m2-cache
         path: /root/.m2/repository
+      - name: tesseract-dist
+        host:
+          path: /usr/local/lib/tesseract
 
   - name: bake-beta
     image: plugins/docker
@@ -64,6 +67,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 297449ba74414f8625d3368937f9f410e3b2b5e5dc7ef370aa373e29ad26f478
+hmac: 43d539119c9cab99cd02d645404bd1abb3109100f5cddf1ddd5ddc20d69bdb7b
 
 ...
