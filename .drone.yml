@@ -23,8 +23,7 @@ steps:
       - name: m2-cache
         path: /root/.m2/repository
       - name: tesseract-dist
-        host:
-          path: /usr/local/lib/tesseract
+        path: /usr/local/lib/tesseract
 
   - name: bake-beta
     image: plugins/docker
@@ -69,6 +68,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 098bfcfc07192a9c1410fe1b3da6a3ca25c56a3e038a24154173c09241cd6ab7
+hmac: 06e32f7544b017547d3244e533778453c9b3cb94b37dc342a4596977437763d8
 
 ...
