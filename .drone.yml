@@ -8,11 +8,9 @@ steps:
     image: franky1/tesseract:5.5.0
     commands:
       - mkdir -p tesseract-dist/usr/bin
-      - mkdir -p tesseract-dist/usr/share
       - mkdir -p tesseract-dist/usr/lib
-
-      - cp /usr/local/bin/tesseract tesseract-dist/usr/bin/
-      - cp -r /usr/local/lib/libtesseract* tesseract-dist/usr/lib/
+      - cp /usr/local/bin/tesseract tesseract-dist/
+      - ldd /usr/local/bin/tesseract | awk '{print $3}' | grep -E '^/' | xargs -I{} cp --parents {} tesseract-dist/
     when:
       event:
         - push
@@ -67,6 +65,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: c05b75783fe0f543117bd274bbef083ee581761b2fd847cdc60d08153395ab42
+hmac: 6df1907f073f8bb5a32bb7561ba3407f8610656b625694f6335d5ee9adaffe03
 
 ...
