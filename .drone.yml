@@ -11,8 +11,8 @@ steps:
       - mkdir -p tesseract-dist/usr/share
       - mkdir -p tesseract-dist/usr/lib
 
-      - cp /usr/bin/tesseract tesseract-dist/usr/bin/
-      - cp -r /usr/lib/x86_64-linux-gnu tesseract-dist/usr/lib/
+      - cp /usr/local/bin/tesseract tesseract-dist/usr/bin/
+      - cp -r /usr/local/lib/libtesseract* tesseract-dist/usr/lib/
     when:
       event:
         - push
@@ -67,6 +67,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: f5b9c960652d122429404a989724cfba87fe088d3835ff3ac89a8f707b3a9f66
+hmac: c05b75783fe0f543117bd274bbef083ee581761b2fd847cdc60d08153395ab42
 
 ...
