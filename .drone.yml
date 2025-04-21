@@ -21,7 +21,7 @@ steps:
       - apt-get update && apt-get install -y rsync
       - rsync -a --ignore-existing /tesseract-dist/lib/ /usr/lib/
       - rsync -a --ignore-existing /tesseract-dist/usr/ /usr/
-      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/opt/tesseract/lib
+      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/local/lib
     volumes:
       - name: m2-cache
         path: /root/.m2/repository
@@ -71,6 +71,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 413080689919945b1951541b71d5858b749dfb3571a4296f6f64d8fe657ca381
+hmac: b2c5c55ba9666d8d3c6412d3677d6350760c472317d43c040a4e87c393898735
 
 ...
