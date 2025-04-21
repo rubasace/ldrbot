@@ -7,10 +7,9 @@ steps:
   - name: prepare-tesseract
     image: franky1/tesseract:5.5.0
     commands:
-      - mkdir -p tesseract-dist/usr/bin
-      - mkdir -p tesseract-dist/usr/lib
-      - cp /usr/local/bin/tesseract tesseract-dist/
-      - ldd /usr/local/bin/tesseract | awk '{print $3}' | grep -E '^/' | xargs -I{} cp --parents {} tesseract-dist/
+      - mkdir -p tesseract-dist/all-libs
+      - cp /usr/local/lib/libtesseract.so* tesseract-dist/all-libs/
+      - ldd /usr/local/bin/tesseract | awk '{print $3}' | grep -E '^/' | xargs -I{} cp {} tesseract-dist/all-libs/
     when:
       event:
         - push
@@ -19,7 +18,7 @@ steps:
     image: maven:3.9.6-eclipse-temurin-21
     commands:
       - ldconfig
-      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/drone/src/tesseract-dist/usr/local/lib/
+      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/drone/src/tesseract-dist/all-libs/
     volumes:
       - name: m2-cache
         path: /root/.m2/repository
@@ -65,6 +64,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 56e008fce9bece94122b8c46a39658d8f0c9ba386d3b2fbf73fb27fc1b1c960e
+hmac: 297449ba74414f8625d3368937f9f410e3b2b5e5dc7ef370aa373e29ad26f478
 
 ...
