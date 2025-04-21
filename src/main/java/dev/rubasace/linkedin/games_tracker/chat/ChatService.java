@@ -35,6 +35,45 @@ import java.util.stream.Collectors;
 @Service
 class ChatService {
 
+    private static final String HELP_MESSAGE = """
+            🤖 <b>LinkedIn Games Tracker Help</b>
+            
+            Here’s what I can do in this group:
+            
+            📸 <b>How it works</b>
+            
+            Send a screenshot of your completed LinkedIn puzzle (Queens, Tango, Zip) and I’ll extract your time and track it.
+            
+            🏆 <b>Daily Competition</b>
+            
+            Each day, scores are tracked separately per group. I’ll automatically publish the leaderboard once everyone submits, or by the end of the day — alternatively, you can trigger it manually with <code>/daily</code>.
+            
+            🛠️ <b>Commands</b>
+            
+            <code>/join</code> – Register yourself in the group (optional, automatic on first submission)
+            
+            <code>/games</code> – List the puzzles I'm tracking
+            
+            <code>/daily</code> – Show today's leaderboard
+            
+            <code>/delete &lt;game&gt;</code> – Remove your submitted time for the given game
+            
+            <code>/deleteAll</code> – Remove all your submitted scores for today
+            
+            <code>/override @&lt;user&gt; &lt;game&gt; &lt;mm:ss&gt;</code> – Admin: override someone's time
+            
+            <code>/help</code> – Show this message
+            
+            💡 <b>Tip:</b> I only process screenshots or commands in group messages. Private chat support is coming soon!
+            """;
+    private static final String START_MESSAGE = """
+            👋 Hello! I'm the LinkedIn Games Tracker bot.
+            
+            To get started, add me to a Telegram group. I’ll track puzzle results for games like Queens, Tango, and Zip and keep a daily leaderboard.
+            
+            Use <code>/help</code> to see what I can do.
+            """;
+
     private final ImageGameDurationExtractor imageGameDurationExtractor;
     private final AssetsDownloader assetsDownloader;
     private final GameSessionService gameSessionService;
@@ -195,5 +234,13 @@ class ChatService {
             messageService.error("Invalid time format. Use `mm:ss`, e.g. `1:30` or `12:05`", message.getChatId());
         }
         gameSessionService.manuallRrecordGameSession(message.getChatId(), username, new GameDuration(gameType, duration.get()));
+    }
+
+    public void help(final Message message) {
+        messageService.html(HELP_MESSAGE, message.getChatId());
+    }
+
+    public void start(final Message message) {
+        messageService.html(START_MESSAGE, message.getChatId());
     }
 }

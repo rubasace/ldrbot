@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
+import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
+
 @Component
 public class ChatController extends AbilityBot implements SpringLongPollingBot {
 
@@ -89,12 +92,22 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
 
     //TODO allow to submit and delete/deleteall on private chat, affecting all joined groups
     //TODO move actions to separate classes to control a bit better the implementation (probably move away from main chatService into dedicated components)
+    public Ability start() {
+        return Ability.builder()
+                      .name("start")
+                      .info("Start interacting with the bot")
+                      .locality(Locality.USER)
+                      .privacy(PUBLIC)
+                      .action(ctx -> chatService.start(ctx.update().getMessage()))
+                      .build();
+    }
+
     public Ability join() {
         return Ability.builder()
                       .name("join")
                       .info("Register yourself as a participant in the group. (This happens automatically when you submit your first message in the group.)")
                       .locality(Locality.GROUP)
-                      .privacy(Privacy.PUBLIC)
+                      .privacy(PUBLIC)
                       .action(ctx -> chatService.addUserToGroup(ctx.update().getMessage()))
                       .build();
     }
@@ -105,7 +118,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .info("Delete your game result for today. Usage: /delete <game>")
                       .input(1)
                       .locality(Locality.GROUP)
-                      .privacy(Privacy.PUBLIC)
+                      .privacy(PUBLIC)
                       .action(ctx -> chatService.deleteTodayRecord(ctx.update().getMessage(), ctx.arguments()))
                       .build();
     }
@@ -115,7 +128,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .name("deleteall")
                       .info("Delete all your submitted results for today.")
                       .locality(Locality.GROUP)
-                      .privacy(Privacy.PUBLIC)
+                      .privacy(PUBLIC)
                       .action(ctx -> chatService.deleteTodayRecords(ctx.update().getMessage()))
                       .build();
     }
@@ -125,7 +138,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .name("daily")
                       .info("Manually trigger today's group ranking summary.")
                       .locality(Locality.GROUP)
-                      .privacy(Privacy.PUBLIC)
+                      .privacy(PUBLIC)
                       .action(ctx -> chatService.dailyRanking(ctx.update().getMessage()))
                       .build();
     }
@@ -135,7 +148,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .name("games")
                       .info("Show the list of games currently tracked by this group.")
                       .locality(Locality.GROUP)
-                      .privacy(Privacy.PUBLIC)
+                      .privacy(PUBLIC)
                       .action(ctx -> chatService.listTrackedGames(ctx.update().getMessage()))
                       .build();
     }
@@ -150,4 +163,17 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .action(ctx -> chatService.registerSessionManually(ctx.update().getMessage(), ctx.arguments()))
                       .build();
     }
+
+    public Ability help() {
+        return Ability
+                .builder()
+                .name("help")
+                .info("Displays a list of available commands and how to use the bot.")
+                .locality(ALL)
+                .privacy(PUBLIC)
+                .action(ctx -> chatService.help(ctx.update().getMessage()))
+                .build();
+    }
+
+
 }
