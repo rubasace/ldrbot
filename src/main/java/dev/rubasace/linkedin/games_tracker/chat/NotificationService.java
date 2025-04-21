@@ -1,6 +1,7 @@
 package dev.rubasace.linkedin.games_tracker.chat;
 
 import dev.rubasace.linkedin.games_tracker.configuration.ExecutorsConfiguration;
+import dev.rubasace.linkedin.games_tracker.group.GroupCreatedEvent;
 import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games_tracker.group.UserJoinedGroupEvent;
 import dev.rubasace.linkedin.games_tracker.group.UserLeftGroupEvent;
@@ -30,6 +31,15 @@ public class NotificationService {
     private static final String SUBMISSION_MESSAGE_TEMPLATE = "@%s submitted their result for today's %s with a time of %s";
     private static final String USER_JOIN_MESSAGE_TEMPLATE = "User @%s joined this group";
     private static final String USER_LEAVE_MESSAGE_TEMPLATE = "User @%s left this group";
+    private static final String GROUP_GREETING_MESSAGE = """
+            👋 Hey everyone, I'm your LinkedIn Games Tracker bot 🤖!
+            
+            This group is now officially being tracked 🏁. From now on, you can submit your LinkedIn puzzle screenshots, and I’ll keep score for the day.
+            
+            Every day is a new competition — submit your time, climb the leaderboard, and don’t get left behind! 💪
+            
+            Type /help to see everything I can do.
+            """;
 
     private final MessageService messageService;
 
@@ -50,6 +60,12 @@ public class NotificationService {
         } else if (userFeedbackException instanceof GameNameNotFoundException gameNameNotFoundException) {
             messageService.error("'%s' is not a valid game.".formatted(gameNameNotFoundException.getGameName()), gameNameNotFoundException.getChatId());
         }
+    }
+
+    @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void handleGroupCreation(final GroupCreatedEvent groupCreatedEvent) {
+        messageService.info(GROUP_GREETING_MESSAGE, groupCreatedEvent.getChatId());
     }
 
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)

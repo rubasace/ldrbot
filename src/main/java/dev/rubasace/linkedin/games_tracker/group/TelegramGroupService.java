@@ -80,11 +80,19 @@ public class TelegramGroupService {
     private TelegramGroup createGroup(final Long chatId, final String title) {
         //TODO stop hardcoding the timezone and request it as part of the command interaction
         TelegramGroup telegramGroup = new TelegramGroup(chatId, title, ZoneId.of("Europe/Madrid"), EnumSet.allOf(GameType.class), Set.of());
-        return telegramGroupRepository.save(telegramGroup);
+        TelegramGroup createdTelegramGroup = telegramGroupRepository.save(telegramGroup);
+        applicationEventPublisher.publishEvent(new GroupCreatedEvent(this, chatId, title));
+        return createdTelegramGroup;
     }
 
     public Set<GameType> listTrackedGames(final Long chatId) throws GroupNotFoundException {
         TelegramGroup telegramGroup = findGroupOrThrow(chatId);
         return telegramGroup.getTrackedGames();
+    }
+
+    @Transactional
+    public void removeGroup(final Long chatId) {
+        //TODO allow to remove groups
+        //        telegramGroupRepository.deleteById(chatId);
     }
 }

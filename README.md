@@ -14,7 +14,7 @@ rankings.
 
 👉 Add the bot to your Telegram group: [@LinkedInGamesTrackerBot](https://t.me/LinkedInGamesTrackerBot)
 
-Each group is treated as a standalone competition — just invite the bot to your group, `/start` it, and you’re ready to go!
+Each group is treated as a standalone competition — just invite the bot to your group and you’re ready to go!
 
 ## ⚙️ How It Works
 
@@ -41,8 +41,7 @@ every new day is a fresh challenge for members to compete, improve, and (hopeful
 
 | Command                               | Description                                                                                                                                |
 |---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| `/start`                              | Starts a private conversation with the bot.                                                                                                |
-| `/join`                               | Explicitly registers you to compete in the group (optional).                                                                               |
+| `/join`                               | Explicitly registers you to compete in the group (optional, done automatically the moment you message in the group).                       |
 | `/games`                              | Lists the games being tracked by the bot.                                                                                                  |
 | `/delete <game>`                      | Removes your score for today's selected game.                                                                                              |
 | `/deleteAll`                          | Removes all of your submitted results for the current day.                                                                                 |
@@ -61,21 +60,18 @@ every new day is a fresh challenge for members to compete, improve, and (hopeful
 1. **Invite the bot to your group**  
    The bot will start tracking scores and players from the moment it's added.
 
-2. **Run `/start`**  
-   This initializes your interaction with the bot (can be done privately or in group).
-
-3. **Run `/join` (optional)**  
+2. **Run `/join` (optional)**  
    Registers you in the group manually. Members are also automatically registered the first time they submit a valid screenshot or are added to the group after tracking begins.
 
-4. **Submit your LinkedIn puzzle screenshot**  
+3. **Submit your LinkedIn puzzle screenshot**  
    Send a screenshot of your completed puzzle. The bot will process and register your time for the current day.
 
-5. (Optional) **Manage your score**  
+4. (Optional) **Manage your score**  
    Use `/delete`, `/deleteall`, or `/override` (admin-only) to modify the results if needed. Useful for correcting misprocessed or mistaken submissions.
 
-6. (Optional) **Track the competition**  
+5. (Optional) **Track the competition**  
    Use `/daily` to recalculate and view the group leaderboard for the day.
-7. **Wait for the group**  
+6. **Wait for the group**  
    When all members are done (or at the end of the day) they leaderboard gets recalculated and shown in the group.
 
 ## 💻 Tech Stack

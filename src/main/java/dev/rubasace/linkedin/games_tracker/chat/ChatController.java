@@ -89,16 +89,6 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
 
     //TODO allow to submit and delete/deleteall on private chat, affecting all joined groups
     //TODO move actions to separate classes to control a bit better the implementation (probably move away from main chatService into dedicated components)
-    public Ability start() {
-        return Ability.builder()
-                      .name("start")
-                      .info("Initialize the bot for this group and start tracking game results.")
-                      .locality(Locality.GROUP)
-                      .privacy(Privacy.PUBLIC)
-                      .action(ctx -> chatService.setupGroup(ctx.update().getMessage().getChat()))
-                      .build();
-    }
-
     public Ability join() {
         return Ability.builder()
                       .name("join")

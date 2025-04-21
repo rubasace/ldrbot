@@ -1,9 +1,9 @@
 package dev.rubasace.linkedin.games_tracker.chat;
 
 import dev.rubasace.linkedin.games_tracker.assets.AssetsDownloader;
+import dev.rubasace.linkedin.games_tracker.configuration.TelegramBotProperties;
 import dev.rubasace.linkedin.games_tracker.exception.HandleBotExceptions;
 import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
-import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroupService;
 import dev.rubasace.linkedin.games_tracker.image.ImageGameDurationExtractor;
 import dev.rubasace.linkedin.games_tracker.ranking.GroupRankingService;
@@ -41,19 +41,22 @@ class ChatService {
     private final TelegramGroupService telegramGroupService;
     private final MessageService messageService;
     private final GroupRankingService groupRankingService;
+    private final TelegramBotProperties telegramBotProperties;
 
     ChatService(final ImageGameDurationExtractor imageGameDurationExtractor,
                 final AssetsDownloader assetsDownloader,
                 final GameSessionService gameSessionService,
                 final TelegramGroupService telegramGroupService,
                 final MessageService messageService,
-                final GroupRankingService groupRankingService) {
+                final GroupRankingService groupRankingService,
+                final TelegramBotProperties telegramBotProperties) {
         this.imageGameDurationExtractor = imageGameDurationExtractor;
         this.assetsDownloader = assetsDownloader;
         this.gameSessionService = gameSessionService;
         this.telegramGroupService = telegramGroupService;
         this.messageService = messageService;
         this.groupRankingService = groupRankingService;
+        this.telegramBotProperties = telegramBotProperties;
     }
 
     @Transactional
@@ -78,16 +81,19 @@ class ChatService {
     @SneakyThrows
     @Transactional
     void processMessage(final Message message) {
+
         if (message.getChat().isGroupChat()) {
-            Optional<TelegramGroup> group = telegramGroupService.findGroup(message.getChat().getId());
-            if (group.isEmpty()) {
-                return;
+            if (isBotRemovedFromGroup(message)) {
+                telegramGroupService.removeGroup(message.getChatId());
             }
+            telegramGroupService.registerOrUpdateGroup(message.getChat().getId(), message.getChat().getTitle());
             addUserToGroup(message);
         }
         if (!CollectionUtils.isEmpty(message.getNewChatMembers())) {
             for (User user : message.getNewChatMembers()) {
-                telegramGroupService.addUserToGroup(message.getChatId(), user.getId(), user.getUserName());
+                if (!user.getUserName().equalsIgnoreCase(telegramBotProperties.getUsername())) {
+                    telegramGroupService.addUserToGroup(message.getChatId(), user.getId(), user.getUserName());
+                }
             }
             return;
         }
@@ -109,6 +115,10 @@ class ChatService {
         gameSessionService.recordGameSession(message.getFrom().getId(), message.getChatId(), message.getFrom().getUserName(),
                                              gameDuration.get());
 
+    }
+
+    private boolean isBotRemovedFromGroup(final Message message) {
+        return message.getLeftChatMember() != null && message.getLeftChatMember().getUserName().equalsIgnoreCase(telegramBotProperties.getUsername());
     }
 
     private List<PhotoSize> getPhotos(final Message message) {
