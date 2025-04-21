@@ -12,10 +12,6 @@ steps:
     volumes:
       - name: m2-cache
         path: /root/.m2/repository
-      - name: tessdata
-        path: /usr/share/tessdata
-      - name: tesslib
-        path: /usr/lib/tesseract
 
 volumes:
   - name: m2-cache
@@ -29,6 +25,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 4736a2b98277ad37f7d997764d1971b91a8b085bdfc4385590a9ca28ebb1fb25
+hmac: 9f03a6f585e2425a564b5f10fad5c0f80914fe3bfa23d42dc2e0b9d392a56f71
 
 ...
