@@ -20,7 +20,7 @@ class ImageHelper {
     private static final int S_TOLERANCE = 60;
     private static final int V_TOLERANCE = 60;
 
-    private ImageHelper() {
+    ImageHelper() {
         Loader.load(opencv_core.class);
     }
 
