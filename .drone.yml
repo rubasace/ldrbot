@@ -17,13 +17,14 @@ steps:
   - name: build
     image: maven:3.9.6-eclipse-temurin-21
     commands:
-      - ldconfig
-      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/local/lib/tesseract
+      - mkdir -p /usr/lib/x86_64-linux-gnu
+      - cp -R /tesseract-dist/* /usr/lib/x86_64-linux-gnu
+      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/lib/x86_64-linux-gnu
     volumes:
       - name: m2-cache
         path: /root/.m2/repository
       - name: tesseract-dist
-        path: /usr/local/lib/tesseract
+        path: /tesseract-dist
 
   - name: bake-beta
     image: plugins/docker
@@ -68,6 +69,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 06e32f7544b017547d3244e533778453c9b3cb94b37dc342a4596977437763d8
+hmac: 7d01f12997e66c9729f2fe51459caec3b33e7fbd2e4700322059bb7c9f504404
 
 ...
