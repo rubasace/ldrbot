@@ -30,7 +30,7 @@ class ImageDurationExtractor {
         this.imageTextExtractor = imageTextExtractor;
     }
 
-    Optional<Duration> extractDuration(final Mat image) {
+    synchronized Optional<Duration> extractDuration(final Mat image) {
         Optional<Rect> resultsBox = imageHelper.findLargestRegionOfColor(image, RESULTS_COLOR);
         if (resultsBox.isEmpty()) {
             LOGGER.warn("Couldn't find the results area on the image");
