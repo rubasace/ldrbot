@@ -7,13 +7,13 @@ steps:
   - name: build
     image: maven:3.9.6-eclipse-temurin-21
     commands:
-      - apt-get update && apt-get install -y tesseract-ocr
+      - apt update && apt install -y tesseract-ocr
       - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/lib/x86_64-linux-gnu
     volumes:
       - name: m2-cache
         path: /root/.m2/repository
 
-  - name: deploy-beta
+  - name: bake-beta
     image: plugins/docker
     settings:
       username:
@@ -28,7 +28,7 @@ steps:
       event:
         - push
 
-  - name: deploy-release
+  - name: bake-release
     image: plugins/docker
     settings:
       username:
@@ -54,6 +54,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 0264c0cb7bc140f688432f9e6b1f906a8c57016d809ceddae9ed5818b8b49b30
+hmac: 2534fd47e3b802bd058279be70b51deabf0b99b38a475ed7035bcc4f621f0777
 
 ...
