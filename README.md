@@ -1,4 +1,4 @@
-# 🎯 LinkedIn Games Tracker (@LinkedInGamesTrackerBot)
+# 🎯 LinkedIn Games Tracker
 
 [![Telegram Bot](https://img.shields.io/badge/telegram-@LinkedInGamesTrackerBot-blue?logo=telegram)](https://t.me/LinkedInGamesTrackerBot)
 [![Build Status](https://drone.nasvigo.com/api/badges/rubasace/linkedin-games-tracker/status.svg)](https://drone.nasvigo.com/rubasace/linkedin-games-tracker)
