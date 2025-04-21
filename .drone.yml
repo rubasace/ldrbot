@@ -7,7 +7,7 @@ steps:
   - name: build
     image: maven:3.9.6-eclipse-temurin-21
     commands:
-      - apt update && apt install -y tesseract-ocr
+      - ./install/install-tesseract-ubuntu.sh
       - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/lib/x86_64-linux-gnu
     volumes:
       - name: m2-cache
@@ -54,6 +54,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 2534fd47e3b802bd058279be70b51deabf0b99b38a475ed7035bcc4f621f0777
+hmac: 04611b036e126044e598ba72748ca7546cfa6d43bdece09dbd2bde8794bf0f9b
 
 ...

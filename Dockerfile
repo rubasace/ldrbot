@@ -1,10 +1,8 @@
 FROM eclipse-temurin:21-jre-jammy
 
-# TODO migrate to tesseract 5 here and on pipeline
-# TODO think of using installed language data
-RUN apt update && \
-    apt install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-spa && \
-    rm -rf /var/lib/apt/lists/*
+#Install Tesseract
+COPY install/install-tesseract.sh /tmp/install-tesseract.sh
+RUN chmod +x /tmp/install-tesseract.sh && /tmp/install-tesseract.sh && rm /tmp/install-tesseract.sh
 
 WORKDIR /app
 
