@@ -16,7 +16,9 @@ import dev.rubasace.linkedin.games_tracker.util.ParseUtils;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
@@ -68,11 +70,7 @@ class ChatService {
     @SneakyThrows
     @Transactional
     void addUserToGroup(final Message message) {
-        boolean joined = telegramGroupService.addUserToGroup(message.getChatId(), message.getFrom().getId(), message.getFrom().getUserName());
-        if (joined) {
-            messageService.info("User @%s joined this group".formatted(message.getFrom().getUserName()), message.getChatId());
-
-        }
+        telegramGroupService.addUserToGroup(message.getChatId(), message.getFrom().getId(), message.getFrom().getUserName());
     }
 
     //TODO track users join/leave
@@ -87,6 +85,16 @@ class ChatService {
             }
             addUserToGroup(message);
         }
+        if (!CollectionUtils.isEmpty(message.getNewChatMembers())) {
+            for (User user : message.getNewChatMembers()) {
+                telegramGroupService.addUserToGroup(message.getChatId(), user.getId(), user.getUserName());
+            }
+            return;
+        }
+        if (message.getLeftChatMember() != null) {
+            telegramGroupService.removeUserFromGroup(message.getChatId(), message.getLeftChatMember().getId());
+            return;
+        }
 
         List<PhotoSize> photoSizeList = getPhotos(message);
         if (photoSizeList.isEmpty()) {
@@ -99,7 +107,7 @@ class ChatService {
             return;
         }
         gameSessionService.recordGameSession(message.getFrom().getId(), message.getChatId(), message.getFrom().getUserName(),
-                                                                                 gameDuration.get());
+                                             gameDuration.get());
 
     }
 

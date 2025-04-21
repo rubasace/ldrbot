@@ -2,6 +2,8 @@ package dev.rubasace.linkedin.games_tracker.chat;
 
 import dev.rubasace.linkedin.games_tracker.configuration.ExecutorsConfiguration;
 import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
+import dev.rubasace.linkedin.games_tracker.group.UserJoinedGroupEvent;
+import dev.rubasace.linkedin.games_tracker.group.UserLeftGroupEvent;
 import dev.rubasace.linkedin.games_tracker.ranking.GroupDailyScoreCreatedEvent;
 import dev.rubasace.linkedin.games_tracker.session.AlreadyRegisteredSession;
 import dev.rubasace.linkedin.games_tracker.session.GameNameNotFoundException;
@@ -26,6 +28,8 @@ public class NotificationService {
 
     private static final String ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE = "@%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall";
     private static final String SUBMISSION_MESSAGE_TEMPLATE = "@%s submitted their result for today's %s with a time of %s";
+    private static final String USER_JOIN_MESSAGE_TEMPLATE = "User @%s joined this group";
+    private static final String USER_LEAVE_MESSAGE_TEMPLATE = "User @%s left this group";
 
     private final MessageService messageService;
 
@@ -68,6 +72,20 @@ public class NotificationService {
                                                                   gameSessionRegistrationEvent.getGame().name().toLowerCase(),
                                                                   FormatUtils.formatDuration(gameSessionRegistrationEvent.getDuration())),
                             gameSessionRegistrationEvent.getChatId());
+    }
+
+    @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void handleUserJoin(final UserJoinedGroupEvent userJoinedGroupEvent) {
+        messageService.info(USER_JOIN_MESSAGE_TEMPLATE.formatted(userJoinedGroupEvent.getUserName()),
+                            userJoinedGroupEvent.getChatId());
+    }
+
+    @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void handleUserLeave(final UserLeftGroupEvent userLeftGroupEvent) {
+        messageService.info(USER_LEAVE_MESSAGE_TEMPLATE.formatted(userLeftGroupEvent.getUserName()),
+                            userLeftGroupEvent.getChatId());
     }
 
     private String toHtmlSummary(GroupDailyScore groupScore) {

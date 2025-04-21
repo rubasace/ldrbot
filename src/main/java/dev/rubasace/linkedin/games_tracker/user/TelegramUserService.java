@@ -16,9 +16,8 @@ public class TelegramUserService {
         this.telegramUserRepository = telegramUserRepository;
     }
 
-    public TelegramUser find(final Long userId) {
-        return telegramUserRepository.findById(userId)
-                                     .orElseThrow();
+    public Optional<TelegramUser> find(final Long userId) {
+        return telegramUserRepository.findById(userId);
     }
 
     @Transactional

@@ -10,7 +10,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 class RankingGameSessionRegistrationListener {
 
-
     private final GroupsRankingReadinessCheckService groupsRankingReadinessCheckService;
 
     RankingGameSessionRegistrationListener(final GroupsRankingReadinessCheckService groupsRankingReadinessCheckService) {
