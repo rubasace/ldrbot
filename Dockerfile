@@ -8,7 +8,7 @@ RUN apt update && \
 
 WORKDIR /app
 
-COPY tessdata/* /usr/share/tessdata
+COPY tessdata/* /usr/share/tessdata/
 
 COPY target/*.jar /app/linkedin-games-tracker.jar
 
