@@ -5,7 +5,7 @@ name: default
 
 steps:
   - name: build
-    image: eclipse-temurin:21-jdk
+    image: maven:3.9.6-eclipse-temurin-21
     commands:
       - apt-get update && apt-get install -y tesseract-ocr
       - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/lib/x86_64-linux-gnu
@@ -24,6 +24,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 6c8b214c7f69de46a7b26ddf50d0a6d4599d6806e580aacab21800472fa5d98a
+hmac: eacedb1319a7cdb59fe0945e3b2af24f980bec45f43fe7fa709fb72046fa37d5
 
 ...
