@@ -106,6 +106,3 @@ Whether you're here to fix a bug, suggest a feature, or simply explore how it wo
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
-
-💬 Questions? Feedback?  
-Join the conversation by [opening an issue](https://github.com/rubasace/linkedin-games-tracker/issues).
