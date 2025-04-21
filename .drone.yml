@@ -5,11 +5,10 @@ name: default
 
 steps:
   - name: build
-    image: maven:3.9.9-eclipse-temurin-21-alpine@sha256:4cbb8bf76c46b97e028998f2486ed014759a8e932480431039bdb93dffe6813e
+    image: eclipse-temurin:21-jdk
     commands:
-      - apk add --no-cache tesseract-ocr
-      - ln -s /usr/lib/libtesseract.so.5 /usr/lib/libtesseract.so
-      - mvn package -Dtesseract.data-path=/drone/src/tessdata -Dtesseract.lib-path=/usr/lib -X
+      - apt-get update && apt-get install -y tesseract-ocr
+      - mvn package -Dtesseract.data-path=/usr/share/tessdata -Dtesseract.lib-path=/usr/lib/x86_64-linux-gnu
     volumes:
       - name: m2-cache
         path: /root/.m2/repository
@@ -25,6 +24,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: b771bf5a9ab6926fd3b68888c0e10e9324cf6b119b54211ef81c185107d2a494
+hmac: 23f2c5f897be2927b497be29ba115b0fa3498d88c09efd79285732ea380eddd8
 
 ...
