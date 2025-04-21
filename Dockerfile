@@ -1,7 +1,7 @@
 FROM eclipse-temurin:21-jre-jammy
 
 #Install Tesseract
-COPY install/install-tesseract.sh /tmp/install-tesseract.sh
+COPY install/install-tesseract-ubuntu.sh /tmp/install-tesseract.sh
 RUN chmod +x /tmp/install-tesseract.sh && /tmp/install-tesseract.sh && rm /tmp/install-tesseract.sh
 
 WORKDIR /app
