@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
+import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.objects.Locality;
 import org.telegram.telegrambots.abilitybots.api.objects.Privacy;
@@ -33,7 +34,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
     ChatController(final TelegramClient telegramClient,
                    final ChatService chatService,
                    final TelegramBotProperties telegramBotProperties) {
-        super(telegramClient, telegramBotProperties.getUsername());
+        super(telegramClient, telegramBotProperties.getUsername(), MapDBContext.onlineInstance("/tmp/" + telegramBotProperties.getUsername()));
         this.chatService = chatService;
         this.token = telegramBotProperties.getToken();
     }
