@@ -77,7 +77,6 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
             telegramClient.execute(new SetMyCommands(commands));
         } catch (TelegramApiException e) {
             LOGGER.error("Failed to register bot commands", e);
-            throw new RuntimeException(e);
         }
     }
 
