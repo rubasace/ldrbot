@@ -68,10 +68,10 @@ every new day is a fresh challenge for members to compete, improve, and (hopeful
 3. **Submit your LinkedIn puzzle screenshot**  
    Send a screenshot of your completed puzzle. The bot will process and register your time for the current day.
 
-4. (Optional) **Manage your score**  
+4. **Manage your score (optional)**  
    Use `/delete`, `/deleteall`, or `/override` (admin-only) to modify the results if needed. Useful for correcting misprocessed or mistaken submissions.
 
-5. (Optional) **Track the competition**  
+5. **Track the competition (optional)**  
    Use `/daily` to recalculate and view the group leaderboard for the day.
 6. **Wait for the group**  
    When all members are done (or at the end of the day) they leaderboard gets recalculated and shown in the group.
