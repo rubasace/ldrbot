@@ -28,13 +28,15 @@ class ImageDurationExtractorTest {
             "2.jpeg,TANGO,47s",
             "3.jpeg,ZIP,2m51s",
             "4.jpeg,QUEENS,23s",
-            "5.jpeg,TANGO,1m20s"
+            "5.jpeg,TANGO,1m20s",
+            "6.jpeg,ZIP,27s"
     })
     @ParameterizedTest
-    void shouldExtractDuration(final String imageName, final GameType game, @ConvertWith(DurationConverter.class) final Duration expectedDuration) {
+    void shouldExtractDuration(final String imageName, final GameType game, @ConvertWith(
+            DurationConverter.class) final Duration expectedDuration) throws GameDurationExtractionException {
 
         File imageFile = new File("src/test/resources/images/" + imageName);
-        Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile);
+        Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, 1L, "test");
         assertAll(
                 () -> assertEquals(Optional.of(expectedDuration), gameDuration.map(GameDuration::duration)),
                 () -> assertEquals(Optional.of(game), gameDuration.map(GameDuration::type))
