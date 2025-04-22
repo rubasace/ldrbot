@@ -7,10 +7,13 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Transactional(readOnly = true)
 @Service
@@ -68,6 +71,10 @@ public class TelegramGroupService {
         applicationEventPublisher.publishEvent(new UserLeftGroupEvent(this, userId, telegramUser.get().getUserName(), chatId));
     }
 
+    public Stream<TelegramGroup> getGroupsWithoutDailyRanking(final LocalDate gameDay) {
+        return telegramGroupRepository.findGroupsWithMissingScores(gameDay);
+    }
+
     private TelegramGroup udpateGroupData(final TelegramGroup telegramGroup, final String title) {
         if (telegramGroup.getGroupName().equals(title)) {
             return telegramGroup;
@@ -79,7 +86,7 @@ public class TelegramGroupService {
 
     private TelegramGroup createGroup(final Long chatId, final String title) {
         //TODO stop hardcoding the timezone and request it as part of the command interaction
-        TelegramGroup telegramGroup = new TelegramGroup(chatId, title, ZoneId.of("Europe/Madrid"), EnumSet.allOf(GameType.class), Set.of());
+        TelegramGroup telegramGroup = new TelegramGroup(chatId, title, ZoneId.of("Europe/Madrid"), EnumSet.allOf(GameType.class), new HashSet<>(), Set.of());
         TelegramGroup createdTelegramGroup = telegramGroupRepository.save(telegramGroup);
         applicationEventPublisher.publishEvent(new GroupCreatedEvent(this, chatId, title));
         return createdTelegramGroup;

@@ -15,6 +15,7 @@ import dev.rubasace.linkedin.games_tracker.session.GameDuration;
 import dev.rubasace.linkedin.games_tracker.session.GameNameNotFoundException;
 import dev.rubasace.linkedin.games_tracker.session.GameSessionService;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
+import dev.rubasace.linkedin.games_tracker.util.LinkedinTimeUtils;
 import dev.rubasace.linkedin.games_tracker.util.ParseUtils;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
@@ -65,15 +66,12 @@ class MessageService {
         return telegramGroupService.registerOrUpdateGroup(chatId, title);
     }
 
-    //TODO revisit if SneakyThrows makes sense here, probably will be kept if logic extracted into specific action component
     @SneakyThrows
     @Transactional
     void addUserToGroup(final Message message) {
         telegramGroupService.addUserToGroup(message.getChatId(), message.getFrom().getId(), message.getFrom().getUserName());
     }
 
-    //TODO track users join/leave
-    //TODO annotate number of members when started?
     @SneakyThrows
     @Transactional
     void processMessage(final Message message) {
@@ -160,12 +158,12 @@ class MessageService {
 
     @Transactional
     public void deleteTodayRecords(final Message message) {
-        gameSessionService.deleteTodaySessions(message.getFrom().getId(), message.getChatId());
+        gameSessionService.deleteDaySessions(message.getFrom().getId(), message.getChatId(), LinkedinTimeUtils.todayGameDay());
     }
 
     public void dailyRanking(final Message message) {
         telegramGroupService.findGroup(message.getChat().getId())
-                            .ifPresent(groupRankingService::createDailyRanking);
+                            .ifPresent(telegramGroup -> groupRankingService.createDailyRanking(telegramGroup, LinkedinTimeUtils.todayGameDay()));
     }
 
     @SneakyThrows

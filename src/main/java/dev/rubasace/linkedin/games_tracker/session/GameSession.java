@@ -1,5 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.session;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
 import jakarta.persistence.Column;
@@ -31,6 +32,7 @@ public class GameSession {
     @ManyToOne
     private TelegramUser user;
 
+    @JsonIgnoreProperties("sessions")
     @ManyToOne(optional = false)
     private TelegramGroup group;
 

@@ -4,6 +4,7 @@ import dev.rubasace.linkedin.games_tracker.ranking.DailyGameScore;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,14 +25,14 @@ public class GroupDailyScoreAdapter {
         this.dailyWinnerCalculator = dailyWinnerCalculator;
     }
 
-    public GroupDailyScore adapt(final Long chatId, final Map<GameType, List<DailyGameScore>> scores) {
+    public GroupDailyScore adapt(final Long chatId, final Map<GameType, List<DailyGameScore>> scores, final LocalDate date) {
         Map<GameType, List<GameScoreData>> gameScores = scores.entrySet().stream()
                                                               .collect(Collectors.toMap(Map.Entry::getKey, e -> gameScoreDataAdapter.adapt(e.getValue())));
 
         List<GlobalScoreData> globalScoreData = globalScoreDataAdapter.adapt(gameScores);
         List<String> winners = dailyWinnerCalculator.getWinners(globalScoreData);
 
-        return new GroupDailyScore(chatId, gameScores, globalScoreData, winners);
+        return new GroupDailyScore(chatId, gameScores, date, globalScoreData, winners);
 
     }
 

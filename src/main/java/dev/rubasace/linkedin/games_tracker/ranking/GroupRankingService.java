@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,14 +40,13 @@ public class GroupRankingService {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
-    //TODO make sure this gets performed before the day is over too, in case the ranking wasn't created
     @Transactional
-    public void createDailyRanking(TelegramGroup telegramGroup) {
+    public void createDailyRanking(final TelegramGroup telegramGroup, final LocalDate date) {
         Set<Long> userIds = telegramGroup.getMembers().stream()
                                          .map(TelegramUser::getId)
                                          .collect(Collectors.toSet());
 
-        Map<GameType, List<GameSession>> groupSessions = gameSessionService.getTodaySessions(userIds, telegramGroup.getChatId())
+        Map<GameType, List<GameSession>> groupSessions = gameSessionService.getDaySessions(userIds, telegramGroup.getChatId(), date)
                                                                            .collect(Collectors.groupingBy(GameSession::getGame));
 
 
@@ -57,11 +57,11 @@ public class GroupRankingService {
             List<DailyGameScore> dailyGameScores = dailyGameScoreCalculator.calculateScores(sessions, telegramGroup);
             gameScores.put(gameType, dailyScoreService.updateDailyScores(dailyGameScores, telegramGroup.getChatId(), gameType));
         }
-        notifyRankingCreation(telegramGroup.getChatId(), gameScores);
+        notifyRankingCreation(telegramGroup.getChatId(), gameScores, date);
     }
 
-    private void notifyRankingCreation(final Long chatId, final Map<GameType, List<DailyGameScore>> gameScores) {
-        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, gameScores);
+    private void notifyRankingCreation(final Long chatId, final Map<GameType, List<DailyGameScore>> gameScores, final LocalDate date) {
+        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, gameScores, date);
         applicationEventPublisher.publishEvent(new GroupDailyScoreCreatedEvent(this, groupDailyScore));
     }
 

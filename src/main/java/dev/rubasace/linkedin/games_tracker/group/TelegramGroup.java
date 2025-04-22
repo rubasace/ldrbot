@@ -1,6 +1,7 @@
 package dev.rubasace.linkedin.games_tracker.group;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.rubasace.linkedin.games_tracker.ranking.DailyGameScore;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
 import jakarta.persistence.CollectionTable;
@@ -13,6 +14,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,6 +45,10 @@ public class TelegramGroup {
     @Column(name = "tracked_game")
     @CollectionTable(name = "telegram_group_tracked_games", joinColumns = @JoinColumn(name = "group_id"))
     private Set<GameType> trackedGames = EnumSet.allOf(GameType.class);
+
+    @JsonIgnoreProperties("group")
+    @OneToMany(mappedBy = "group")
+    private Set<DailyGameScore> scores;
 
     @JsonIgnoreProperties("groups")
     @ManyToMany

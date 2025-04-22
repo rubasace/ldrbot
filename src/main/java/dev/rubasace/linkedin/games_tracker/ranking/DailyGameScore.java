@@ -1,5 +1,6 @@
 package dev.rubasace.linkedin.games_tracker.ranking;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
@@ -28,6 +29,7 @@ public class DailyGameScore {
     @Id
     private UUID id;
 
+    @JsonIgnoreProperties("scores")
     @ManyToOne(optional = false)
     private TelegramGroup group;
 

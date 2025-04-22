@@ -16,7 +16,7 @@ class RankingMessageFactory {
 
     String createRankingMessage(GroupDailyScore groupScore) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<b>📊 Daily Ranking</b>\n");
+        sb.append("<b>📊 Daily Ranking for %s</b>\n".formatted(FormatUtils.formatDate(groupScore.date())));
 
         for (Map.Entry<GameType, List<GameScoreData>> entry : groupScore.gameScores().entrySet()) {
             toHtmlGameRanking(entry.getKey(), entry.getValue(), sb);
