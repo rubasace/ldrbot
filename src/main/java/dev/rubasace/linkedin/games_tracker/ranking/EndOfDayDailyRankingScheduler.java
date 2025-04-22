@@ -23,11 +23,10 @@ class EndOfDayDailyRankingScheduler {
         this.groupRankingService = groupRankingService;
     }
 
-    //    @Scheduled(cron = "30 0 0 * * *", zone = LinkedinTimeUtils.LINKEDIN_ZONE)
-    @Scheduled(cron = "0 1 14 * * *", zone = LinkedinTimeUtils.LINKEDIN_ZONE)
+    @Scheduled(cron = "30 0 0 * * *", zone = LinkedinTimeUtils.LINKEDIN_ZONE)
     @Transactional
     public void runAtEndOfDay() {
-        LocalDate previousGameDay = LinkedinTimeUtils.todayGameDay();
+        LocalDate previousGameDay = LinkedinTimeUtils.todayGameDay().minusDays(1);
         telegramGroupService.getGroupsWithoutDailyRanking(previousGameDay)
                             .forEach(telegramGroup -> generateDailyRanking(telegramGroup, previousGameDay));
     }
