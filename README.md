@@ -21,8 +21,9 @@ Each group is treated as a standalone competition — just invite the bot to you
 When you add the bot to a Telegram group, that group becomes its own independent leaderboard and competition space. Each day, members of the group can submit their results for
 LinkedIn’s puzzles (currently: Queens, Tango, and Zip) by simply uploading a screenshot of their completion screen.
 
-The bot automatically scans these screenshots using OCR (powered by Tesseract) and extracts the relevant information: the game type and the time it took to solve it. Once
-submitted, your time is recorded for the current day and associated with your Telegram username.
+The bot automatically scans these screenshots using OCR (powered by OpenCV and Tesseract) and extracts the relevant information: the game type and the time it took to solve it.
+Once
+processed, your time is recorded for the current day and associated to your Telegram user id.
 
 As group members submit their scores, the bot keeps track of who’s already participated and waits for everyone to submit. Once all registered players have sent their times, the bot
 automatically recalculates and publishes the daily leaderboard. Alternatively, any member can run the /daily command to manually trigger a recalculation at any time.
