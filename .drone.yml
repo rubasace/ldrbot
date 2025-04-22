@@ -70,9 +70,15 @@ steps:
 
   - name: tag-release
     image: docker:git
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
     commands:
+      - git config user.name "CI Bot"
+      - git config user.email "ci@example.com"
+      - git remote set-url origin https://$GITHUB_TOKEN@github.com/${DRONE_REPO}.git
       - git add pom.xml
-      - git commit -m "Release ${CI_BUILD_TARGET}"
+      - git commit --allow-empty -m "Release ${CI_BUILD_TARGET}"
       - git tag ${CI_BUILD_TARGET}
       - git push origin ${CI_BUILD_TARGET}
     when:
@@ -106,6 +112,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 555b79a32125ac5c6eeef4731d2d4d9a34fce43a569e9089edd9ab0b4978886d
+hmac: 5d3ef16ce4daf0a941a1ab19bb57b7bbbaf7cbba05a5344234966fa777e3876d
 
 ...
