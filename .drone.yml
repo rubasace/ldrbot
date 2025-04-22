@@ -4,6 +4,16 @@ type: kubernetes
 name: default
 
 steps:
+  - name: set-version-release
+    image: maven:3.9.9-eclipse-temurin-17
+    commands:
+      - mvn versions:set -DnewVersion=${CI_BUILD_TARGET} -DgenerateBackupPoms=false
+    when:
+      branch:
+        - main
+      event:
+        - promote
+
   - name: prepare-tesseract
     image: franky1/tesseract:5.5.0
     commands:
@@ -58,6 +68,16 @@ steps:
       event:
         - promote
 
+  - name: tag-release
+    image: docker:git
+    commands:
+      - git add pom.xml
+      - git commit -m "Release ${CI_BUILD_TARGET}"
+      - git tag ${CI_BUILD_TARGET}
+      - git push origin ${CI_BUILD_TARGET}
+    when:
+      event:
+        - promote
 volumes:
   - name: m2-cache
     host:
@@ -71,6 +91,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: b2c5c55ba9666d8d3c6412d3677d6350760c472317d43c040a4e87c393898735
+hmac: 74529ad4c0bedacdaac163e208985b273143db7189329ddcfd82bec18b276933
 
 ...
