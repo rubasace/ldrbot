@@ -25,6 +25,6 @@ COPY target/*.jar /app/linkedin-games-tracker.jar
 
 USER 1000:999
 
-ENV JDK_OPTIONS="-XX:+UseContainerSupport -XX:InitialRAMPercentage=75 -XX:MaxRAMPercentage=85 -XX:MaxJavaStackTraceDepth=15"
+ENV JDK_JAVA_OPTIONS="-XX:+UseContainerSupport -XX:InitialRAMPercentage=75 -XX:MaxRAMPercentage=85 -XX:MaxJavaStackTraceDepth=15"
 
 ENTRYPOINT ["java", "-jar", "linkedin-games-tracker.jar"]
