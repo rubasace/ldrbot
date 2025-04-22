@@ -2,9 +2,9 @@ package dev.rubasace.linkedin.games_tracker.chat;
 
 import dev.rubasace.linkedin.games_tracker.configuration.ExecutorsConfiguration;
 import dev.rubasace.linkedin.games_tracker.group.GroupCreatedEvent;
-import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games_tracker.group.UserJoinedGroupEvent;
 import dev.rubasace.linkedin.games_tracker.group.UserLeftGroupEvent;
+import dev.rubasace.linkedin.games_tracker.image.GameDurationExtractionException;
 import dev.rubasace.linkedin.games_tracker.ranking.GroupDailyScoreCreatedEvent;
 import dev.rubasace.linkedin.games_tracker.session.AlreadyRegisteredSession;
 import dev.rubasace.linkedin.games_tracker.session.GameNameNotFoundException;
@@ -15,6 +15,8 @@ import dev.rubasace.linkedin.games_tracker.summary.GlobalScoreData;
 import dev.rubasace.linkedin.games_tracker.summary.GroupDailyScore;
 import dev.rubasace.linkedin.games_tracker.user.UsernameNotFoundException;
 import dev.rubasace.linkedin.games_tracker.util.FormatUtils;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -40,6 +42,9 @@ public class NotificationService {
             
             Type /help to see everything I can do.
             """;
+    public static final int GREETING_NOTIFICATION_ORDER = Ordered.HIGHEST_PRECEDENCE;
+    public static final int USER_INTERACTION_NOTIFICATION_ORDER = GREETING_NOTIFICATION_ORDER + 1000;
+    public static final int DAILY_RANKING_NOTIFICATION_ORDER = 0;
 
     private final MessageService messageService;
 
@@ -53,21 +58,27 @@ public class NotificationService {
                                                                                        alreadyRegisteredSession.getGame().name(),
                                                                                        alreadyRegisteredSession.getGame().name().toLowerCase()),
                                  alreadyRegisteredSession.getChatId());
-        } else if (userFeedbackException instanceof GroupNotFoundException groupNotFoundException) {
-            messageService.error("Group not registered. Must execute /start command first", groupNotFoundException.getChatId());
         } else if (userFeedbackException instanceof UsernameNotFoundException usernameNotFoundException) {
             messageService.error("User @%s not found".formatted(usernameNotFoundException.getUsername()), usernameNotFoundException.getChatId());
         } else if (userFeedbackException instanceof GameNameNotFoundException gameNameNotFoundException) {
             messageService.error("'%s' is not a valid game.".formatted(gameNameNotFoundException.getGameName()), gameNameNotFoundException.getChatId());
+        } else if (userFeedbackException instanceof GameDurationExtractionException gameDurationExtractionException) {
+            messageService.error(
+                    "@%s submitted a screenshot for the game %s but I wasn't able to extract the time. Please try with another image or ask an admin to input the time manually using the command /override %s <time>".formatted(
+                            gameDurationExtractionException.getUserName(), gameDurationExtractionException.getGameType().name(),
+                            gameDurationExtractionException.getGameType().name().toLowerCase()),
+                    gameDurationExtractionException.getChatId());
         }
     }
 
+    @Order(GREETING_NOTIFICATION_ORDER)
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleGroupCreation(final GroupCreatedEvent groupCreatedEvent) {
         messageService.info(GROUP_GREETING_MESSAGE, groupCreatedEvent.getChatId());
     }
 
+    @Order(DAILY_RANKING_NOTIFICATION_ORDER)
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void notifyDailyRanking(final GroupDailyScoreCreatedEvent groupDailyScoreCreatedEvent) {
@@ -81,6 +92,7 @@ public class NotificationService {
         messageService.html(htmlSummary, groupDailyScore.chatId());
     }
 
+    @Order(USER_INTERACTION_NOTIFICATION_ORDER)
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleSessionRegistration(final GameSessionRegistrationEvent gameSessionRegistrationEvent) {
@@ -90,6 +102,7 @@ public class NotificationService {
                             gameSessionRegistrationEvent.getChatId());
     }
 
+    @Order(USER_INTERACTION_NOTIFICATION_ORDER)
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleUserJoin(final UserJoinedGroupEvent userJoinedGroupEvent) {
@@ -97,6 +110,7 @@ public class NotificationService {
                             userJoinedGroupEvent.getChatId());
     }
 
+    @Order(USER_INTERACTION_NOTIFICATION_ORDER)
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleUserLeave(final UserLeftGroupEvent userLeftGroupEvent) {
@@ -124,7 +138,7 @@ public class NotificationService {
     private void toHtmlGameRanking(final GameType gameType, final List<GameScoreData> scores, final StringBuilder sb) {
         sb.append(toTile(FormatUtils.gameIcon(gameType), gameType.name()));
 
-        for (int i = 0; i < scores.size(); i++) {
+        for (int i = DAILY_RANKING_NOTIFICATION_ORDER; i < scores.size(); i++) {
             GameScoreData score = scores.get(i);
             sb.append(formatRankingLine(i, score.username(), score.duration(), score.points()));
         }
@@ -138,7 +152,7 @@ public class NotificationService {
 
         sb.append(toTile("🏆", "Global Score"));
 
-        for (int i = 0; i < global.size(); i++) {
+        for (int i = DAILY_RANKING_NOTIFICATION_ORDER; i < global.size(); i++) {
             GlobalScoreData score = global.get(i);
             sb.append(formatRankingLine(i, score.username(), score.totalDuration(), score.points()));
         }
@@ -159,7 +173,7 @@ public class NotificationService {
 
     private String rankingIcon(int position) {
         return switch (position) {
-            case 0 -> "🥇";
+            case DAILY_RANKING_NOTIFICATION_ORDER -> "🥇";
             case 1 -> "🥈";
             case 2 -> "🥉";
             case 3 -> "4️⃣";

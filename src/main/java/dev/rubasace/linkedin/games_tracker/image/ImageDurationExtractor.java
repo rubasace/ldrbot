@@ -4,21 +4,16 @@ import dev.rubasace.linkedin.games_tracker.util.ParseUtils;
 import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.Rect;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 
 @Component
 class ImageDurationExtractor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ImageDurationExtractor.class);
 
     private static final String RESULTS_COLOR = "#FDE4A5";
 
@@ -30,28 +25,26 @@ class ImageDurationExtractor {
         this.imageTextExtractor = imageTextExtractor;
     }
 
-    synchronized Optional<Duration> extractDuration(final Mat image) {
+    //TODO improve using blockingQueue or something similar
+    synchronized Duration extractDuration(final Mat image) throws DurationOCRException {
         Optional<Rect> resultsBox = imageHelper.findLargestRegionOfColor(image, RESULTS_COLOR);
         if (resultsBox.isEmpty()) {
-            LOGGER.warn("Couldn't find the results area on the image");
-            return Optional.empty();
+            throw new DurationOCRException("Couldn't find the results area on the image");
         }
         try {
             Mat cropped = new Mat(image, resultsBox.get());
             File temp = File.createTempFile("time-results-section", ".png");
             opencv_imgcodecs.imwrite(temp.getAbsolutePath(), cropped);
             String text = imageTextExtractor.extractText(temp);
-            Optional<Duration> duration = Arrays.stream(text.split("\n"))
+            return Arrays.stream(text.split("\n"))
                                                 .map(durationText -> ParseUtils.parseDuration(durationText.trim()))
                                                 .filter(Optional::isPresent)
                                                 .map(Optional::get)
-                                                .findFirst();
-            if (duration.isEmpty()) {
-                LOGGER.warn("No timer found in OCR result");
-            }
-            return duration;
+                         .findFirst()
+                         .orElseThrow(() -> new DurationOCRException("No timer found in OCR result. Found the following text:\n" + text));
+
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new DurationOCRException(e);
         }
     }
 }

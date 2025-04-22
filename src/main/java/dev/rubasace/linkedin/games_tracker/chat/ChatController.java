@@ -98,7 +98,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .info("Start interacting with the bot")
                       .locality(Locality.USER)
                       .privacy(PUBLIC)
-                      .action(ctx -> chatService.start(ctx.update().getMessage()))
+                      .action(ctx -> chatService.privateStart(ctx.update().getMessage()))
                       .build();
     }
 

@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-class HandleBotExceptionsAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HandleBotExceptionsAspect.class);
+class BotExceptionHandlerAspect {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BotExceptionHandlerAspect.class);
 
     private final NotificationService notificationService;
 
-    public HandleBotExceptionsAspect(final NotificationService notificationService) {
+    public BotExceptionHandlerAspect(final NotificationService notificationService) {
         this.notificationService = notificationService;
     }
 

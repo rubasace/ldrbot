@@ -5,8 +5,10 @@ import dev.rubasace.linkedin.games_tracker.configuration.TelegramBotProperties;
 import dev.rubasace.linkedin.games_tracker.exception.HandleBotExceptions;
 import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroupService;
+import dev.rubasace.linkedin.games_tracker.image.GameDurationExtractionException;
 import dev.rubasace.linkedin.games_tracker.image.ImageGameDurationExtractor;
 import dev.rubasace.linkedin.games_tracker.ranking.GroupRankingService;
+import dev.rubasace.linkedin.games_tracker.session.AlreadyRegisteredSession;
 import dev.rubasace.linkedin.games_tracker.session.GameDuration;
 import dev.rubasace.linkedin.games_tracker.session.GameNameNotFoundException;
 import dev.rubasace.linkedin.games_tracker.session.GameSessionService;
@@ -19,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.io.File;
@@ -66,7 +67,7 @@ class ChatService {
             
             💡 <b>Tip:</b> I only process screenshots or commands in group messages. Private chat support is coming soon!
             """;
-    private static final String START_MESSAGE = """
+    private static final String PRIVATE_START_MESSAGE = """
             👋 Hello! I'm the LinkedIn Games Tracker bot.
             
             To get started, add me to a Telegram group. I’ll track puzzle results for games like Queens, Tango, and Zip and keep a daily leaderboard.
@@ -78,6 +79,7 @@ class ChatService {
     private final AssetsDownloader assetsDownloader;
     private final GameSessionService gameSessionService;
     private final TelegramGroupService telegramGroupService;
+    //TODO move everything into notification service
     private final MessageService messageService;
     private final GroupRankingService groupRankingService;
     private final TelegramBotProperties telegramBotProperties;
@@ -98,16 +100,6 @@ class ChatService {
         this.telegramBotProperties = telegramBotProperties;
     }
 
-    @Transactional
-    void setupGroup(final Chat chat) {
-        if (!chat.isGroupChat()) {
-            throw new IllegalArgumentException("Chat must be a group");
-        }
-        telegramGroupService.registerOrUpdateGroup(chat.getId(), chat.getTitle());
-        messageService.info("Now I'll monitor this group and keep track of your linkedin games times. You can explicitly /join or send a message on the group to be added to it",
-                            chat.getId());
-    }
-
     //TODO revisit if SneakyThrows makes sense here, probably will be kept if logic extracted into specific action component
     @SneakyThrows
     @Transactional
@@ -122,12 +114,23 @@ class ChatService {
     void processMessage(final Message message) {
 
         if (message.getChat().isGroupChat()) {
-            if (isBotRemovedFromGroup(message)) {
-                telegramGroupService.removeGroup(message.getChatId());
-            }
-            telegramGroupService.registerOrUpdateGroup(message.getChat().getId(), message.getChat().getTitle());
-            addUserToGroup(message);
+            processGroupMessage(message);
+        } else {
+            processPrivateMessage(message);
         }
+    }
+
+    private void processPrivateMessage(final Message message) {
+        //Do nothing for now
+    }
+
+    private void processGroupMessage(final Message message) throws GroupNotFoundException, AlreadyRegisteredSession, GameDurationExtractionException {
+        if (isBotRemovedFromGroup(message)) {
+            telegramGroupService.removeGroup(message.getChatId());
+            return;
+        }
+        telegramGroupService.registerOrUpdateGroup(message.getChat().getId(), message.getChat().getTitle());
+        addUserToGroup(message);
         if (!CollectionUtils.isEmpty(message.getNewChatMembers())) {
             for (User user : message.getNewChatMembers()) {
                 if (!user.getUserName().equalsIgnoreCase(telegramBotProperties.getUsername())) {
@@ -147,13 +150,12 @@ class ChatService {
         }
 
         File imageFile = assetsDownloader.getImage(photoSizeList);
-        Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile);
+        Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, message.getChatId(), message.getFrom().getUserName());
         if (gameDuration.isEmpty()) {
             return;
         }
         gameSessionService.recordGameSession(message.getFrom().getId(), message.getChatId(), message.getFrom().getUserName(),
                                              gameDuration.get());
-
     }
 
     private boolean isBotRemovedFromGroup(final Message message) {
@@ -205,22 +207,19 @@ class ChatService {
                             .ifPresent(groupRankingService::createDailyRanking);
     }
 
+    @SneakyThrows
     public void listTrackedGames(final Message message) {
         Long chatId = message.getChatId();
-        try {
-            Set<GameType> trackedGames = telegramGroupService.listTrackedGames(chatId);
-            if (trackedGames == null || trackedGames.isEmpty()) {
-                messageService.error("This group is not tracking any games.", chatId);
-            } else {
-                String text = trackedGames.stream()
-                                          .sorted()
-                                          .map(game -> "%s %s".formatted(FormatUtils.gameIcon(game), game.name()))
-                                          .collect(Collectors.joining("\n"));
+        Set<GameType> trackedGames = telegramGroupService.listTrackedGames(chatId);
+        if (trackedGames == null || trackedGames.isEmpty()) {
+            messageService.error("This group is not tracking any games.", chatId);
+        } else {
+            String text = trackedGames.stream()
+                                      .sorted()
+                                      .map(game -> "%s %s".formatted(FormatUtils.gameIcon(game), game.name()))
+                                      .collect(Collectors.joining("\n"));
 
-                messageService.info("This group is currently tracking:\n" + text, chatId);
-            }
-        } catch (GroupNotFoundException e) {
-            messageService.error("Group not registered. Must execute /start command first", message.getChatId());
+            messageService.info("This group is currently tracking:\n" + text, chatId);
         }
     }
 
@@ -240,7 +239,7 @@ class ChatService {
         messageService.html(HELP_MESSAGE, message.getChatId());
     }
 
-    public void start(final Message message) {
-        messageService.html(START_MESSAGE, message.getChatId());
+    public void privateStart(final Message message) {
+        messageService.html(PRIVATE_START_MESSAGE, message.getChatId());
     }
 }

@@ -92,7 +92,7 @@ public class TelegramGroupService {
 
     @Transactional
     public void removeGroup(final Long chatId) {
-        //TODO allow to remove groups
+        //TODO allow to remove groups, probably with soft deletion
         //        telegramGroupRepository.deleteById(chatId);
     }
 }
