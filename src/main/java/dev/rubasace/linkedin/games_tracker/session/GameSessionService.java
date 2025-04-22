@@ -78,6 +78,8 @@ public class GameSessionService {
     @Transactional
     public void deleteTodaySession(final Long userId, final Long chatId, final GameType game) {
         gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameAndGameDay(userId, chatId, game, LinkedinTimeUtils.todayGameDay());
+        telegramUserService.find(userId)
+                           .ifPresent(user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, user.getId(), user.getUserName(), game, chatId)));
     }
 
     public Stream<GameSession> getTodaySessions(final Long userId, final Long chatId) {
@@ -91,6 +93,8 @@ public class GameSessionService {
     @Transactional
     public void deleteTodaySessions(final Long userId, final Long chatId) {
         gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameDay(userId, chatId, LinkedinTimeUtils.todayGameDay());
+        telegramUserService.find(userId)
+                           .ifPresent(user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, user.getId(), user.getUserName(), null, chatId)));
     }
 
 

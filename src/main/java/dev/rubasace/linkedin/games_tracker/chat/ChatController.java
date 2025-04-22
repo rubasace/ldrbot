@@ -32,7 +32,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
 
     private final ChatService chatService;
     private final String token;
-    private final Executor controllerExecutor = Executors.newVirtualThreadPerTaskExecutor();
+    private final Executor controllerExecutor;
 
     ChatController(final TelegramClient telegramClient,
                    final ChatService chatService,
@@ -41,6 +41,8 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
         super(telegramClient, telegramBotProperties.getUsername(), MapDBContext.onlineInstance("/tmp/" + telegramBotProperties.getUsername()));
         this.chatService = chatService;
         this.token = telegramBotProperties.getToken();
+        //TODO think of capping the executor size
+        controllerExecutor = Executors.newVirtualThreadPerTaskExecutor();
     }
 
     @Override
@@ -50,10 +52,14 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
 
     @Override
     public void consume(Update update) {
-        super.consume(update);
         if (!update.hasMessage()) {
             return;
         }
+        if (update.getMessage().getChat().isGroupChat()) {
+            chatService.registerOrUpdateGroup(update.getMessage().getChatId(), update.getMessage().getChat().getTitle());
+        }
+        super.consume(update);
+
         if (update.getMessage().isCommand()) {
             return;
         }
@@ -71,6 +77,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
             telegramClient.execute(new SetMyCommands(commands));
         } catch (TelegramApiException e) {
             LOGGER.error("Failed to register bot commands", e);
+            throw new RuntimeException(e);
         }
     }
 

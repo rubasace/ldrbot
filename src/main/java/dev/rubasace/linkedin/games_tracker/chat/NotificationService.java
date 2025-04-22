@@ -8,10 +8,8 @@ import dev.rubasace.linkedin.games_tracker.image.GameDurationExtractionException
 import dev.rubasace.linkedin.games_tracker.ranking.GroupDailyScoreCreatedEvent;
 import dev.rubasace.linkedin.games_tracker.session.AlreadyRegisteredSession;
 import dev.rubasace.linkedin.games_tracker.session.GameNameNotFoundException;
+import dev.rubasace.linkedin.games_tracker.session.GameSessionDeletionEvent;
 import dev.rubasace.linkedin.games_tracker.session.GameSessionRegistrationEvent;
-import dev.rubasace.linkedin.games_tracker.session.GameType;
-import dev.rubasace.linkedin.games_tracker.summary.GameScoreData;
-import dev.rubasace.linkedin.games_tracker.summary.GlobalScoreData;
 import dev.rubasace.linkedin.games_tracker.summary.GroupDailyScore;
 import dev.rubasace.linkedin.games_tracker.user.UsernameNotFoundException;
 import dev.rubasace.linkedin.games_tracker.util.FormatUtils;
@@ -22,15 +20,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-
+//TODO think about decoupling chatId and user data from events and store them as part of the thread so it's available without having to pass it through (careful with executors)
 @Component
 public class NotificationService {
 
     private static final String ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE = "@%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall";
     private static final String SUBMISSION_MESSAGE_TEMPLATE = "@%s submitted their result for today's %s with a time of %s";
+
+    private static final String GAME_SESSION_DELETION_MESSAGE_TEMPLATE = "@%s result for today's %s has been deleted";
+    private static final String ALL_SESSION_DELETION_MESSAGE_TEMPLATE = "All @%s results for today games have been deleted";
     private static final String USER_JOIN_MESSAGE_TEMPLATE = "User @%s joined this group";
     private static final String USER_LEAVE_MESSAGE_TEMPLATE = "User @%s left this group";
     private static final String GROUP_GREETING_MESSAGE = """
@@ -42,14 +40,16 @@ public class NotificationService {
             
             Type /help to see everything I can do.
             """;
-    public static final int GREETING_NOTIFICATION_ORDER = Ordered.HIGHEST_PRECEDENCE;
-    public static final int USER_INTERACTION_NOTIFICATION_ORDER = GREETING_NOTIFICATION_ORDER + 1000;
-    public static final int DAILY_RANKING_NOTIFICATION_ORDER = 0;
+    private static final int GREETING_NOTIFICATION_ORDER = Ordered.HIGHEST_PRECEDENCE;
+    private static final int USER_INTERACTION_NOTIFICATION_ORDER = GREETING_NOTIFICATION_ORDER + 1000;
+    private static final int DAILY_RANKING_NOTIFICATION_ORDER = 0;
 
     private final MessageService messageService;
+    private final RankingMessageFactory rankingMessageFactory;
 
-    NotificationService(final MessageService messageService) {
+    NotificationService(final MessageService messageService, final RankingMessageFactory rankingMessageFactory) {
         this.messageService = messageService;
+        this.rankingMessageFactory = rankingMessageFactory;
     }
 
     public void notifyUserFeedbackException(final UserFeedbackException userFeedbackException) {
@@ -68,6 +68,8 @@ public class NotificationService {
                             gameDurationExtractionException.getUserName(), gameDurationExtractionException.getGameType().name(),
                             gameDurationExtractionException.getGameType().name().toLowerCase()),
                     gameDurationExtractionException.getChatId());
+        } else if (userFeedbackException instanceof InvalidUserInputException invalidUserInputException) {
+            messageService.error(invalidUserInputException.getMessage(), invalidUserInputException.getChatId());
         }
     }
 
@@ -88,7 +90,7 @@ public class NotificationService {
             return;
         }
 
-        String htmlSummary = toHtmlSummary(groupDailyScore);
+        String htmlSummary = rankingMessageFactory.createRankingMessage(groupDailyScore);
         messageService.html(htmlSummary, groupDailyScore.chatId());
     }
 
@@ -100,6 +102,19 @@ public class NotificationService {
                                                                   gameSessionRegistrationEvent.getGame().name().toLowerCase(),
                                                                   FormatUtils.formatDuration(gameSessionRegistrationEvent.getDuration())),
                             gameSessionRegistrationEvent.getChatId());
+    }
+
+    @Order(USER_INTERACTION_NOTIFICATION_ORDER)
+    @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void handleSessionDeletion(final GameSessionDeletionEvent gameSessionDeletionEvent) {
+        if (gameSessionDeletionEvent.isAllGames()) {
+            messageService.success(ALL_SESSION_DELETION_MESSAGE_TEMPLATE.formatted(gameSessionDeletionEvent.getUserName()), gameSessionDeletionEvent.getChatId());
+        } else {
+            messageService.success(
+                    GAME_SESSION_DELETION_MESSAGE_TEMPLATE.formatted(gameSessionDeletionEvent.getUserName(), gameSessionDeletionEvent.getGame().name().toLowerCase()),
+                    gameSessionDeletionEvent.getChatId());
+        }
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)
@@ -117,75 +132,5 @@ public class NotificationService {
         messageService.info(USER_LEAVE_MESSAGE_TEMPLATE.formatted(userLeftGroupEvent.getUserName()),
                             userLeftGroupEvent.getChatId());
     }
-
-    private String toHtmlSummary(GroupDailyScore groupScore) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<b>📊 Daily Ranking</b>\n");
-
-        for (Map.Entry<GameType, List<GameScoreData>> entry : groupScore.gameScores().entrySet()) {
-            toHtmlGameRanking(entry.getKey(), entry.getValue(), sb);
-        }
-
-        List<GlobalScoreData> global = groupScore.globalScore();
-
-        toHtmlGlobalRanking(sb, global);
-
-        toHtmlFinalMessage(groupScore.winners(), sb);
-
-        return sb.toString();
-    }
-
-    private void toHtmlGameRanking(final GameType gameType, final List<GameScoreData> scores, final StringBuilder sb) {
-        sb.append(toTile(FormatUtils.gameIcon(gameType), gameType.name()));
-
-        for (int i = DAILY_RANKING_NOTIFICATION_ORDER; i < scores.size(); i++) {
-            GameScoreData score = scores.get(i);
-            sb.append(formatRankingLine(i, score.username(), score.duration(), score.points()));
-        }
-    }
-
-    private String toTile(final String icon, final String title) {
-        return "\n<b><u>%s</u> </b>\n".formatted(title);
-    }
-
-    private void toHtmlGlobalRanking(final StringBuilder sb, final List<GlobalScoreData> global) {
-
-        sb.append(toTile("🏆", "Global Score"));
-
-        for (int i = DAILY_RANKING_NOTIFICATION_ORDER; i < global.size(); i++) {
-            GlobalScoreData score = global.get(i);
-            sb.append(formatRankingLine(i, score.username(), score.totalDuration(), score.points()));
-        }
-    }
-
-    //TODO allow admin to make message configurable
-    private void toHtmlFinalMessage(final List<String> winners, final StringBuilder sb) {
-        sb.append("\n<b>🎉🎉🎉 Congratulations @%s, you are today's champion%s! 🎉🎉🎉</b>"
-                          .formatted(String.join(" and @", winners), winners.size() > 1 ? "s" : ""));
-    }
-
-    private String formatRankingLine(int position, String username, Duration duration, int points) {
-        String icon = rankingIcon(position);
-        String paddedUser = String.format("@%s", username);
-        String durationStr = FormatUtils.formatDuration(duration);
-        return String.format("%s %s (%s) — %d pts\n", icon, paddedUser, durationStr, points);
-    }
-
-    private String rankingIcon(int position) {
-        return switch (position) {
-            case DAILY_RANKING_NOTIFICATION_ORDER -> "🥇";
-            case 1 -> "🥈";
-            case 2 -> "🥉";
-            case 3 -> "4️⃣";
-            case 4 -> "5️⃣";
-            case 5 -> "6️⃣";
-            case 6 -> "7️⃣";
-            case 7 -> "8️⃣";
-            case 8 -> "9️⃣";
-            case 9 -> "🔟";
-            default -> (position + 1) + ".";
-        };
-    }
-
 
 }

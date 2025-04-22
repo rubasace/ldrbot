@@ -4,6 +4,7 @@ import dev.rubasace.linkedin.games_tracker.assets.AssetsDownloader;
 import dev.rubasace.linkedin.games_tracker.configuration.TelegramBotProperties;
 import dev.rubasace.linkedin.games_tracker.exception.HandleBotExceptions;
 import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
+import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroupService;
 import dev.rubasace.linkedin.games_tracker.image.GameDurationExtractionException;
 import dev.rubasace.linkedin.games_tracker.image.ImageGameDurationExtractor;
@@ -51,19 +52,19 @@ class ChatService {
             
             🛠️ <b>Commands</b>
             
-            <code>/join</code> – Register yourself in the group (optional, automatic on first submission)
+            /join – Register yourself in the group (optional, automatic on first submission)
             
-            <code>/games</code> – List the puzzles I'm tracking
+            /games – List the puzzles I'm tracking
             
-            <code>/daily</code> – Show today's leaderboard
+            /daily – Show today's leaderboard
             
-            <code>/delete &lt;game&gt;</code> – Remove your submitted time for the given game
+            /delete &lt;game&gt; – Remove your submitted time for the given game
             
-            <code>/deleteAll</code> – Remove all your submitted scores for today
+            /deleteAll – Remove all your submitted scores for today
             
-            <code>/override @&lt;user&gt; &lt;game&gt; &lt;mm:ss&gt;</code> – Admin: override someone's time
+            /override @&lt;user&gt; &lt;game&gt; &lt;mm:ss&gt; – Admin: override someone's time
             
-            <code>/help</code> – Show this message
+            /help – Show this message
             
             💡 <b>Tip:</b> I only process screenshots or commands in group messages. Private chat support is coming soon!
             """;
@@ -72,7 +73,7 @@ class ChatService {
             
             To get started, add me to a Telegram group. I’ll track puzzle results for games like Queens, Tango, and Zip and keep a daily leaderboard.
             
-            Use <code>/help</code> to see what I can do.
+            Use /help to see what I can do.
             """;
 
     private final ImageGameDurationExtractor imageGameDurationExtractor;
@@ -98,6 +99,11 @@ class ChatService {
         this.messageService = messageService;
         this.groupRankingService = groupRankingService;
         this.telegramBotProperties = telegramBotProperties;
+    }
+
+    @Transactional
+    TelegramGroup registerOrUpdateGroup(final Long chatId, final String title) {
+        return telegramGroupService.registerOrUpdateGroup(chatId, title);
     }
 
     //TODO revisit if SneakyThrows makes sense here, probably will be kept if logic extracted into specific action component
@@ -129,7 +135,6 @@ class ChatService {
             telegramGroupService.removeGroup(message.getChatId());
             return;
         }
-        telegramGroupService.registerOrUpdateGroup(message.getChat().getId(), message.getChat().getTitle());
         addUserToGroup(message);
         if (!CollectionUtils.isEmpty(message.getNewChatMembers())) {
             for (User user : message.getNewChatMembers()) {
@@ -174,16 +179,14 @@ class ChatService {
     @SneakyThrows
     @Transactional
     public void deleteTodayRecord(final Message message, final String[] arguments) {
-        //TODO think if controlling actions arguments with input() or via explicit arguments check like here
+        //TODO think if controlling actions arguments with input() or via explicit arguments check like here. Probably here so we have more control over everything
         if (arguments == null || arguments.length == 0) {
-            messageService.error("Please provide a game name. Example: /delete queens", message.getChatId());
-            return;
+            throw new InvalidUserInputException("Please provide a game name. Example: /delete queens", message.getChatId());
         }
 
         String gameName = arguments[0];
         GameType gameType = getGameType(gameName, message.getChatId());
         gameSessionService.deleteTodaySession(message.getFrom().getId(), message.getChatId(), gameType);
-        messageService.info("Your result for *%s* has been deleted.".formatted(gameName.toUpperCase()), message.getChatId());
     }
 
     private GameType getGameType(final String gameName, final Long chatId) throws GameNameNotFoundException {
@@ -199,7 +202,6 @@ class ChatService {
     @Transactional
     public void deleteTodayRecords(final Message message) {
         gameSessionService.deleteTodaySessions(message.getFrom().getId(), message.getChatId());
-        messageService.success("All your records for today have been deleted.", message.getChatId());
     }
 
     public void dailyRanking(final Message message) {
@@ -211,8 +213,8 @@ class ChatService {
     public void listTrackedGames(final Message message) {
         Long chatId = message.getChatId();
         Set<GameType> trackedGames = telegramGroupService.listTrackedGames(chatId);
-        if (trackedGames == null || trackedGames.isEmpty()) {
-            messageService.error("This group is not tracking any games.", chatId);
+        if (CollectionUtils.isEmpty(trackedGames)) {
+            throw new InvalidUserInputException("This group is not tracking any games.", chatId);
         } else {
             String text = trackedGames.stream()
                                       .sorted()
@@ -230,7 +232,7 @@ class ChatService {
         GameType gameType = getGameType(arguments[1], message.getChatId());
         Optional<Duration> duration = ParseUtils.parseDuration(arguments[2]);
         if (duration.isEmpty()) {
-            messageService.error("Invalid time format. Use `mm:ss`, e.g. `1:30` or `12:05`", message.getChatId());
+            throw new InvalidUserInputException("Invalid time format. Use `mm:ss`, e.g. `1:30` or `12:05`", message.getChatId());
         }
         gameSessionService.manuallRrecordGameSession(message.getChatId(), username, new GameDuration(gameType, duration.get()));
     }
