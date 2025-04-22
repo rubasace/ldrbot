@@ -85,20 +85,18 @@ steps:
       event:
         - promote
 
-  - name: github-release
+  - name: release-tag
     image: plugins/github-release
     settings:
       api_key:
         from_secret: github_token
       files:
         - target/*.jar
-      note: "Release for ${CI_BUILD_TARGET}"
-      tag: ${CI_BUILD_TARGET}
+      note: "Release for ${DRONE_TAG}"
+      tag: ${DRONE_TAG}
     when:
-      branch:
-        - main
       event:
-        - promote
+        - tag
 volumes:
   - name: m2-cache
     host:
@@ -109,9 +107,10 @@ trigger:
   event:
     - push
     - promote
+    - tag
 hmac:
 ---
 kind: signature
-hmac: 5d3ef16ce4daf0a941a1ab19bb57b7bbbaf7cbba05a5344234966fa777e3876d
+hmac: 8c4df06ba2bb5b5c64ab86bac296951f52c225705bcd65e1a73c88d548356fe9
 
 ...
