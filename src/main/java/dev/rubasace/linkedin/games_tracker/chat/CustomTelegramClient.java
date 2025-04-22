@@ -9,13 +9,13 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 @Service
-class MessageService {
+class CustomTelegramClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MessageService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomTelegramClient.class);
 
     private final TelegramClient telegramClient;
 
-    MessageService(final TelegramClient telegramClient) {
+    CustomTelegramClient(final TelegramClient telegramClient) {
         this.telegramClient = telegramClient;
     }
 

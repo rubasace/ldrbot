@@ -1,4 +1,4 @@
-package dev.rubasace.linkedin.games_tracker.chat;
+package dev.rubasace.linkedin.games_tracker.message;
 
 import dev.rubasace.linkedin.games_tracker.configuration.TelegramBotProperties;
 import jakarta.annotation.PostConstruct;
@@ -26,20 +26,20 @@ import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Component
-public class ChatController extends AbilityBot implements SpringLongPollingBot {
+public class MessageController extends AbilityBot implements SpringLongPollingBot {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChatController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageController.class);
 
-    private final ChatService chatService;
+    private final MessageService messageService;
     private final String token;
     private final Executor controllerExecutor;
 
-    ChatController(final TelegramClient telegramClient,
-                   final ChatService chatService,
-                   final TelegramBotProperties telegramBotProperties) {
+    MessageController(final TelegramClient telegramClient,
+                      final MessageService messageService,
+                      final TelegramBotProperties telegramBotProperties) {
         //TODO investigate if DB has/can be made persistent against real DB
         super(telegramClient, telegramBotProperties.getUsername(), MapDBContext.onlineInstance("/tmp/" + telegramBotProperties.getUsername()));
-        this.chatService = chatService;
+        this.messageService = messageService;
         this.token = telegramBotProperties.getToken();
         //TODO think of capping the executor size
         controllerExecutor = Executors.newVirtualThreadPerTaskExecutor();
@@ -56,14 +56,14 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
             return;
         }
         if (update.getMessage().getChat().isGroupChat()) {
-            chatService.registerOrUpdateGroup(update.getMessage().getChatId(), update.getMessage().getChat().getTitle());
+            messageService.registerOrUpdateGroup(update.getMessage().getChatId(), update.getMessage().getChat().getTitle());
         }
         super.consume(update);
 
         if (update.getMessage().isCommand()) {
             return;
         }
-        chatService.processMessage(update.getMessage());
+        messageService.processMessage(update.getMessage());
     }
 
     @PostConstruct
@@ -102,10 +102,10 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
     public Ability start() {
         return Ability.builder()
                       .name("start")
-                      .info("Start interacting with the bot")
+                      .info("Standard Telegram action to start interacting with the bot.")
                       .locality(Locality.USER)
                       .privacy(PUBLIC)
-                      .action(ctx -> chatService.privateStart(ctx.update().getMessage()))
+                      .action(ctx -> messageService.privateStart(ctx.update().getMessage()))
                       .build();
     }
 
@@ -115,7 +115,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .info("Register yourself as a participant in the group. (This happens automatically when you submit your first message in the group.)")
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
-                      .action(ctx -> chatService.addUserToGroup(ctx.update().getMessage()))
+                      .action(ctx -> messageService.addUserToGroup(ctx.update().getMessage()))
                       .build();
     }
 
@@ -126,7 +126,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .input(1)
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
-                      .action(ctx -> chatService.deleteTodayRecord(ctx.update().getMessage(), ctx.arguments()))
+                      .action(ctx -> messageService.deleteTodayRecord(ctx.update().getMessage(), ctx.arguments()))
                       .build();
     }
 
@@ -136,7 +136,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .info("Delete all your submitted results for today.")
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
-                      .action(ctx -> chatService.deleteTodayRecords(ctx.update().getMessage()))
+                      .action(ctx -> messageService.deleteTodayRecords(ctx.update().getMessage()))
                       .build();
     }
 
@@ -146,7 +146,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .info("Manually trigger today's group ranking summary.")
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
-                      .action(ctx -> chatService.dailyRanking(ctx.update().getMessage()))
+                      .action(ctx -> messageService.dailyRanking(ctx.update().getMessage()))
                       .build();
     }
 
@@ -156,7 +156,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .info("Show the list of games currently tracked by this group.")
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
-                      .action(ctx -> chatService.listTrackedGames(ctx.update().getMessage()))
+                      .action(ctx -> messageService.listTrackedGames(ctx.update().getMessage()))
                       .build();
     }
 
@@ -167,7 +167,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                       .input(3)
                       .locality(Locality.GROUP)
                       .privacy(Privacy.GROUP_ADMIN)
-                      .action(ctx -> chatService.registerSessionManually(ctx.update().getMessage(), ctx.arguments()))
+                      .action(ctx -> messageService.registerSessionManually(ctx.update().getMessage(), ctx.arguments()))
                       .build();
     }
 
@@ -178,7 +178,7 @@ public class ChatController extends AbilityBot implements SpringLongPollingBot {
                 .info("Displays a list of available commands and how to use the bot.")
                 .locality(ALL)
                 .privacy(PUBLIC)
-                .action(ctx -> chatService.help(ctx.update().getMessage()))
+                .action(ctx -> messageService.help(ctx.update().getMessage(), getAbilities()))
                 .build();
     }
 

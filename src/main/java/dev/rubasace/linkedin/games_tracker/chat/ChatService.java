@@ -1,41 +1,21 @@
 package dev.rubasace.linkedin.games_tracker.chat;
 
-import dev.rubasace.linkedin.games_tracker.assets.AssetsDownloader;
-import dev.rubasace.linkedin.games_tracker.configuration.TelegramBotProperties;
-import dev.rubasace.linkedin.games_tracker.exception.HandleBotExceptions;
 import dev.rubasace.linkedin.games_tracker.group.GroupNotFoundException;
-import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroupService;
-import dev.rubasace.linkedin.games_tracker.image.GameDurationExtractionException;
-import dev.rubasace.linkedin.games_tracker.image.ImageGameDurationExtractor;
-import dev.rubasace.linkedin.games_tracker.ranking.GroupRankingService;
-import dev.rubasace.linkedin.games_tracker.session.AlreadyRegisteredSession;
-import dev.rubasace.linkedin.games_tracker.session.GameDuration;
-import dev.rubasace.linkedin.games_tracker.session.GameNameNotFoundException;
-import dev.rubasace.linkedin.games_tracker.session.GameSessionService;
+import dev.rubasace.linkedin.games_tracker.message.InvalidUserInputException;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
 import dev.rubasace.linkedin.games_tracker.util.FormatUtils;
-import dev.rubasace.linkedin.games_tracker.util.ParseUtils;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
-import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 
-import java.io.File;
-import java.time.Duration;
-import java.util.List;
-import java.util.Optional;
+import java.util.Comparator;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@HandleBotExceptions
-//TODO revisit if it makes sense after we revisit all logic in this service
-@Transactional(readOnly = true)
 @Service
-class ChatService {
+public class ChatService {
 
     private static final String HELP_MESSAGE = """
             🤖 <b>LinkedIn Games Tracker Help</b>
@@ -52,19 +32,7 @@ class ChatService {
             
             🛠️ <b>Commands</b>
             
-            /join – Register yourself in the group (optional, automatic on first submission)
-            
-            /games – List the puzzles I'm tracking
-            
-            /daily – Show today's leaderboard
-            
-            /delete &lt;game&gt; – Remove your submitted time for the given game
-            
-            /deleteAll – Remove all your submitted scores for today
-            
-            /override @&lt;user&gt; &lt;game&gt; &lt;mm:ss&gt; – Admin: override someone's time
-            
-            /help – Show this message
+            %s
             
             💡 <b>Tip:</b> I only process screenshots or commands in group messages. Private chat support is coming soon!
             """;
@@ -76,142 +44,15 @@ class ChatService {
             Use /help to see what I can do.
             """;
 
-    private final ImageGameDurationExtractor imageGameDurationExtractor;
-    private final AssetsDownloader assetsDownloader;
-    private final GameSessionService gameSessionService;
+    private final CustomTelegramClient customTelegramClient;
     private final TelegramGroupService telegramGroupService;
-    //TODO move everything into notification service
-    private final MessageService messageService;
-    private final GroupRankingService groupRankingService;
-    private final TelegramBotProperties telegramBotProperties;
 
-    ChatService(final ImageGameDurationExtractor imageGameDurationExtractor,
-                final AssetsDownloader assetsDownloader,
-                final GameSessionService gameSessionService,
-                final TelegramGroupService telegramGroupService,
-                final MessageService messageService,
-                final GroupRankingService groupRankingService,
-                final TelegramBotProperties telegramBotProperties) {
-        this.imageGameDurationExtractor = imageGameDurationExtractor;
-        this.assetsDownloader = assetsDownloader;
-        this.gameSessionService = gameSessionService;
+    ChatService(final CustomTelegramClient customTelegramClient, final TelegramGroupService telegramGroupService) {
+        this.customTelegramClient = customTelegramClient;
         this.telegramGroupService = telegramGroupService;
-        this.messageService = messageService;
-        this.groupRankingService = groupRankingService;
-        this.telegramBotProperties = telegramBotProperties;
     }
 
-    @Transactional
-    TelegramGroup registerOrUpdateGroup(final Long chatId, final String title) {
-        return telegramGroupService.registerOrUpdateGroup(chatId, title);
-    }
-
-    //TODO revisit if SneakyThrows makes sense here, probably will be kept if logic extracted into specific action component
-    @SneakyThrows
-    @Transactional
-    void addUserToGroup(final Message message) {
-        telegramGroupService.addUserToGroup(message.getChatId(), message.getFrom().getId(), message.getFrom().getUserName());
-    }
-
-    //TODO track users join/leave
-    //TODO annotate number of members when started?
-    @SneakyThrows
-    @Transactional
-    void processMessage(final Message message) {
-
-        if (message.getChat().isGroupChat()) {
-            processGroupMessage(message);
-        } else {
-            processPrivateMessage(message);
-        }
-    }
-
-    private void processPrivateMessage(final Message message) {
-        //Do nothing for now
-    }
-
-    private void processGroupMessage(final Message message) throws GroupNotFoundException, AlreadyRegisteredSession, GameDurationExtractionException {
-        if (isBotRemovedFromGroup(message)) {
-            telegramGroupService.removeGroup(message.getChatId());
-            return;
-        }
-        addUserToGroup(message);
-        if (!CollectionUtils.isEmpty(message.getNewChatMembers())) {
-            for (User user : message.getNewChatMembers()) {
-                if (!user.getUserName().equalsIgnoreCase(telegramBotProperties.getUsername())) {
-                    telegramGroupService.addUserToGroup(message.getChatId(), user.getId(), user.getUserName());
-                }
-            }
-            return;
-        }
-        if (message.getLeftChatMember() != null) {
-            telegramGroupService.removeUserFromGroup(message.getChatId(), message.getLeftChatMember().getId());
-            return;
-        }
-
-        List<PhotoSize> photoSizeList = getPhotos(message);
-        if (photoSizeList.isEmpty()) {
-            return;
-        }
-
-        File imageFile = assetsDownloader.getImage(photoSizeList);
-        Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, message.getChatId(), message.getFrom().getUserName());
-        if (gameDuration.isEmpty()) {
-            return;
-        }
-        gameSessionService.recordGameSession(message.getFrom().getId(), message.getChatId(), message.getFrom().getUserName(),
-                                             gameDuration.get());
-    }
-
-    private boolean isBotRemovedFromGroup(final Message message) {
-        return message.getLeftChatMember() != null && message.getLeftChatMember().getUserName().equalsIgnoreCase(telegramBotProperties.getUsername());
-    }
-
-    private List<PhotoSize> getPhotos(final Message message) {
-        if (message.hasPhoto()) {
-            return message.getPhoto();
-        } else if (message.hasDocument() && message.getDocument().getThumbnail() != null) {
-            return List.of(message.getDocument().getThumbnail());
-        }
-        return List.of();
-    }
-
-    @SneakyThrows
-    @Transactional
-    public void deleteTodayRecord(final Message message, final String[] arguments) {
-        //TODO think if controlling actions arguments with input() or via explicit arguments check like here. Probably here so we have more control over everything
-        if (arguments == null || arguments.length == 0) {
-            throw new InvalidUserInputException("Please provide a game name. Example: /delete queens", message.getChatId());
-        }
-
-        String gameName = arguments[0];
-        GameType gameType = getGameType(gameName, message.getChatId());
-        gameSessionService.deleteTodaySession(message.getFrom().getId(), message.getChatId(), gameType);
-    }
-
-    private GameType getGameType(final String gameName, final Long chatId) throws GameNameNotFoundException {
-        GameType gameType;
-        try {
-            gameType = GameType.valueOf(gameName.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new GameNameNotFoundException(chatId, gameName);
-        }
-        return gameType;
-    }
-
-    @Transactional
-    public void deleteTodayRecords(final Message message) {
-        gameSessionService.deleteTodaySessions(message.getFrom().getId(), message.getChatId());
-    }
-
-    public void dailyRanking(final Message message) {
-        telegramGroupService.findGroup(message.getChat().getId())
-                            .ifPresent(groupRankingService::createDailyRanking);
-    }
-
-    @SneakyThrows
-    public void listTrackedGames(final Message message) {
-        Long chatId = message.getChatId();
+    public void listTrackedGames(final Long chatId) throws GroupNotFoundException, InvalidUserInputException {
         Set<GameType> trackedGames = telegramGroupService.listTrackedGames(chatId);
         if (CollectionUtils.isEmpty(trackedGames)) {
             throw new InvalidUserInputException("This group is not tracking any games.", chatId);
@@ -221,27 +62,32 @@ class ChatService {
                                       .map(game -> "%s %s".formatted(FormatUtils.gameIcon(game), game.name()))
                                       .collect(Collectors.joining("\n"));
 
-            messageService.info("This group is currently tracking:\n" + text, chatId);
+            customTelegramClient.info("This group is currently tracking:\n" + text, chatId);
         }
     }
 
-    @Transactional
-    @SneakyThrows
-    public void registerSessionManually(final Message message, final String[] arguments) {
-        String username = arguments[0].startsWith("@") ? arguments[0].substring(1) : arguments[0];
-        GameType gameType = getGameType(arguments[1], message.getChatId());
-        Optional<Duration> duration = ParseUtils.parseDuration(arguments[2]);
-        if (duration.isEmpty()) {
-            throw new InvalidUserInputException("Invalid time format. Use `mm:ss`, e.g. `1:30` or `12:05`", message.getChatId());
-        }
-        gameSessionService.manuallRrecordGameSession(message.getChatId(), username, new GameDuration(gameType, duration.get()));
+
+    public void help(final Long chatId, final Map<String, Ability> abilities) {
+        String commandsSection = this.formatAbilities(abilities);
+        customTelegramClient.html(HELP_MESSAGE.formatted(commandsSection), chatId);
     }
 
-    public void help(final Message message) {
-        messageService.html(HELP_MESSAGE, message.getChatId());
+    private String formatAbilities(final Map<String, Ability> abilities) {
+        return abilities.values().stream()
+                        .filter(ability -> ability.info() != null)
+                        .sorted(Comparator.comparing(Ability::name))
+                        .map(ability -> "/%s - %s".formatted(ability.name(), escapeInfo(ability)))
+                        .collect(Collectors.joining("\n"));
     }
 
-    public void privateStart(final Message message) {
-        messageService.html(PRIVATE_START_MESSAGE, message.getChatId());
+    private String escapeInfo(final Ability ability) {
+        return ability.info()
+                      .replace("&", "&amp;")
+                      .replace("<", "&lt;")
+                      .replace(">", "&gt;");
+    }
+
+    public void privateStart(final Long chatId) {
+        customTelegramClient.html(PRIVATE_START_MESSAGE, chatId);
     }
 }

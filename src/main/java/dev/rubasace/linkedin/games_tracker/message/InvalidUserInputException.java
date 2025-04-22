@@ -1,5 +1,6 @@
-package dev.rubasace.linkedin.games_tracker.chat;
+package dev.rubasace.linkedin.games_tracker.message;
 
+import dev.rubasace.linkedin.games_tracker.chat.UserFeedbackException;
 import lombok.Getter;
 
 @Getter
