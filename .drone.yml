@@ -78,6 +78,21 @@ steps:
     when:
       event:
         - promote
+
+  - name: github-release
+    image: plugins/github-release
+    settings:
+      api_key:
+        from_secret: github_token
+      files:
+        - target/*.jar
+      note: "Release for ${CI_BUILD_TARGET}"
+      tag: ${CI_BUILD_TARGET}
+    when:
+      branch:
+        - main
+      event:
+        - promote
 volumes:
   - name: m2-cache
     host:
@@ -91,6 +106,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 74529ad4c0bedacdaac163e208985b273143db7189329ddcfd82bec18b276933
+hmac: 555b79a32125ac5c6eeef4731d2d4d9a34fce43a569e9089edd9ab0b4978886d
 
 ...
