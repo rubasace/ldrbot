@@ -67,7 +67,8 @@ class RankingMessageFactory {
         return String.format("%s %s (%s) — %d pts\n", icon, paddedUser, durationStr, points);
     }
 
-    //FIXME improve this so if there are two winners they both get the same icon, same for seconds and thirds (use same approach as winners probably)
+    //FIXME improve this so if there are two winners they both get the same icon, same for seconds and thirds (use same approach as winners probably).
+    // Alternatively, just add the position to the global score data, probably fixes the root issue and winners can be extracted from there
     private String rankingIcon(int position, final int points) {
         if (points == 3) {
             return "🥇";

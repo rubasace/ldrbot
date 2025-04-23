@@ -19,7 +19,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
@@ -32,7 +32,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
 
     private final MessageService messageService;
     private final String token;
-    private final Executor controllerExecutor;
+    private final ExecutorService controllerExecutor;
 
     MessageController(final TelegramClient telegramClient,
                       final MessageService messageService,
