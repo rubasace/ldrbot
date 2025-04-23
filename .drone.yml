@@ -102,8 +102,8 @@ steps:
         - tag
 volumes:
   - name: m2-cache
-    persistentVolumeClaim:
-      claimName: drone-m2-cache
+    host:
+      path: /var/lib/cache/.m2
   - name: tesseract-dist
     temp: { }
 trigger:
@@ -114,6 +114,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 613fe387a994cbd6897c44873003d4187684811fbfd1913c2ba16fa5f1b18bc4
+hmac: 3bcaf311c5b045511ebddcd21e46452cb5a8626123ce9c81a063f8e4d57231b5
 
 ...
