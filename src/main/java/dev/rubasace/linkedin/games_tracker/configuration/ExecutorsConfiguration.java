@@ -16,11 +16,11 @@ public class ExecutorsConfiguration {
 
     @Bean(BACKGROUND_TASKS_EXECUTOR_NAME)
     public Executor backgroundTasksExecutor() {
-        return Executors.newFixedThreadPool(5, Thread.ofVirtual().name("background-tasks-executor", 1).factory());
+        return Executors.newFixedThreadPool(5, Thread.ofVirtual().name("background-tasks", 1).factory());
     }
 
     @Bean(NOTIFICATION_LISTENER_EXECUTOR_NAME)
     public Executor notificationListenerExecutor() {
-        return Executors.newSingleThreadExecutor(Thread.ofVirtual().name("notifications-executor").factory());
+        return Executors.newSingleThreadExecutor(Thread.ofVirtual().name("notifications").factory());
     }
 }

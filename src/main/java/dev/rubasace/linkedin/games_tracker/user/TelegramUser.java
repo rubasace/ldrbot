@@ -2,9 +2,11 @@ package dev.rubasace.linkedin.games_tracker.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
+import dev.rubasace.linkedin.games_tracker.session.GameSession;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +28,10 @@ public class TelegramUser {
     @JsonIgnoreProperties("members")
     @ManyToMany(mappedBy = "members")
     private Set<TelegramGroup> groups;
+
+    @JsonIgnoreProperties("user")
+    @OneToMany(mappedBy = "user")
+    private Set<GameSession> sessions;
 
     @Override
     public boolean equals(final Object o) {

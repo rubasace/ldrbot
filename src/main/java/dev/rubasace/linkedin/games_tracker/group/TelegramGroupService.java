@@ -58,6 +58,7 @@ public class TelegramGroupService {
         applicationEventPublisher.publishEvent(new UserJoinedGroupEvent(this, userId, username, chatId));
     }
 
+    //TODO make sure recorded games and scores of the day are deleted for the user
     @Transactional
     public void removeUserFromGroup(final Long chatId, final Long userId) throws GroupNotFoundException {
         TelegramGroup telegramGroup = findGroupOrThrow(chatId);
@@ -71,7 +72,7 @@ public class TelegramGroupService {
         applicationEventPublisher.publishEvent(new UserLeftGroupEvent(this, userId, telegramUser.get().getUserName(), chatId));
     }
 
-    public Stream<TelegramGroup> getGroupsWithoutDailyRanking(final LocalDate gameDay) {
+    public Stream<TelegramGroup> findGroupsWithMissingScores(final LocalDate gameDay) {
         return telegramGroupRepository.findGroupsWithMissingScores(gameDay);
     }
 

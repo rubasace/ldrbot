@@ -29,6 +29,7 @@ public class GameSession {
     @GeneratedValue
     private UUID id;
 
+    @JsonIgnoreProperties("sessions")
     @ManyToOne
     private TelegramUser user;
 
