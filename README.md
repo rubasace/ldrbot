@@ -7,7 +7,7 @@
 
 ## ℹ️ About LDRBot
 
-**LDRBot** stands for **LinkedIn Daily Rankings Bot** — a Telegram bot that automates score tracking and leaderboard generation
+**LDRBot** stands for **LinkedIn Daily (games) Rankings Bot** — a Telegram bot that automates score tracking and leaderboard generation
 for [LinkedIn’s daily puzzle games](https://www.linkedin.com/games) (currently, [Queens](https://www.linkedin.com/games/queens), [Tango](https://www.linkedin.com/games/tango),
 and [Zip](https://www.linkedin.com/games/zip)).
 
