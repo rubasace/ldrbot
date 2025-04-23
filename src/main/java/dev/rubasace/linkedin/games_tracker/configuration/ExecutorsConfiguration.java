@@ -28,7 +28,7 @@ public class ExecutorsConfiguration {
 
     @Bean(ExecutorsConfiguration.SCHEDULED_TASKS_EXECUTOR_NAME)
     public ScheduledExecutorService scheduledTasksExecutor() {
-        return Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().name("scheduled", 1).factory());
+        return Executors.newScheduledThreadPool(4, Thread.ofVirtual().name("scheduled", 1).factory());
     }
 
 }

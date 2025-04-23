@@ -7,6 +7,7 @@ import dev.rubasace.linkedin.games_tracker.group.UserLeftGroupEvent;
 import dev.rubasace.linkedin.games_tracker.image.GameDurationExtractionException;
 import dev.rubasace.linkedin.games_tracker.message.InvalidUserInputException;
 import dev.rubasace.linkedin.games_tracker.ranking.GroupDailyScoreCreatedEvent;
+import dev.rubasace.linkedin.games_tracker.reminder.UserMissingSessionsReminderEvent;
 import dev.rubasace.linkedin.games_tracker.session.AlreadyRegisteredSession;
 import dev.rubasace.linkedin.games_tracker.session.GameNameNotFoundException;
 import dev.rubasace.linkedin.games_tracker.session.GameSessionDeletionEvent;
@@ -32,6 +33,10 @@ public class NotificationService {
     private static final String ALL_SESSION_DELETION_MESSAGE_TEMPLATE = "All @%s results for today games have been deleted";
     private static final String USER_JOIN_MESSAGE_TEMPLATE = "User @%s joined this group";
     private static final String USER_LEAVE_MESSAGE_TEMPLATE = "User @%s left this group";
+    private static final String USER_MISSING_SESSIONS_REMINDER = """
+                Hey @%s! Looks like you're missing some of today’s results.
+                Don’t leave your group hanging — submit your screenshots and climb the leaderboard! 💪
+            """;
     private static final String GROUP_GREETING_MESSAGE = """
             👋 Hey everyone, I'm your LinkedIn Games Tracker bot 🤖!
             
@@ -42,6 +47,7 @@ public class NotificationService {
             Type /help to see everything I can do.
             """;
     private static final int GREETING_NOTIFICATION_ORDER = Ordered.HIGHEST_PRECEDENCE;
+    private static final int REMINDER_NOTIFICATION_ORDER = Ordered.HIGHEST_PRECEDENCE + 500;
     private static final int USER_INTERACTION_NOTIFICATION_ORDER = GREETING_NOTIFICATION_ORDER + 1000;
     private static final int DAILY_RANKING_NOTIFICATION_ORDER = 0;
 
@@ -55,8 +61,7 @@ public class NotificationService {
 
     public void notifyUserFeedbackException(final UserFeedbackException userFeedbackException) {
         if (userFeedbackException instanceof AlreadyRegisteredSession alreadyRegisteredSession) {
-            customTelegramClient.error(ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE.formatted(alreadyRegisteredSession.getUsername(),
-                                                                                             alreadyRegisteredSession.getGame().name(),
+            customTelegramClient.error(ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE.formatted(alreadyRegisteredSession.getUsername(), alreadyRegisteredSession.getGame().name(),
                                                                                              alreadyRegisteredSession.getGame().name().toLowerCase()),
                                        alreadyRegisteredSession.getChatId());
         } else if (userFeedbackException instanceof UsernameNotFoundException usernameNotFoundException) {
@@ -67,8 +72,7 @@ public class NotificationService {
             customTelegramClient.error(
                     "@%s submitted a screenshot for the game %s but I wasn't able to extract the time. Please try with another image or ask an admin to input the time manually using the command /override %s <time>".formatted(
                             gameDurationExtractionException.getUserName(), gameDurationExtractionException.getGameType().name(),
-                            gameDurationExtractionException.getGameType().name().toLowerCase()),
-                    gameDurationExtractionException.getChatId());
+                            gameDurationExtractionException.getGameType().name().toLowerCase()), gameDurationExtractionException.getChatId());
         } else if (userFeedbackException instanceof InvalidUserInputException invalidUserInputException) {
             customTelegramClient.error(invalidUserInputException.getMessage(), invalidUserInputException.getChatId());
         }
@@ -100,8 +104,7 @@ public class NotificationService {
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleSessionRegistration(final GameSessionRegistrationEvent gameSessionRegistrationEvent) {
-        customTelegramClient.info(SUBMISSION_MESSAGE_TEMPLATE.formatted(gameSessionRegistrationEvent.getUserName(),
-                                                                        gameSessionRegistrationEvent.getGame().name().toLowerCase(),
+        customTelegramClient.info(SUBMISSION_MESSAGE_TEMPLATE.formatted(gameSessionRegistrationEvent.getUserName(), gameSessionRegistrationEvent.getGame().name().toLowerCase(),
                                                                         FormatUtils.formatDuration(gameSessionRegistrationEvent.getDuration())),
                                   gameSessionRegistrationEvent.getChatId());
     }
@@ -123,16 +126,21 @@ public class NotificationService {
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleUserJoin(final UserJoinedGroupEvent userJoinedGroupEvent) {
-        customTelegramClient.info(USER_JOIN_MESSAGE_TEMPLATE.formatted(userJoinedGroupEvent.getUserName()),
-                                  userJoinedGroupEvent.getChatId());
+        customTelegramClient.info(USER_JOIN_MESSAGE_TEMPLATE.formatted(userJoinedGroupEvent.getUserName()), userJoinedGroupEvent.getChatId());
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleUserLeave(final UserLeftGroupEvent userLeftGroupEvent) {
-        customTelegramClient.info(USER_LEAVE_MESSAGE_TEMPLATE.formatted(userLeftGroupEvent.getUserName()),
-                                  userLeftGroupEvent.getChatId());
+        customTelegramClient.info(USER_LEAVE_MESSAGE_TEMPLATE.formatted(userLeftGroupEvent.getUserName()), userLeftGroupEvent.getChatId());
+    }
+
+    @Order(REMINDER_NOTIFICATION_ORDER)
+    @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void handleUserMissingSessionsReminder(final UserMissingSessionsReminderEvent userMissingSessionsReminderEvent) {
+        customTelegramClient.reminder(USER_MISSING_SESSIONS_REMINDER.formatted(userMissingSessionsReminderEvent.getUserName()), userMissingSessionsReminderEvent.getChatId());
     }
 
 }

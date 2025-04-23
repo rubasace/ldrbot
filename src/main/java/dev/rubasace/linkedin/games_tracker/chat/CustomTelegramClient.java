@@ -35,6 +35,15 @@ class CustomTelegramClient {
         sendMessage("❌ " + text, chatId);
     }
 
+    void reminder(final String text, final Long chatId) {
+        String formatted = """
+                    ⏰ <b>Don't forget!</b> ⏰
+                
+                    %s
+                """.formatted(text);
+        sendMessage(formatted, chatId, ParseMode.HTML);
+    }
+
     private void sendMessage(final String text, final Long chatId) {
         sendMessage(text, chatId, null);
     }

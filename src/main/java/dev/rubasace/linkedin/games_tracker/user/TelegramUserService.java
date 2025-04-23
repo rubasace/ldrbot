@@ -3,8 +3,10 @@ package dev.rubasace.linkedin.games_tracker.user;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Transactional(readOnly = true)
 @Service
@@ -25,6 +27,10 @@ public class TelegramUserService {
             return telegramUserRepository.findById(userId)
                                          .map(telegramUser -> updateUserData(telegramUser, userName))
                                          .orElseGet(() -> this.createUser(userId, userName));
+    }
+
+    public Stream<MissingSessionUserProjection> findUsersWithMissingSessions(LocalDate date) {
+        return telegramUserRepository.findUsersWithMissingSessions(date);
     }
 
     public Optional<TelegramUser> findByUserName(final String userName) {

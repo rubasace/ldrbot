@@ -85,8 +85,8 @@ every new day is a fresh challenge for members to compete, improve, and (hopeful
 
 ## 🔮 Future Features
 
-- [ ] Automatic reminders for users missing their submissions near the end of the day
-- [ ] Auto-finalize scores at end-of-day, even if some users didn’t submit
+- [ ] Allow to opt-in/out of reminders and configure time
+- [x] Auto-finalize scores at end-of-day, even if some users didn’t submit
 - [ ] Allow to opt-in/out from games on each group
 - [ ] Support for private chat submissions (auto-publish to all groups the user is in)
 - [ ] Web dashboard showing historical and aggregated performance across groups and users
