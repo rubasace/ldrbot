@@ -8,6 +8,9 @@ steps:
     image: maven:3.9.9-eclipse-temurin-17
     commands:
       - mvn versions:set -DnewVersion=${CI_BUILD_TARGET} -DgenerateBackupPoms=false
+    volumes:
+      - name: m2-cache
+        path: /root/.m2/repository
     when:
       branch:
         - main
@@ -99,8 +102,8 @@ steps:
         - tag
 volumes:
   - name: m2-cache
-    host:
-      path: /var/lib/cache/.m2
+    persistentVolumeClaim:
+      claimName: drone-m2-cache
   - name: tesseract-dist
     temp: { }
 trigger:
@@ -111,6 +114,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 8c4df06ba2bb5b5c64ab86bac296951f52c225705bcd65e1a73c88d548356fe9
+hmac: 613fe387a994cbd6897c44873003d4187684811fbfd1913c2ba16fa5f1b18bc4
 
 ...
