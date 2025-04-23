@@ -56,7 +56,7 @@ class RankingMessageFactory {
 
     //TODO allow admin to make message configurable?
     private void toHtmlFinalMessage(final List<String> winners, final StringBuilder sb) {
-        sb.append("\n<b>🎉🎉🎉 Congratulations @%s, you are today's champion%s! 🎉🎉🎉</b>"
+        sb.append("\n<b>🎉🎉🎉 Congratulations @%s, you are today's champion%s 🏆! 🎉🎉🎉</b>"
                           .formatted(String.join(" and @", winners), winners.size() > 1 ? "s" : ""));
     }
 
@@ -67,6 +67,7 @@ class RankingMessageFactory {
         return String.format("%s %s (%s) — %d pts\n", icon, paddedUser, durationStr, points);
     }
 
+    //FIXME improve this so if there are two winners they both get the same icon, same for seconds and thirds (use same approach as winners probably)
     private String rankingIcon(int position, final int points) {
         if (points == 3) {
             return "🥇";
@@ -78,6 +79,9 @@ class RankingMessageFactory {
             return "🥉";
         }
         return switch (position) {
+            case 0 -> "🥇";
+            case 1 -> "🥈";
+            case 2 -> "🥉";
             case 3 -> "4️⃣";
             case 4 -> "5️⃣";
             case 5 -> "6️⃣";
