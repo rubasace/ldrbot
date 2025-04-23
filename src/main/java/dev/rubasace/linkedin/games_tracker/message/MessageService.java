@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+//TODO update bot description on startup
 @HandleBotExceptions
 @Transactional(readOnly = true)
 @Service
