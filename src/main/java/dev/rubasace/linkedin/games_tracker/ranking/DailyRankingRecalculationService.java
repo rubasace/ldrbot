@@ -22,9 +22,10 @@ class DailyRankingRecalculationService {
         this.groupRankingService = groupRankingService;
     }
 
+    //TODO offload into separated transactions (one per group) and parallelize with an executor
     @Transactional
     void calculateMissingRankings() {
-        LocalDate previousGameDay = LinkedinTimeUtils.todayGameDay();
+        LocalDate previousGameDay = LinkedinTimeUtils.todayGameDay().minusDays(1);
         telegramGroupService.findGroupsWithMissingScores(previousGameDay)
                             .forEach(telegramGroup -> generateDailyRanking(telegramGroup, previousGameDay));
     }
