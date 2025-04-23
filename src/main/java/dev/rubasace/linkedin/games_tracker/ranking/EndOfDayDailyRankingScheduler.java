@@ -12,11 +12,12 @@ class EndOfDayDailyRankingScheduler {
 
     EndOfDayDailyRankingScheduler(final DailyRankingRecalculationService dailyRankingRecalculationService) {
         this.dailyRankingRecalculationService = dailyRankingRecalculationService;
-        this.dailyRankingRecalculationService.calculateMissingRankings();
+        //        this.dailyRankingRecalculationService.calculateMissingRankings();
     }
 
 
-    @Scheduled(cron = "30 0 0 * * *", zone = LinkedinTimeUtils.LINKEDIN_ZONE, scheduler = ExecutorsConfiguration.BACKGROUND_TASKS_EXECUTOR_NAME)
+    //    @Scheduled(cron = "30 0 0 * * *", zone = LinkedinTimeUtils.LINKEDIN_ZONE, scheduler = ExecutorsConfiguration.SCHEDULED_TASKS_EXECUTOR_NAME)
+    @Scheduled(cron = "0 49 17 * * *", zone = LinkedinTimeUtils.LINKEDIN_ZONE, scheduler = ExecutorsConfiguration.SCHEDULED_TASKS_EXECUTOR_NAME)
     public void calculateMissingRankings() {
         dailyRankingRecalculationService.calculateMissingRankings();
     }

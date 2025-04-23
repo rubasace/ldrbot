@@ -3,8 +3,8 @@ package dev.rubasace.linkedin.games_tracker.user;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 @Transactional(readOnly = true)
 @Service
@@ -40,6 +40,6 @@ public class TelegramUserService {
     }
 
     private TelegramUser createUser(final Long userId, final String userName) {
-        return telegramUserRepository.saveAndFlush(new TelegramUser(userId, userName, Set.of()));
+        return telegramUserRepository.saveAndFlush(new TelegramUser(userId, userName, new HashSet<>(), new HashSet<>()));
     }
 }

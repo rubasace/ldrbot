@@ -24,7 +24,7 @@ class DailyRankingRecalculationService {
 
     @Transactional
     void calculateMissingRankings() {
-        LocalDate previousGameDay = LinkedinTimeUtils.todayGameDay().minusDays(1);
+        LocalDate previousGameDay = LinkedinTimeUtils.todayGameDay();
         telegramGroupService.findGroupsWithMissingScores(previousGameDay)
                             .forEach(telegramGroup -> generateDailyRanking(telegramGroup, previousGameDay));
     }

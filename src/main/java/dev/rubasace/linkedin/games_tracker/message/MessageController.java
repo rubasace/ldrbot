@@ -96,6 +96,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
         return -1;
     }
 
+    //TODO add metrics
     //TODO allow to submit and delete/deleteall on private chat, affecting all joined groups
     //TODO move actions to separate classes to control a bit better the implementation (probably move away from main chatService into dedicated components)
     public Ability start() {
@@ -139,6 +140,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
                       .build();
     }
 
+    //TODO think if we want to allow to indicate past days too
     public Ability dailyRanking() {
         return Ability.builder()
                       .name("daily")
