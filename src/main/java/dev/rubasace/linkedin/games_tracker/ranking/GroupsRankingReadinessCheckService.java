@@ -39,14 +39,14 @@ class GroupsRankingReadinessCheckService {
         groupRankingService.createDailyRanking(telegramGroup.get(), gameSessionRegistrationEvent.getGameDay());
     }
 
-    public boolean allMembersDone(TelegramGroup telegramGroup, final LocalDate date) {
+    public boolean allMembersDone(TelegramGroup telegramGroup, final LocalDate gameDay) {
         return telegramGroup.getMembers()
-                            .stream().allMatch(member -> this.submittedAllGames(member, telegramGroup, date));
+                            .stream().allMatch(member -> this.submittedAllGames(member, telegramGroup, gameDay));
 
     }
 
-    private boolean submittedAllGames(final TelegramUser telegramUser, final TelegramGroup telegramGroup, final LocalDate date) {
-        Set<GameType> submittedGames = gameSessionService.getDaySessions(telegramUser.getId(), telegramGroup.getChatId(), date)
+    private boolean submittedAllGames(final TelegramUser telegramUser, final TelegramGroup telegramGroup, final LocalDate gameDay) {
+        Set<GameType> submittedGames = gameSessionService.getDaySessions(telegramUser.getId(), telegramGroup.getChatId(), gameDay)
                                                          .map(GameSession::getGame)
                                                          .collect(Collectors.toSet());
         return submittedGames.containsAll(telegramGroup.getTrackedGames());

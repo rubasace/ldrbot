@@ -21,13 +21,13 @@ public class GroupDailyScoreAdapter {
         this.globalScoreDataAdapter = globalScoreDataAdapter;
     }
 
-    public GroupDailyScore adapt(final Long chatId, final Map<GameType, List<DailyGameScore>> scores, final LocalDate date) {
+    public GroupDailyScore adapt(final Long chatId, final Map<GameType, List<DailyGameScore>> scores, final LocalDate gameDay) {
         Map<GameType, List<GameScoreData>> gameScores = scores.entrySet().stream()
                                                               .collect(Collectors.toMap(Map.Entry::getKey, e -> gameScoreDataAdapter.adapt(e.getValue())));
 
         List<GlobalScoreData> globalScoreData = globalScoreDataAdapter.adapt(gameScores);
 
-        return new GroupDailyScore(chatId, date, gameScores, globalScoreData);
+        return new GroupDailyScore(chatId, gameDay, gameScores, globalScoreData);
 
     }
 

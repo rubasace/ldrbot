@@ -91,7 +91,7 @@ public class NotificationService {
     void notifyDailyRanking(final GroupDailyScoreCreatedEvent groupDailyScoreCreatedEvent) {
         GroupDailyScore groupDailyScore = groupDailyScoreCreatedEvent.getGroupDailyScore();
         if (groupDailyScore.globalScore().isEmpty()) {
-            customTelegramClient.error("No games have been registered yet for %s, cannot calculate the ranking".formatted(FormatUtils.formatDate(groupDailyScore.date())),
+            customTelegramClient.error("No games have been registered yet for %s, cannot calculate the ranking".formatted(FormatUtils.formatDate(groupDailyScore.gameDay())),
                                        groupDailyScore.chatId());
             return;
         }

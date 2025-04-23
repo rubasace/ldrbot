@@ -17,7 +17,7 @@ class RankingMessageFactory {
 
     String createRankingMessage(GroupDailyScore groupScore) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<b>📊 Daily Ranking for %s</b>\n".formatted(FormatUtils.formatDate(groupScore.date())));
+        sb.append("<b>📊 Daily Ranking for %s</b>\n".formatted(FormatUtils.formatDate(groupScore.gameDay())));
 
         java.util.stream.Stream.of(GameType.values())
                                .sorted(Comparator.comparing(GameType::name))

@@ -163,7 +163,7 @@ class DailyGameScoreCalculatorTest {
                 () -> assertEquals(gameSession.getUser().getUserName(), score.getUser().getUserName()),
                 () -> assertEquals(gameSession.getGame(), score.getGame()),
                 () -> assertEquals(group, score.getGroup()),
-                () -> assertEquals(gameSession.getGameDay(), score.getDate()),
+                () -> assertEquals(gameSession.getGameDay(), score.getGameDay()),
                 () -> assertEquals(expectedPosition, score.getPosition()),
                 () -> assertEquals(expectedPoints, score.getPoints())
         );

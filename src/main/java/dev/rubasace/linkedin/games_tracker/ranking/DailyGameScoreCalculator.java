@@ -40,11 +40,10 @@ class DailyGameScoreCalculator {
     @NotNull
     private static DailyGameScore createDailyScore(final TelegramGroup group, final GameSession session, int position) {
         DailyGameScore dailyGameScore = new DailyGameScore();
-        dailyGameScore.setDate(session.getGameDay());
+        dailyGameScore.setGameDay(session.getGameDay());
         dailyGameScore.setUser(session.getUser());
         dailyGameScore.setGroup(group);
         dailyGameScore.setGame(session.getGame());
-        dailyGameScore.setDuration(session.getDuration());
         dailyGameScore.setGameSession(session);
         dailyGameScore.setPosition(position);
         dailyGameScore.setPoints(calculatePoints(position));

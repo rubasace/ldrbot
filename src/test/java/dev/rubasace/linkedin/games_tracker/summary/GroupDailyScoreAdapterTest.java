@@ -1,6 +1,7 @@
 package dev.rubasace.linkedin.games_tracker.summary;
 
 import dev.rubasace.linkedin.games_tracker.ranking.DailyGameScore;
+import dev.rubasace.linkedin.games_tracker.session.GameSession;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ class GroupDailyScoreAdapterTest {
     void shouldAdapt() {
 
         long chatId = -1L;
-        LocalDate date = LocalDate.now();
+        LocalDate gameDay = LocalDate.now();
 
         Map<GameType, List<DailyGameScore>> dailyGameScores = new HashMap<>();
         DailyGameScore aliceZipGameScore = createGameScore("alice", GameType.ZIP, 1, Duration.ofSeconds(2), 3);
@@ -41,7 +42,7 @@ class GroupDailyScoreAdapterTest {
         List<DailyGameScore> queensGameScores = List.of(jonQueensGameScore, aliceQueensGameScore, bobQueensGameScore);
         dailyGameScores.put(GameType.QUEENS, queensGameScores);
 
-        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, date);
+        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, gameDay);
 
         assertAll(
                 () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
@@ -64,7 +65,7 @@ class GroupDailyScoreAdapterTest {
     void shouldAdaptWithGameTies() {
 
         long chatId = -1L;
-        LocalDate date = LocalDate.now();
+        LocalDate gameDay = LocalDate.now();
 
         Map<GameType, List<DailyGameScore>> dailyGameScores = new HashMap<>();
         DailyGameScore aliceZipGameScore = createGameScore("alice", GameType.ZIP, 1, Duration.ofSeconds(2), 3);
@@ -83,7 +84,7 @@ class GroupDailyScoreAdapterTest {
         List<DailyGameScore> queensGameScores = List.of(jonQueensGameScore, aliceQueensGameScore, bobQueensGameScore);
         dailyGameScores.put(GameType.QUEENS, queensGameScores);
 
-        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, date);
+        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, gameDay);
 
         assertAll(
                 () -> assertGameScoreData(bobZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
@@ -106,7 +107,7 @@ class GroupDailyScoreAdapterTest {
     void shouldAdaptWithGlobalTiesSamePointsAndDifferentDurations() {
 
         long chatId = -1L;
-        LocalDate date = LocalDate.now();
+        LocalDate gameDay = LocalDate.now();
 
         Map<GameType, List<DailyGameScore>> dailyGameScores = new HashMap<>();
         DailyGameScore aliceZipGameScore = createGameScore("alice", GameType.ZIP, 1, Duration.ofSeconds(2), 3);
@@ -125,7 +126,7 @@ class GroupDailyScoreAdapterTest {
         List<DailyGameScore> queensGameScores = List.of(jonQueensGameScore, aliceQueensGameScore, bobQueensGameScore);
         dailyGameScores.put(GameType.QUEENS, queensGameScores);
 
-        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, date);
+        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, gameDay);
 
         assertAll(
                 () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
@@ -148,7 +149,7 @@ class GroupDailyScoreAdapterTest {
     void shouldAdaptWithGlobalTiesSamePointsAndSameDurations() {
 
         long chatId = -1L;
-        LocalDate date = LocalDate.now();
+        LocalDate gameDay = LocalDate.now();
 
         Map<GameType, List<DailyGameScore>> dailyGameScores = new HashMap<>();
         DailyGameScore aliceZipGameScore = createGameScore("alice", GameType.ZIP, 1, Duration.ofSeconds(3), 3);
@@ -167,7 +168,7 @@ class GroupDailyScoreAdapterTest {
         List<DailyGameScore> queensGameScores = List.of(jonQueensGameScore, aliceQueensGameScore, bobQueensGameScore);
         dailyGameScores.put(GameType.QUEENS, queensGameScores);
 
-        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, date);
+        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, gameDay);
 
         assertAll(
                 () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
@@ -199,7 +200,7 @@ class GroupDailyScoreAdapterTest {
         assertAll(
                 () -> assertEquals(dailyGameScore.getUser().getUserName(), gameScoreData.userName()),
                 () -> assertEquals(dailyGameScore.getGame(), gameScoreData.game()),
-                () -> assertEquals(dailyGameScore.getDuration(), gameScoreData.duration()),
+                () -> assertEquals(dailyGameScore.getGameSession().getDuration(), gameScoreData.duration()),
                 () -> assertEquals(dailyGameScore.getPosition(), gameScoreData.position()),
                 () -> assertEquals(dailyGameScore.getPoints(), gameScoreData.points())
         );
@@ -207,12 +208,14 @@ class GroupDailyScoreAdapterTest {
 
     private static DailyGameScore createGameScore(final String userName, final GameType game, final int position, final Duration duration, final int points) {
         DailyGameScore dailyGameScore = new DailyGameScore();
+        GameSession gameSession = new GameSession();
+        gameSession.setDuration(duration);
         TelegramUser telegramUser = new TelegramUser();
         telegramUser.setUserName(userName);
         dailyGameScore.setUser(telegramUser);
         dailyGameScore.setGame(game);
         dailyGameScore.setPosition(position);
-        dailyGameScore.setDuration(duration);
+        dailyGameScore.setGameSession(gameSession);
         dailyGameScore.setPoints(points);
         return dailyGameScore;
     }

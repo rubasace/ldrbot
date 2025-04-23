@@ -41,12 +41,12 @@ public class GroupRankingService {
     }
 
     @Transactional
-    public void createDailyRanking(final TelegramGroup telegramGroup, final LocalDate date) {
+    public void createDailyRanking(final TelegramGroup telegramGroup, final LocalDate gameDay) {
         Set<Long> userIds = telegramGroup.getMembers().stream()
                                          .map(TelegramUser::getId)
                                          .collect(Collectors.toSet());
 
-        Map<GameType, List<GameSession>> groupSessions = gameSessionService.getDaySessions(userIds, telegramGroup.getChatId(), date)
+        Map<GameType, List<GameSession>> groupSessions = gameSessionService.getDaySessions(userIds, telegramGroup.getChatId(), gameDay)
                                                                            .collect(Collectors.groupingBy(GameSession::getGame));
 
 
@@ -57,11 +57,11 @@ public class GroupRankingService {
             List<DailyGameScore> dailyGameScores = dailyGameScoreCalculator.calculateScores(sessions, telegramGroup);
             gameScores.put(gameType, dailyScoreService.updateDailyScores(dailyGameScores, telegramGroup.getChatId(), gameType));
         }
-        notifyRankingCreation(telegramGroup.getChatId(), gameScores, date);
+        notifyRankingCreation(telegramGroup.getChatId(), gameScores, gameDay);
     }
 
-    private void notifyRankingCreation(final Long chatId, final Map<GameType, List<DailyGameScore>> gameScores, final LocalDate date) {
-        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, gameScores, date);
+    private void notifyRankingCreation(final Long chatId, final Map<GameType, List<DailyGameScore>> gameScores, final LocalDate gameDay) {
+        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, gameScores, gameDay);
         applicationEventPublisher.publishEvent(new GroupDailyScoreCreatedEvent(this, groupDailyScore));
     }
 

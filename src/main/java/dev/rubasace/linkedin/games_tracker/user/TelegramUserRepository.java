@@ -18,9 +18,9 @@ public interface TelegramUserRepository extends JpaRepository<TelegramUser, Long
                 WHERE (
                     SELECT COUNT(s)
                     FROM GameSession s
-                    WHERE s.group = g AND s.user = u AND s.gameDay = :date
+                    WHERE s.group = g AND s.user = u AND s.gameDay = :gameDay
                 ) < SIZE(g.trackedGames)
             """)
-    Stream<MissingSessionUserProjection> findUsersWithMissingSessions(LocalDate date);
+    Stream<MissingSessionUserProjection> findUsersWithMissingSessions(LocalDate gameDay);
 
 }

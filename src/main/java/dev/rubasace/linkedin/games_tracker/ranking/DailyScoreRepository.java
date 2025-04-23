@@ -10,5 +10,5 @@ import java.util.UUID;
 public interface DailyScoreRepository extends JpaRepository<DailyGameScore, UUID> {
 
     @Transactional
-    void deleteAllByGroupChatIdAndDateAndGame(Long chatId, LocalDate date, GameType game);
+    void deleteAllByGroupChatIdAndGameDayAndGame(Long chatId, LocalDate gameDay, GameType game);
 }

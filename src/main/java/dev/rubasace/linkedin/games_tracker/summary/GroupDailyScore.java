@@ -8,7 +8,7 @@ import java.util.Map;
 
 public record GroupDailyScore(
         Long chatId,
-        LocalDate date,
+        LocalDate gameDay,
         Map<GameType, List<GameScoreData>> gameScores,
         List<GlobalScoreData> globalScore
 ) {

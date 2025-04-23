@@ -17,7 +17,7 @@ class GameScoreDataAdapter {
     }
 
     private GameScoreData adapt(DailyGameScore dailyGameScore) {
-        return new GameScoreData(dailyGameScore.getUser().getUserName(), dailyGameScore.getGame(), dailyGameScore.getDuration(), dailyGameScore.getPosition(),
+        return new GameScoreData(dailyGameScore.getUser().getUserName(), dailyGameScore.getGame(), dailyGameScore.getGameSession().getDuration(), dailyGameScore.getPosition(),
                                  dailyGameScore.getPoints());
     }
 }

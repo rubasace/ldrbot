@@ -82,17 +82,17 @@ public class GameSessionService {
                 user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, user.getId(), user.getUserName(), game, chatId)));
     }
 
-    public Stream<GameSession> getDaySessions(final Long userId, final Long chatId, final LocalDate date) {
-        return gameSessionRepository.getByUserIdAndGroupChatIdAndGameDay(userId, chatId, date);
+    public Stream<GameSession> getDaySessions(final Long userId, final Long chatId, final LocalDate gameDay) {
+        return gameSessionRepository.getByUserIdAndGroupChatIdAndGameDay(userId, chatId, gameDay);
     }
 
-    public Stream<GameSession> getDaySessions(final Set<Long> userIds, final Long chatId, final LocalDate date) {
-        return gameSessionRepository.getByUserIdInAndGroupChatIdAndGameDay(userIds, chatId, date);
+    public Stream<GameSession> getDaySessions(final Set<Long> userIds, final Long chatId, final LocalDate gameDay) {
+        return gameSessionRepository.getByUserIdInAndGroupChatIdAndGameDay(userIds, chatId, gameDay);
     }
 
     @Transactional
-    public void deleteDaySessions(final Long userId, final Long chatId, final LocalDate date) {
-        gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameDay(userId, chatId, date);
+    public void deleteDaySessions(final Long userId, final Long chatId, final LocalDate gameDay) {
+        gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameDay(userId, chatId, gameDay);
         telegramUserService.find(userId).ifPresent(
                 user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, user.getId(), user.getUserName(), chatId)));
     }

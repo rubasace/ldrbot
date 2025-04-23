@@ -13,12 +13,12 @@ public interface TelegramGroupRepository extends CrudRepository<TelegramGroup, L
                 WHERE (
                     SELECT COUNT(score)
                     FROM DailyGameScore score
-                    WHERE score.group = g AND score.date = :date
+                    WHERE score.group = g AND score.gameDay = :gameDay
                 ) < (
                     SELECT COUNT(session)
                     FROM GameSession session
-                    WHERE session.group = g AND session.gameDay = :date
+                    WHERE session.group = g AND session.gameDay = :gameDay
                 )
             """)
-    Stream<TelegramGroup> findGroupsWithMissingScores(LocalDate date);
+    Stream<TelegramGroup> findGroupsWithMissingScores(LocalDate gameDay);
 }

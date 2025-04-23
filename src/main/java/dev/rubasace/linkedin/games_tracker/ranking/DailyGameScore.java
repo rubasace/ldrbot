@@ -17,7 +17,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
@@ -42,11 +41,7 @@ public class DailyGameScore {
     @Enumerated(EnumType.STRING)
     private GameType game;
 
-    private LocalDate date;
-
-    //TODO remove after migrated to gameSession
-    @Deprecated
-    private Duration duration;
+    private LocalDate gameDay;
 
     @JsonIgnoreProperties("dailyGameScore")
     @OneToOne(optional = false)
@@ -69,12 +64,12 @@ public class DailyGameScore {
         return Objects.equals(group, that.group) &&
                 Objects.equals(user, that.user) &&
                 game == that.game &&
-                Objects.equals(date, that.date);
+                Objects.equals(gameDay, that.gameDay);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(group, user, game, date);
+        return Objects.hash(group, user, game, gameDay);
     }
 
 }

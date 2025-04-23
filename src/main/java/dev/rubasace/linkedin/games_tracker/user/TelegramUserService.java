@@ -29,8 +29,8 @@ public class TelegramUserService {
                                          .orElseGet(() -> this.createUser(userId, userName));
     }
 
-    public Stream<MissingSessionUserProjection> findUsersWithMissingSessions(LocalDate date) {
-        return telegramUserRepository.findUsersWithMissingSessions(date);
+    public Stream<MissingSessionUserProjection> findUsersWithMissingSessions(final LocalDate gameDay) {
+        return telegramUserRepository.findUsersWithMissingSessions(gameDay);
     }
 
     public Optional<TelegramUser> findByUserName(final String userName) {
