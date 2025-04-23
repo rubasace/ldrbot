@@ -9,10 +9,10 @@
         <relativePath/>
     </parent>
     <groupId>dev.rubasace.linkedin</groupId>
-    <artifactId>linkedin-games-tracker</artifactId>
+    <artifactId>ldrbot</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>linkedin-games-tracker</name>
-    <description>Telegram bot to keep track of each user Linkedin games results</description>
+    <name>ldrbot</name>
+    <description>Telegram bot that uses OCR to extract scores from LinkedIn puzzle screenshots and build daily leaderboards per group</description>
     <properties>
         <java.version>21</java.version>
         <telegrambots.version>8.3.0</telegrambots.version>

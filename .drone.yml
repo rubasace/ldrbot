@@ -48,7 +48,7 @@ steps:
         from_secret: dockerhub_user
       password:
         from_secret: dockerhub_pass
-      repo: rubasace/linkedin-games-tracker
+      repo: rubasace/ldrbot
       tags: beta
     when:
       branch:
@@ -63,7 +63,7 @@ steps:
         from_secret: dockerhub_user
       password:
         from_secret: dockerhub_pass
-      repo: rubasace/linkedin-games-tracker
+      repo: rubasace/ldrbot
       tags:
         - latest
         - ${CI_BUILD_TARGET}

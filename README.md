@@ -1,34 +1,37 @@
-# 🎯 LinkedIn Games Tracker
+# 🤖 LDRBot
 
-[![Telegram Bot](https://img.shields.io/badge/telegram-@LinkedInGamesTrackerBot-blue?logo=telegram)](https://t.me/LinkedInGamesTrackerBot)
-[![Build Status](https://drone.nasvigo.com/api/badges/rubasace/linkedin-games-tracker/status.svg)](https://drone.nasvigo.com/rubasace/linkedin-games-tracker)
+[![Telegram Bot](https://img.shields.io/badge/telegram-@ldrbot-blue?logo=telegram)](https://t.me/LinkedinDailyRankingBot)
+[![Build Status](https://drone.nasvigo.com/api/badges/rubasace/ldrbot/status.svg)](https://drone.nasvigo.com/rubasace/ldrbot)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+---
 
-A Telegram bot designed to streamline and gamify the experience of solving LinkedIn's daily puzzles  
-(currently, [Queens](https://www.linkedin.com/games/queens), [Tango](https://www.linkedin.com/games/tango), and [Zip](https://www.linkedin.com/games/zip)).
+## ℹ️ About LDRBot
 
-Each Telegram group acts as its own competition, where everyday members submit their puzzle results via screenshots. The bot processes them using OCR to maintain scoreboards and
-rankings.
+**LDRBot** stands for **LinkedIn Daily Rankings Bot** — a Telegram bot that automates score tracking and leaderboard generation
+for [LinkedIn’s daily puzzle games](https://www.linkedin.com/games) (currently, [Queens](https://www.linkedin.com/games/queens), [Tango](https://www.linkedin.com/games/tango),
+and [Zip](https://www.linkedin.com/games/zip)).
 
-## 🤖 Try It Out
+Each Telegram group becomes its own independent competition; Members submit their puzzle results by uploading screenshots, and LDRBot uses OCR to extract solving times and build a
+daily ranking automatically.
 
-👉 Add the bot to your Telegram group: [@LinkedInGamesTrackerBot](https://t.me/LinkedInGamesTrackerBot)
+## 🦾 Try It Out
+
+Add LDRBot to your Telegram group: [@ldrbot](https://t.me/LinkedinDailyRankingBot)
 
 Each group is treated as a standalone competition — just invite the bot to your group and you’re ready to go!
 
 ## ⚙️ How It Works
 
-When you add the bot to a Telegram group, that group becomes its own independent leaderboard and competition space. Each day, members of the group can submit their results for
+When you add LDRBot to a Telegram group, that group becomes its own independent leaderboard and competition space. Each day, members of the group can submit their results for
 LinkedIn’s puzzles (currently: Queens, Tango, and Zip) by simply uploading a screenshot of their completion screen.
 
-The bot automatically scans these screenshots using OCR (powered by OpenCV and Tesseract) and extracts the relevant information: the game type and the time it took to solve it.
-Once
-processed, your time is recorded for the current day and associated to your Telegram user id.
+LDRBot automatically scans these screenshots using OCR (powered by OpenCV and Tesseract) and extracts the relevant information: the game type and the time it took to solve it. Once
+processed, your time is recorded for the current day and associated with your Telegram user ID.
 
-As group members submit their scores, the bot keeps track of who’s already participated and waits for everyone to submit. Once all registered players have sent their times, the bot
+As group members submit their scores, LDRBot keeps track of who’s already participated and waits for everyone to submit. Once all registered players have sent their times, it
 automatically recalculates and publishes the daily leaderboard. Alternatively, any member can run the /daily command to manually trigger a recalculation at any time.
 
-If not everyone submits, the bot will still calculate and publish the results at the end of the day, including only the times that were received. This ensures the competition
+If not everyone submits, LDRBot will still calculate and publish the results at the end of the day, including only the times that were received. This ensures the competition
 continues smoothly even if someone forgets to post their score.
 
 Each group maintains its own isolated set of scores, players, and competition history — meaning users can participate in multiple groups independently. Leaderboards reset daily, so
@@ -59,22 +62,20 @@ every new day is a fresh challenge for members to compete, improve, and (hopeful
 
 ### Setup
 
-1. **Invite the bot to your group**  
-   The bot will start tracking scores and players from the moment it's added.
+1. **Add the bot to your group**  
+   LDRBot will start tracking scores and players from the moment it's added.
 
 2. **Run `/join` (optional)**  
-   Registers you in the group manually. Members are also automatically registered the first time they submit a valid screenshot or are added to the group after tracking begins.
+   Registers you manually. Optional as it happens automatically when you send any message on the tracked group.
 
-3. **Submit your LinkedIn puzzle screenshot**  
-   Send a screenshot of your completed puzzle. The bot will process and register your time for the current day.
+3. **Submit your LinkedIn score screenshot**  
+   LDRBot will extract your time and game, and track it for the day.
 
 4. **Manage your score (optional)**  
    Use `/delete`, `/deleteall`, or `/override` (admin-only) to modify the results if needed. Useful for correcting misprocessed or mistaken submissions.
 
-5. **Track the competition (optional)**  
-   Use `/daily` to recalculate and view the group leaderboard for the day.
-6. **Wait for the group**  
-   When all members are done (or at the end of the day) they leaderboard gets recalculated and shown in the group.
+5. **Watch the leaderboard evolve**  
+   Once everyone submits (or at day’s end), LDRBot will post the updated rankings.
 
 ## 💻 Tech Stack
 
@@ -93,12 +94,12 @@ every new day is a fresh challenge for members to compete, improve, and (hopeful
 
 ## 🤝 Contributing
 
-We’d love your help to improve this project!
+We’d love your help to improve LDRBot!
 
 Whether you're here to fix a bug, suggest a feature, or simply explore how it works, here’s how to get involved:
 
 1. ⭐ **Star this repository** to show support
-2. 🐞 **Report issues** or request features via [GitHub Issues](https://github.com/rubasace/linkedin-games-tracker/issues)
+2. 🐞 **Report issues** or request features via [GitHub Issues](https://github.com/rubasace/ldrbot/issues)
 3. 🛠️ **Submit a pull request** with enhancements, fixes, or new ideas
 4. 📣 **Spread the word** — share it with your Telegram puzzle groups!
 
