@@ -3,6 +3,8 @@ package dev.rubasace.linkedin.games_tracker.scheduled;
 import dev.rubasace.linkedin.games_tracker.configuration.ExecutorsConfiguration;
 import dev.rubasace.linkedin.games_tracker.ranking.DailyRankingRecalculationService;
 import dev.rubasace.linkedin.games_tracker.util.LinkedinTimeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,6 +12,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 class EndOfDayDailyRankingScheduler implements ApplicationListener<ApplicationReadyEvent> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EndOfDayDailyRankingScheduler.class);
 
     private final DailyRankingRecalculationService dailyRankingRecalculationService;
 
@@ -24,6 +28,10 @@ class EndOfDayDailyRankingScheduler implements ApplicationListener<ApplicationRe
 
     @Override
     public void onApplicationEvent(final ApplicationReadyEvent event) {
-        this.dailyRankingRecalculationService.calculateMissingRankings();
+        try {
+            this.dailyRankingRecalculationService.calculateMissingRankings();
+        } catch (Exception e) {
+            LOGGER.error("Failed to calculate missing rankings at startup", e);
+        }
     }
 }

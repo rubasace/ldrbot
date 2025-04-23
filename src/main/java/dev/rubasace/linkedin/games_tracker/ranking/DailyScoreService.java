@@ -19,6 +19,7 @@ public class DailyScoreService {
 
     @Transactional
     public List<DailyGameScore> updateDailyScores(final List<DailyGameScore> scores, final Long chatId, final GameType game) {
+        //TODO investigate if this is still breaking and fix properly.
         cleanupOldReferences(scores);
         dailyScoreRepository.deleteAllByGroupChatIdAndGameDayAndGame(chatId, LinkedinTimeUtils.todayGameDay(), game);
         return dailyScoreRepository.saveAll(scores);
