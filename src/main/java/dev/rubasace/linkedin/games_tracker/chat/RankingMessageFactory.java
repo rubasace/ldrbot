@@ -61,17 +61,23 @@ class RankingMessageFactory {
     }
 
     private String formatRankingLine(int position, String username, Duration duration, int points) {
-        String icon = rankingIcon(position);
+        String icon = rankingIcon(position, points);
         String paddedUser = String.format("@%s", username);
         String durationStr = FormatUtils.formatDuration(duration);
         return String.format("%s %s (%s) — %d pts\n", icon, paddedUser, durationStr, points);
     }
 
-    private String rankingIcon(int position) {
+    private String rankingIcon(int position, final int points) {
+        if (points == 3) {
+            return "🥇";
+        }
+        if (points == 2) {
+            return "🥈";
+        }
+        if (points == 1) {
+            return "🥉";
+        }
         return switch (position) {
-            case 0 -> "🥇";
-            case 1 -> "🥈";
-            case 2 -> "🥉";
             case 3 -> "4️⃣";
             case 4 -> "5️⃣";
             case 5 -> "6️⃣";
