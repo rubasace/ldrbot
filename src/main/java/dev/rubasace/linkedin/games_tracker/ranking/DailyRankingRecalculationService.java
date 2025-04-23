@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 @Service
-class DailyRankingRecalculationService {
+public class DailyRankingRecalculationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DailyRankingRecalculationService.class);
     private final TelegramGroupService telegramGroupService;
@@ -24,7 +24,7 @@ class DailyRankingRecalculationService {
 
     //TODO offload into separated transactions (one per group) and parallelize with an executor
     @Transactional
-    void calculateMissingRankings() {
+    public void calculateMissingRankings() {
         LocalDate previousGameDay = LinkedinTimeUtils.todayGameDay().minusDays(1);
         telegramGroupService.findGroupsWithMissingScores(previousGameDay)
                             .forEach(telegramGroup -> generateDailyRanking(telegramGroup, previousGameDay));

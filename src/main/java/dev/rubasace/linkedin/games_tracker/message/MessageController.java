@@ -164,7 +164,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     public Ability override() {
         return Ability.builder()
                       .name("override")
-                      .info("Admin-only: Manually override a user's game time (mm:ss) in case the bot fails to detect it. Usage: /override @<username> <game> <duration>")
+                      .info("Admin-only: Manually override a user's game time (mm:ss) in case the bot fails to detect it. Usage: /override @<userName> <game> <duration>")
                       .input(3)
                       .locality(Locality.GROUP)
                       .privacy(Privacy.GROUP_ADMIN)

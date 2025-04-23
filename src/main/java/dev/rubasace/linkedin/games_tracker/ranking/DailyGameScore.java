@@ -2,6 +2,7 @@ package dev.rubasace.linkedin.games_tracker.ranking;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
+import dev.rubasace.linkedin.games_tracker.session.GameSession;
 import dev.rubasace.linkedin.games_tracker.session.GameType;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
 import jakarta.persistence.Entity;
@@ -10,6 +11,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +31,7 @@ public class DailyGameScore {
     @Id
     private UUID id;
 
-    @JsonIgnoreProperties("scores")
+    @JsonIgnoreProperties({"scores", "members"})
     @ManyToOne(optional = false)
     private TelegramGroup group;
 
@@ -41,7 +43,15 @@ public class DailyGameScore {
 
     private LocalDate date;
 
+    //TODO remove after migrated to gameSession
+    @Deprecated
     private Duration duration;
+
+    @JsonIgnoreProperties("dailyGameScore")
+    @OneToOne(optional = false)
+    private GameSession gameSession;
+
+    private int position;
 
     private int points;
 

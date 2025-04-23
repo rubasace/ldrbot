@@ -12,6 +12,8 @@ import java.util.List;
 @Component
 class DailyGameScoreCalculator {
 
+    private static final int[] POINTS_PER_POSITION = new int[]{3, 2, 1};
+
     List<DailyGameScore> calculateScores(final List<GameSession> gameSessions, final TelegramGroup group) {
 
         List<GameSession> sessionsByDuration = gameSessions.stream()
@@ -22,28 +24,36 @@ class DailyGameScoreCalculator {
         List<DailyGameScore> dailyGameScores = new ArrayList<>();
         for (int i = 0; i < sessionsByDuration.size(); i++) {
             GameSession gameSession = sessionsByDuration.get(i);
-            int points;
+            int position;
             if (i != 0 && gameSession.getDuration().equals(sessionsByDuration.get(i - 1).getDuration())) {
-                points = dailyGameScores.get(i - 1).getPoints();
+                position = dailyGameScores.get(i - 1).getPosition();
             } else {
-                points = Math.max(3 - i, 0);
+                position = i + 1;
             }
-            DailyGameScore dailyGameScore = createDailyScore(group, gameSession, points);
+
+            DailyGameScore dailyGameScore = createDailyScore(group, gameSession, position);
             dailyGameScores.add(dailyGameScore);
         }
         return dailyGameScores;
     }
 
     @NotNull
-    private static DailyGameScore createDailyScore(final TelegramGroup group, final GameSession session, int points) {
+    private static DailyGameScore createDailyScore(final TelegramGroup group, final GameSession session, int position) {
         DailyGameScore dailyGameScore = new DailyGameScore();
         dailyGameScore.setDate(session.getGameDay());
         dailyGameScore.setUser(session.getUser());
         dailyGameScore.setGroup(group);
         dailyGameScore.setGame(session.getGame());
         dailyGameScore.setDuration(session.getDuration());
-        dailyGameScore.setPoints(points);
+        dailyGameScore.setGameSession(session);
+        dailyGameScore.setPosition(position);
+        dailyGameScore.setPoints(calculatePoints(position));
         return dailyGameScore;
     }
+
+    private static int calculatePoints(final int position) {
+        return position <= POINTS_PER_POSITION.length ? POINTS_PER_POSITION[position - 1] : 0;
+    }
+
 }
 

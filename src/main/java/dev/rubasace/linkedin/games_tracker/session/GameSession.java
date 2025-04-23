@@ -2,7 +2,9 @@ package dev.rubasace.linkedin.games_tracker.session;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.rubasace.linkedin.games_tracker.group.TelegramGroup;
+import dev.rubasace.linkedin.games_tracker.ranking.DailyGameScore;
 import dev.rubasace.linkedin.games_tracker.user.TelegramUser;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,6 +12,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,7 +36,7 @@ public class GameSession {
     @ManyToOne
     private TelegramUser user;
 
-    @JsonIgnoreProperties("sessions")
+    @JsonIgnoreProperties({"members", "scores"})
     @ManyToOne(optional = false)
     private TelegramGroup group;
 
@@ -46,6 +49,10 @@ public class GameSession {
 
     @Column(nullable = false)
     private LocalDate gameDay;
+
+    @JsonIgnoreProperties("gameSession")
+    @OneToOne(mappedBy = "gameSession", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private DailyGameScore dailyGameScore;
 
     @Override
     public boolean equals(Object o) {

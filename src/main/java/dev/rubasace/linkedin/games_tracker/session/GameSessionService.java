@@ -94,7 +94,7 @@ public class GameSessionService {
     public void deleteDaySessions(final Long userId, final Long chatId, final LocalDate date) {
         gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameDay(userId, chatId, date);
         telegramUserService.find(userId).ifPresent(
-                user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, user.getId(), user.getUserName(), null, chatId)));
+                user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, user.getId(), user.getUserName(), chatId)));
     }
 
 

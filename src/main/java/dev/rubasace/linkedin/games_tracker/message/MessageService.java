@@ -42,7 +42,6 @@ class MessageService {
     private final GameSessionService gameSessionService;
     private final TelegramGroupService telegramGroupService;
     private final ChatService chatService;
-    //TODO move everything into notification service
     private final GroupRankingService groupRankingService;
     private final TelegramBotProperties telegramBotProperties;
 
@@ -161,6 +160,7 @@ class MessageService {
         gameSessionService.deleteDaySessions(message.getFrom().getId(), message.getChatId(), LinkedinTimeUtils.todayGameDay());
     }
 
+    @Transactional
     public void dailyRanking(final Message message) {
         telegramGroupService.findGroup(message.getChat().getId())
                             .ifPresent(telegramGroup -> groupRankingService.createDailyRanking(telegramGroup, LinkedinTimeUtils.todayGameDay()));

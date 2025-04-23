@@ -19,7 +19,12 @@ public class DailyScoreService {
 
     @Transactional
     public List<DailyGameScore> updateDailyScores(final List<DailyGameScore> scores, final Long chatId, final GameType game) {
+        cleanupOldReferences(scores);
         dailyScoreRepository.deleteAllByGroupChatIdAndDateAndGame(chatId, LinkedinTimeUtils.todayGameDay(), game);
         return dailyScoreRepository.saveAll(scores);
+    }
+
+    private static void cleanupOldReferences(final List<DailyGameScore> scores) {
+        scores.forEach(score -> score.getGameSession().setDailyGameScore(null));
     }
 }

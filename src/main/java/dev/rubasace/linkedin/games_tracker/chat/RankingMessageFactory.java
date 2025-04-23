@@ -8,8 +8,9 @@ import dev.rubasace.linkedin.games_tracker.util.FormatUtils;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 @Component
 class RankingMessageFactory {
@@ -18,15 +19,16 @@ class RankingMessageFactory {
         StringBuilder sb = new StringBuilder();
         sb.append("<b>📊 Daily Ranking for %s</b>\n".formatted(FormatUtils.formatDate(groupScore.date())));
 
-        for (Map.Entry<GameType, List<GameScoreData>> entry : groupScore.gameScores().entrySet()) {
-            toHtmlGameRanking(entry.getKey(), entry.getValue(), sb);
-        }
+        java.util.stream.Stream.of(GameType.values())
+                               .sorted(Comparator.comparing(GameType::name))
+                               .filter(groupScore.gameScores()::containsKey)
+                               .forEach(gameType -> toHtmlGameRanking(gameType, groupScore.gameScores().get(gameType), sb));
 
         List<GlobalScoreData> global = groupScore.globalScore();
 
         toHtmlGlobalRanking(sb, global);
 
-        toHtmlFinalMessage(groupScore.winners(), sb);
+        toHtmlFinalMessage(sb, global);
 
         return sb.toString();
     }
@@ -34,9 +36,8 @@ class RankingMessageFactory {
     private void toHtmlGameRanking(final GameType gameType, final List<GameScoreData> scores, final StringBuilder sb) {
         sb.append(toTile(FormatUtils.gameIcon(gameType), gameType.name()));
 
-        for (int i = 0; i < scores.size(); i++) {
-            GameScoreData score = scores.get(i);
-            sb.append(formatRankingLine(i, score.username(), score.duration(), score.points()));
+        for (GameScoreData score : scores) {
+            sb.append(formatRankingLine(score.position(), score.userName(), score.duration(), score.points()));
         }
     }
 
@@ -48,48 +49,51 @@ class RankingMessageFactory {
 
         sb.append(toTile("🏆", "Global Score"));
 
-        for (int i = 0; i < global.size(); i++) {
-            GlobalScoreData score = global.get(i);
-            sb.append(formatRankingLine(i, score.username(), score.totalDuration(), score.points()));
+        for (GlobalScoreData scoreData : global) {
+            sb.append(formatRankingLine(scoreData.getPosition(), scoreData.getUserName(), scoreData.getTotalDuration(), scoreData.getPoints()));
         }
     }
 
     //TODO allow admin to make message configurable?
-    private void toHtmlFinalMessage(final List<String> winners, final StringBuilder sb) {
-        sb.append("\n<b>🎉🎉🎉 Congratulations @%s, you are today's champion%s 🏆! 🎉🎉🎉</b>"
-                          .formatted(String.join(" and @", winners), winners.size() > 1 ? "s" : ""));
+    private void toHtmlFinalMessage(final StringBuilder sb, final List<GlobalScoreData> global) {
+        List<String> winners = new ArrayList<>();
+        for (GlobalScoreData score : global) {
+            if (score.getPosition() != 1) {
+                break;
+            }
+            winners.add(score.getUserName());
+        }
+        sb.append("\n<b>🎉🎉🎉 Congratulations ");
+        for (int i = 0; i < winners.size(); i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append("@").append(winners.get(i)).append(" 🏆");
+        }
+        sb.append(" 🎉🎉🎉</b>\n\n<b>");
+        sb.append(winners.size() > 1 ? "You are today's champions" : "You are today's champion");
+        sb.append("!</b>\n");
     }
 
     private String formatRankingLine(int position, String username, Duration duration, int points) {
-        String icon = rankingIcon(position, points);
+        String icon = rankingIcon(position);
         String paddedUser = String.format("@%s", username);
         String durationStr = FormatUtils.formatDuration(duration);
         return String.format("%s %s (%s) — %d pts\n", icon, paddedUser, durationStr, points);
     }
 
-    //FIXME improve this so if there are two winners they both get the same icon, same for seconds and thirds (use same approach as winners probably).
-    // Alternatively, just add the position to the global score data, probably fixes the root issue and winners can be extracted from there
-    private String rankingIcon(int position, final int points) {
-        if (points == 3) {
-            return "🥇";
-        }
-        if (points == 2) {
-            return "🥈";
-        }
-        if (points == 1) {
-            return "🥉";
-        }
+    private String rankingIcon(int position) {
         return switch (position) {
-            case 0 -> "🥇";
-            case 1 -> "🥈";
-            case 2 -> "🥉";
-            case 3 -> "4️⃣";
-            case 4 -> "5️⃣";
-            case 5 -> "6️⃣";
-            case 6 -> "7️⃣";
-            case 7 -> "8️⃣";
-            case 8 -> "9️⃣";
-            case 9 -> "🔟";
+            case 1 -> "🥇";
+            case 2 -> "🥈";
+            case 3 -> "🥉";
+            case 4 -> "4️⃣";
+            case 5 -> "5️⃣";
+            case 6 -> "6️⃣";
+            case 7 -> "7️⃣";
+            case 8 -> "8️⃣";
+            case 9 -> "9️⃣";
+            case 10 -> "🔟";
             default -> (position + 1) + ".";
         };
     }

@@ -50,11 +50,11 @@ public class TelegramGroup {
     )
     private Set<GameType> trackedGames = EnumSet.allOf(GameType.class);
 
-    @JsonIgnoreProperties("group")
+    @JsonIgnoreProperties({"group", "gameSession"})
     @OneToMany(mappedBy = "group")
     private Set<DailyGameScore> scores;
 
-    @JsonIgnoreProperties("groups")
+    @JsonIgnoreProperties({"groups", "sessions"})
     @ManyToMany
     Set<TelegramUser> members;
 
