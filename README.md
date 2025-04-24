@@ -38,7 +38,7 @@ LDRBot automatically scans these screenshots using OCR (powered by OpenCV and Te
 processed, your time is recorded for the current day and associated with your Telegram user ID.
 
 As group members submit their scores, LDRBot keeps track of who’s already participated and waits for everyone to submit. Once all registered players have sent their times, it
-automatically recalculates and publishes the daily leaderboard. Alternatively, any member can run the /daily command to manually trigger a recalculation at any time.
+automatically recalculates and publishes the daily leaderboard. Alternatively, any member can run the /ranking command to manually trigger a recalculation at any time.
 
 If not everyone submits, LDRBot will still calculate and publish the results at the end of the day, including only the times that were received. This ensures the competition
 continues smoothly even if someone forgets to post their score.
@@ -85,7 +85,7 @@ images.
 | `/delete <game>`                      | Removes your score for today's selected game.                                                                                              |
 | `/deleteAll`                          | Removes all of your submitted results for the current day.                                                                                 |
 | `/override @<username> <game> <time>` | Admin only: Override today's user time (`mm:ss`) for a given game.                                                                         |
-| `/daily`                              | Calculates and displays the current leaderboard for the group. It will be recalculated automatically after all members submit their times. |
+| `/ranking`                            | Calculates and displays the current leaderboard for the group. It will be recalculated automatically after all members submit their times. |
 | `/help`                               | Displays a list of available commands and usage instructions.                                                                              |
 
 ## 🚀 Getting Started

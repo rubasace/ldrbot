@@ -31,7 +31,7 @@ public class ChatService {
             
             🏆 <b>Daily Competition</b>
             
-            Each day, scores are tracked separately per group. I’ll automatically publish the leaderboard once everyone submits, or by the end of the day — alternatively, you can trigger it manually with <code>/daily</code>.
+            Each day, scores are tracked separately per group. I’ll automatically publish the leaderboard once everyone submits, or by the end of the day — alternatively, you can trigger it manually with <code>/ranking</code>.
             
             🛠️ <b>Commands</b>
             
