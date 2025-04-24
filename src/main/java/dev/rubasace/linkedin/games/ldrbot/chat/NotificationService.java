@@ -70,7 +70,7 @@ public class NotificationService {
             customTelegramClient.error("'%s' is not a valid game.".formatted(gameNameNotFoundException.getGameName()), gameNameNotFoundException.getChatId());
         } else if (userFeedbackException instanceof GameDurationExtractionException gameDurationExtractionException) {
             customTelegramClient.error(
-                    "@%s submitted a screenshot for the game %s but I wasn't able to extract the time. Please try with another image or ask an admin to input the time manually using the command /override %s <time>".formatted(
+                    "@%s submitted a screenshot for the game %s, but I couldn’t extract the solving time. This often happens if the image is cropped or covered by overlays like confetti. Try sending a clearer screenshot, or ask an admin to set your time manually using /override %s <time>".formatted(
                             gameDurationExtractionException.getUserName(), gameDurationExtractionException.getGameType().name(),
                             gameDurationExtractionException.getGameType().name().toLowerCase()), gameDurationExtractionException.getChatId());
         } else if (userFeedbackException instanceof InvalidUserInputException invalidUserInputException) {
