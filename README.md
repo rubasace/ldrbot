@@ -1,20 +1,23 @@
-</br>
+<div align="center">
 
-
-<img align="right" src="docs/avatar.png" alt="LDRBot avatar" width="120"/>
-
-</br>
-</br>
+<img src="docs/avatar.png" align="center" width="175px" height="175px"/>
 
 # 🤖 LDRBot
 
-[![Telegram Bot](https://img.shields.io/badge/telegram-@ldrbot-229ED9?logo=telegram&logoColor=white)](https://t.me/LinkedinDailyRankingBot)
+[![Telegram Bot](https://img.shields.io/badge/telegram-@LinkedinDailyRankingBot-229ED9?logo=telegram&logoColor=white)](https://t.me/LinkedinDailyRankingBot)
 [![Build Status](https://drone.nasvigo.com/api/badges/rubasace/ldrbot/status.svg)](https://drone.nasvigo.com/rubasace/ldrbot)
 [![License: MIT](https://img.shields.io/badge/license-MIT-6C7A89.svg)](LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/rubasace/ldrbot?label=version&color=9D4EDD)](https://github.com/rubasace/ldrbot/releases)
+</br>
+</br>
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-%23ea4aaa?style=flat&logo=github&logoColor=white)](https://github.com/sponsors/rubasace)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23FFDD00?style=flat&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/rubasace)
+</div>
+
+
 ---
 
-## ℹ️ About LDRBot
+## 💡 Overview
 
 **LDRBot** stands for **LinkedIn Daily (games) Ranking Bot** — a Telegram bot that automates score tracking and leaderboard generation
 for [LinkedIn’s daily puzzle games](https://www.linkedin.com/games) (currently, [Queens](https://www.linkedin.com/games/queens), [Tango](https://www.linkedin.com/games/tango),
@@ -25,7 +28,7 @@ daily ranking automatically.
 
 ## 🦾 Try It Out
 
-Add LDRBot to your Telegram group: [@ldrbot](https://t.me/LinkedinDailyRankingBot)
+Add LDRBot to your Telegram group: [@LinkedinDailyRankingBot](https://t.me/LinkedinDailyRankingBot)
 
 Each group is treated as a standalone competition — just invite the bot to your group and you’re ready to go!
 
@@ -137,6 +140,13 @@ Whether you're here to fix a bug, suggest a feature, or simply explore how it wo
 2. 🐞 **Report issues** or request features via [GitHub Issues](https://github.com/rubasace/ldrbot/issues)
 3. 🛠️ **Submit a pull request** with enhancements, fixes, or new ideas
 4. 📣 **Spread the word** — share it with your Telegram puzzle groups!
+
+## 💖 Support LDRBot
+
+LDRBot is free and open-source. If it's useful for your group, consider supporting its development!
+
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-%23ea4aaa?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/rubasace)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/rubasace)
 
 ## 📄 License
 
