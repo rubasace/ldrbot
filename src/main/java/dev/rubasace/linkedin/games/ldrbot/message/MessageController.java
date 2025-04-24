@@ -2,10 +2,12 @@ package dev.rubasace.linkedin.games.ldrbot.message;
 
 import dev.rubasace.linkedin.games.ldrbot.configuration.TelegramBotProperties;
 import dev.rubasace.linkedin.games.ldrbot.exception.HandleBotExceptions;
+import dev.rubasace.linkedin.games.ldrbot.util.UsageFormatUtils;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
 import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
@@ -19,9 +21,12 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
@@ -44,6 +49,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
         this.messageService = messageService;
         this.token = telegramBotProperties.getToken();
         //TODO think of capping the executor size
+        // TODO validate if virtual threads make sense here and on rest of executors
         controllerExecutor = Executors.newVirtualThreadPerTaskExecutor();
     }
 
@@ -64,11 +70,18 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
         messageService.processMessage(update.getMessage());
     }
 
+    @Override
+    public Map<String, Ability> getAbilities() {
+        return super.getAbilities().values().stream()
+                    .filter(ability -> ability.info() != null)
+                    .collect(Collectors.toMap(Ability::name, ability -> ability));
+    }
+
     @PostConstruct
     void registerCommands() {
         super.onRegister();
+        unregisterUnknownAbilities();
         List<BotCommand> commands = getAbilities().values().stream()
-                                                  .filter(ability -> ability.info() != null)
                                                   .map(ability -> new BotCommand(ability.name(), ability.info()))
                                                   .toList();
         messageService.registerCommands(commands);
@@ -77,6 +90,12 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
         } catch (TelegramApiException e) {
             LOGGER.error("Failed to register bot commands", e);
         }
+    }
+
+    private void unregisterUnknownAbilities() {
+        Field abilities = ReflectionUtils.findField(this.getClass(), "abilities");
+        abilities.setAccessible(true);
+        ReflectionUtils.setField(abilities, this, getAbilities());
     }
 
     @Override
@@ -101,17 +120,17 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     public Ability start() {
         return Ability.builder()
                       .name("start")
-                      .info("Standard Telegram action to start interacting with the bot.")
-                      .locality(Locality.USER)
+                      .info("Start interacting with LDRBot. Required for private messages.")
+                      .locality(ALL)
                       .privacy(PUBLIC)
-                      .action(ctx -> messageService.privateStart(ctx.update().getMessage()))
+                      .action(ctx -> messageService.start(ctx.update().getMessage()))
                       .build();
     }
 
     public Ability join() {
         return Ability.builder()
                       .name("join")
-                      .info("Register yourself as a participant in the group. (This happens automatically when you submit your first message in the group.)")
+                      .info("Register yourself as a player in this group.")
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
                       .action(ctx -> messageService.addUserToGroup(ctx.update().getMessage()))
@@ -121,7 +140,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     public Ability delete() {
         return Ability.builder()
                       .name("delete")
-                      .info("Delete your game result for today. Usage: /delete <game>")
+                      .info(UsageFormatUtils.formatUsage("/delete <game>", "Remove your submitted time for a game."))
                       .input(1)
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
@@ -132,18 +151,17 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     public Ability deleteAll() {
         return Ability.builder()
                       .name("deleteall")
-                      .info("Delete all your submitted results for today.")
+                      .info("Remove all your submitted results for today.")
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
                       .action(ctx -> messageService.deleteTodayRecords(ctx.update().getMessage()))
                       .build();
     }
 
-    //TODO think if we want to allow to indicate past days too
     public Ability dailyRanking() {
         return Ability.builder()
-                      .name("daily")
-                      .info("Manually trigger today's group ranking summary.")
+                      .name("ranking")
+                      .info("Show today’s group leaderboard.")
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
                       .action(ctx -> messageService.dailyRanking(ctx.update().getMessage()))
@@ -153,7 +171,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     public Ability games() {
         return Ability.builder()
                       .name("games")
-                      .info("Show the list of games currently tracked by this group.")
+                      .info("List the games tracked by this group.")
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
                       .action(ctx -> messageService.listTrackedGames(ctx.update().getMessage()))
@@ -163,7 +181,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     public Ability override() {
         return Ability.builder()
                       .name("override")
-                      .info("Admin-only: Manually override a user's game time (mm:ss) in case the bot fails to detect it. Usage: /override @<userName> <game> <duration>")
+                      .info(UsageFormatUtils.formatUsage("/override @<user> <game> <mm:ss>", "Manually set a user’s time (admin-only)."))
                       .input(3)
                       .locality(Locality.GROUP)
                       .privacy(Privacy.GROUP_ADMIN)
@@ -172,14 +190,13 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     }
 
     public Ability help() {
-        return Ability
-                .builder()
-                .name("help")
-                .info("Displays a list of available commands and how to use the bot.")
-                .locality(ALL)
-                .privacy(PUBLIC)
-                .action(ctx -> messageService.help(ctx.update().getMessage()))
-                .build();
+        return Ability.builder()
+                      .name("help")
+                      .info("Show available commands and how to use the bot.")
+                      .locality(ALL)
+                      .privacy(PUBLIC)
+                      .action(ctx -> messageService.help(ctx.update().getMessage()))
+                      .build();
     }
 
 

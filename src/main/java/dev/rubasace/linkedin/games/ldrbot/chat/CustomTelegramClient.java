@@ -60,4 +60,5 @@ class CustomTelegramClient {
             LOGGER.error("Error sending message", e);
         }
     }
+
 }

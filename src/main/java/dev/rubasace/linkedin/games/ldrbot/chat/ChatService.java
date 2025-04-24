@@ -5,12 +5,15 @@ import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.message.InvalidUserInputException;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.util.FormatUtils;
+import dev.rubasace.linkedin.games.ldrbot.util.UsageFormatUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,8 +46,16 @@ public class ChatService {
             
             For the moment I don't support private chat features, but I'm working on it!
             
-            Use /help to see all the commands I support and how to make the most of your group competition!
-            """;
+            
+            """ + ChatConstants.HELP_SUGGESTION;
+
+    private static final String GROUP_START_MESSAGE = """
+            👀 I’ve already got my eye on this group!
+            
+            Ready to record those times and crown the daily champs 🏆
+            
+            """ + ChatConstants.HELP_SUGGESTION;
+    public static final String COMMAND_HELP_FORMAT = "<b>%s</b> – %s";
 
     private final CustomTelegramClient customTelegramClient;
     private final TelegramGroupService telegramGroupService;
@@ -77,18 +88,34 @@ public class ChatService {
     private String formatCommands(final Map<String, BotCommand> botCommands) {
         return botCommands.values().stream()
                           .sorted(Comparator.comparing(BotCommand::getCommand))
-                          .map(command -> "%s - %s".formatted(command.getCommand(), escapeDescription(command.getDescription())))
-                        .collect(Collectors.joining("\n"));
+                          .map(this::formatCommandLine)
+                          .collect(Collectors.joining("\n"));
     }
 
-    private String escapeDescription(final String description) {
-        return description
-                      .replace("&", "&amp;")
-                      .replace("<", "&lt;")
-                      .replace(">", "&gt;");
+    @NotNull
+    private String formatCommandLine(final BotCommand command) {
+        String commandName = "/" + command.getCommand();
+        String description = command.getDescription();
+        Optional<String> usage = UsageFormatUtils.extractUsage(description);
+
+        return usage
+                .map(u -> (COMMAND_HELP_FORMAT + "\n    usage:  <code>%s</code>").formatted(commandName, escapeText(UsageFormatUtils.extractDescription(description)),
+                                                                                            escapeText((u))))
+                .orElse(COMMAND_HELP_FORMAT.formatted(commandName, escapeText(description)));
     }
 
     public void privateStart(final Long chatId) {
         customTelegramClient.html(PRIVATE_START_MESSAGE, chatId);
+    }
+
+    public void groupStart(final Long chatId) {
+        customTelegramClient.html(GROUP_START_MESSAGE, chatId);
+    }
+
+    private String escapeText(final String text) {
+        return text
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
     }
 }

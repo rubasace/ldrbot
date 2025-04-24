@@ -27,13 +27,12 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 public class NotificationService {
 
-    private static final String HELP_SUGGESTION = "Type /help to see everything I can do";
 
     private static final String UNKNOWN_COMMAND_MESSAGE_TEMPLATE = """
             🤖 Sorry, I don’t recognize the command %s.
             
             
-            """ + HELP_SUGGESTION;
+            """ + ChatConstants.HELP_SUGGESTION;
     private static final String ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE = "@%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall";
     private static final String SUBMISSION_MESSAGE_TEMPLATE = "@%s submitted their result for today's %s with a time of %s";
 
@@ -53,7 +52,7 @@ public class NotificationService {
             Every day is a new competition — submit your time, climb the leaderboard, and don’t get left behind! 🦾
             
             
-            """ + HELP_SUGGESTION;
+            """ + ChatConstants.HELP_SUGGESTION;
     private static final int GREETING_NOTIFICATION_ORDER = Ordered.HIGHEST_PRECEDENCE;
     private static final int REMINDER_NOTIFICATION_ORDER = Ordered.HIGHEST_PRECEDENCE + 500;
     private static final int USER_INTERACTION_NOTIFICATION_ORDER = GREETING_NOTIFICATION_ORDER + 1000;

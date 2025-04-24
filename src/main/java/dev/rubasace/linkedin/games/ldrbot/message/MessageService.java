@@ -80,7 +80,8 @@ class MessageService {
     @Transactional
     void processMessage(final Message message) {
 
-        if (message.isCommand() && !knownCommands.containsKey(message.getText().split(" ")[0])) {
+        String receivedCommand = message.getText().split("[\\s@]")[0];
+        if (message.isCommand() && !knownCommands.containsKey(receivedCommand)) {
             throw new UnknownCommandException(message.getChatId(), message.getText());
         }
 
@@ -195,7 +196,11 @@ class MessageService {
         chatService.help(message.getChatId(), knownCommands);
     }
 
-    public void privateStart(final Message message) {
-        chatService.privateStart(message.getChatId());
+    public void start(final Message message) {
+        if (message.getChat().isGroupChat()) {
+            chatService.groupStart(message.getChatId());
+        } else {
+            chatService.privateStart(message.getChatId());
+        }
     }
 }
