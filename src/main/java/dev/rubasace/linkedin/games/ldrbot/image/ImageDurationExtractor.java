@@ -25,8 +25,7 @@ class ImageDurationExtractor {
         this.imageTextExtractor = imageTextExtractor;
     }
 
-    //TODO improve using blockingQueue or something similar
-    synchronized Duration extractDuration(final Mat image) throws DurationOCRException {
+    Duration extractDuration(final Mat image) throws DurationOCRException {
         Optional<Rect> resultsBox = imageHelper.findLargestRegionOfColor(image, RESULTS_COLOR);
         if (resultsBox.isEmpty()) {
             throw new DurationOCRException("Couldn't find the results area on the image");

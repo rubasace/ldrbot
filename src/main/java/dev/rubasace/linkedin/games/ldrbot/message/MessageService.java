@@ -80,7 +80,7 @@ class MessageService {
     @Transactional
     void processMessage(final Message message) {
 
-        String receivedCommand = message.getText().split("[\\s@]")[0];
+        String receivedCommand = message.getText() != null ? message.getText().split("[\\s@]")[0] : "";
         if (message.isCommand() && !knownCommands.containsKey(receivedCommand)) {
             throw new UnknownCommandException(message.getChatId(), message.getText());
         }

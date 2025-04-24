@@ -18,12 +18,12 @@ public class ExecutorsConfiguration {
 
     @Bean(BACKGROUND_TASKS_EXECUTOR_NAME)
     public Executor backgroundTasksExecutor() {
-        return Executors.newFixedThreadPool(5, Thread.ofVirtual().name("background-tasks", 1).factory());
+        return Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("background-tasks", 1).factory());
     }
 
     @Bean(NOTIFICATION_LISTENER_EXECUTOR_NAME)
     public Executor notificationListenerExecutor() {
-        return Executors.newSingleThreadExecutor(Thread.ofVirtual().name("notifications").factory());
+        return Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("notifications", 1).factory());
     }
 
     @Bean(ExecutorsConfiguration.SCHEDULED_TASKS_EXECUTOR_NAME)

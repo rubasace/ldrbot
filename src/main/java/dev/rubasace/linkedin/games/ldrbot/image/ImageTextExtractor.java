@@ -35,7 +35,8 @@ class ImageTextExtractor {
         tesseract.setVariable("user_defined_dpi", "300");
     }
 
-    String extractText(final File inputImage) throws IOException {
+    //TODO improve using blockingQueue or something similar
+    synchronized String extractText(final File inputImage) throws IOException {
         try {
             File preprocessedImage = preprocessForOCR(inputImage);
             return tesseract.doOCR(preprocessedImage);

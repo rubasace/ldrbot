@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
@@ -36,26 +37,36 @@ import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 public class MessageController extends AbilityBot implements SpringLongPollingBot {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageController.class);
+    public static final int MAX_CONSUME_CONCURRENCY = 25;
 
     private final MessageService messageService;
     private final String token;
     private final ExecutorService controllerExecutor;
+    private final Semaphore semaphore;
 
     MessageController(final TelegramClient telegramClient,
                       final MessageService messageService,
                       final TelegramBotProperties telegramBotProperties) {
-        //TODO investigate if DB has/can be made persistent against real DB
         super(telegramClient, telegramBotProperties.getUsername(), MapDBContext.onlineInstance("/tmp/" + telegramBotProperties.getUsername()));
         this.messageService = messageService;
         this.token = telegramBotProperties.getToken();
-        //TODO think of capping the executor size
-        // TODO validate if virtual threads make sense here and on rest of executors
-        controllerExecutor = Executors.newVirtualThreadPerTaskExecutor();
+        this.controllerExecutor = Executors.newVirtualThreadPerTaskExecutor();
+        this.semaphore = new Semaphore(MAX_CONSUME_CONCURRENCY);
     }
 
     @Override
     public void consume(final List<Update> updates) {
-        controllerExecutor.execute(() -> updates.forEach(this::consume));
+        controllerExecutor.execute(() -> updates.forEach(update -> {
+            try {
+                semaphore.acquire();
+                consume(update);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOGGER.error("Update consumption interrupted", e);
+            } finally {
+                semaphore.release();
+            }
+        }));
     }
 
     @Override

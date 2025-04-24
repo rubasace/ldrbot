@@ -54,7 +54,6 @@ class RankingMessageFactory {
         }
     }
 
-    //TODO allow admin to make message configurable?
     private void toHtmlFinalMessage(final StringBuilder sb, final List<GlobalScoreData> global) {
         List<String> winners = new ArrayList<>();
         for (GlobalScoreData score : global) {
