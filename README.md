@@ -1,4 +1,4 @@
-<img align="right" src="src/main/resources/avatar.png" alt="LDRBot avatar" width="120"/>
+<img align="right" src="docs/avatar.png" alt="LDRBot avatar" width="120"/>
 
 # 🤖 LDRBot
 
