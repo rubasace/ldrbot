@@ -16,9 +16,9 @@ import java.util.Optional;
 
 @Component
 class ImageHelper {
-    private static final int H_TOLERANCE = 10;
-    private static final int S_TOLERANCE = 60;
-    private static final int V_TOLERANCE = 60;
+    private static final int H_TOLERANCE = 5;
+    private static final int S_TOLERANCE = 10;
+    private static final int V_TOLERANCE = 10;
 
     ImageHelper() {
         Loader.load(opencv_core.class);

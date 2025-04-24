@@ -10,7 +10,7 @@ import java.util.Optional;
 @Component
 class ImageGameExtractor {
 
-    static final double COLOR_PERCENTAGE_THRESHOLD = 0.33;
+    static final double COLOR_PERCENTAGE_THRESHOLD = 0.10;
 
     private final ImageHelper imageHelper;
 
