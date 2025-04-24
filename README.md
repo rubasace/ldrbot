@@ -8,14 +8,15 @@
 
 # 🤖 LDRBot
 
-[![Telegram Bot](https://img.shields.io/badge/telegram-@ldrbot-blue?logo=telegram)](https://t.me/LinkedinDailyRankingBot)
+[![Telegram Bot](https://img.shields.io/badge/telegram-@ldrbot-229ED9?logo=telegram&logoColor=white)](https://t.me/LinkedinDailyRankingBot)
 [![Build Status](https://drone.nasvigo.com/api/badges/rubasace/ldrbot/status.svg)](https://drone.nasvigo.com/rubasace/ldrbot)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-6C7A89.svg)](LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/rubasace/ldrbot?label=version&color=9D4EDD)](https://github.com/rubasace/ldrbot/releases)
 ---
 
 ## ℹ️ About LDRBot
 
-**LDRBot** stands for **LinkedIn Daily (games) Rankings Bot** — a Telegram bot that automates score tracking and leaderboard generation
+**LDRBot** stands for **LinkedIn Daily (games) Ranking Bot** — a Telegram bot that automates score tracking and leaderboard generation
 for [LinkedIn’s daily puzzle games](https://www.linkedin.com/games) (currently, [Queens](https://www.linkedin.com/games/queens), [Tango](https://www.linkedin.com/games/tango),
 and [Zip](https://www.linkedin.com/games/zip)).
 
