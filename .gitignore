@@ -1,5 +1,7 @@
 *
 
+!docs
+!docs/**
 !src
 !src/**
 !tessdata

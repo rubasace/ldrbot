@@ -1,3 +1,5 @@
+<img align="right" src="src/main/resources/avatar.png" alt="LDRBot avatar" width="120"/>
+
 # 🤖 LDRBot
 
 [![Telegram Bot](https://img.shields.io/badge/telegram-@ldrbot-blue?logo=telegram)](https://t.me/LinkedinDailyRankingBot)
@@ -40,6 +42,32 @@ every new day is a fresh challenge for members to compete, improve, and (hopeful
 > [!NOTE]
 > Only **group messages** with commands or screenshots are processed.  
 > Private message support is under development.
+
+## 🖼️ Screenshots
+
+LDRBot uses OCR to read your submitted screenshots and extract the game and solving time.  
+For best results, try to capture the colored square that shows the game result (e.g., ZIP, TANGO, or QUEENS) **as clearly as possible**, and avoid overlays like confetti or cropped
+images.
+
+### Mobile Layout Examples
+
+<p align="center">
+  <img src="src/test/resources/images/1.jpeg" alt="mobile layout Queens example" width="30%"/>
+  &nbsp;
+  <img src="src/test/resources/images/2.jpeg" alt="mobile layout Tango example" width="30%"/>
+  &nbsp;
+  <img src="src/test/resources/images/3.jpeg" alt="mobile layout Zip example" width="30%"/>
+</p>
+
+### Desktop Layout Examples
+
+<p align="center">
+  <img src="src/test/resources/images/9.jpeg" alt="desktop layout Queens example" width="30%"/>
+  &nbsp;
+  <img src="src/test/resources/images/8.jpeg" alt="desktop layout Tango example" width="30%"/>
+  &nbsp;
+  <img src="src/test/resources/images/7.jpeg" alt="desktop layout Zip example" width="30%"/>
+</p>
 
 ## 🛠️ Commands
 
