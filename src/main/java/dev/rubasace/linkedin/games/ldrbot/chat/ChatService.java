@@ -7,7 +7,7 @@ import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.util.FormatUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.telegram.telegrambots.abilitybots.api.objects.Ability;
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -69,21 +69,20 @@ public class ChatService {
     }
 
 
-    public void help(final Long chatId, final Map<String, Ability> abilities) {
-        String commandsSection = this.formatAbilities(abilities);
+    public void help(final Long chatId, final Map<String, BotCommand> botCommands) {
+        String commandsSection = this.formatCommands(botCommands);
         customTelegramClient.html(HELP_MESSAGE.formatted(commandsSection), chatId);
     }
 
-    private String formatAbilities(final Map<String, Ability> abilities) {
-        return abilities.values().stream()
-                        .filter(ability -> ability.info() != null)
-                        .sorted(Comparator.comparing(Ability::name))
-                        .map(ability -> "/%s - %s".formatted(ability.name(), escapeInfo(ability)))
+    private String formatCommands(final Map<String, BotCommand> botCommands) {
+        return botCommands.values().stream()
+                          .sorted(Comparator.comparing(BotCommand::getCommand))
+                          .map(command -> "%s - %s".formatted(command.getCommand(), escapeDescription(command.getDescription())))
                         .collect(Collectors.joining("\n"));
     }
 
-    private String escapeInfo(final Ability ability) {
-        return ability.info()
+    private String escapeDescription(final String description) {
+        return description
                       .replace("&", "&amp;")
                       .replace("<", "&lt;")
                       .replace(">", "&gt;");

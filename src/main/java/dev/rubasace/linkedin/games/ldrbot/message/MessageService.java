@@ -21,16 +21,18 @@ import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 //TODO update bot description on startup
 @HandleBotExceptions
@@ -45,13 +47,9 @@ class MessageService {
     private final ChatService chatService;
     private final GroupRankingService groupRankingService;
     private final TelegramBotProperties telegramBotProperties;
+    private final Map<String, BotCommand> knownCommands;
 
-    MessageService(final ImageGameDurationExtractor imageGameDurationExtractor,
-                   final AssetsDownloader assetsDownloader,
-                   final GameSessionService gameSessionService,
-                   final TelegramGroupService telegramGroupService, final ChatService chatService,
-                   final GroupRankingService groupRankingService,
-                   final TelegramBotProperties telegramBotProperties) {
+    MessageService(final ImageGameDurationExtractor imageGameDurationExtractor, final AssetsDownloader assetsDownloader, final GameSessionService gameSessionService, final TelegramGroupService telegramGroupService, final ChatService chatService, final GroupRankingService groupRankingService, final TelegramBotProperties telegramBotProperties) {
         this.imageGameDurationExtractor = imageGameDurationExtractor;
         this.assetsDownloader = assetsDownloader;
         this.gameSessionService = gameSessionService;
@@ -59,6 +57,12 @@ class MessageService {
         this.chatService = chatService;
         this.groupRankingService = groupRankingService;
         this.telegramBotProperties = telegramBotProperties;
+        knownCommands = new HashMap<>();
+    }
+
+    void registerCommands(final List<BotCommand> abilities) {
+        knownCommands.putAll(abilities.stream()
+                                      .collect(Collectors.toMap(command1 -> "/" + command1.getCommand(), command -> command)));
     }
 
     @Transactional
@@ -75,6 +79,10 @@ class MessageService {
     @SneakyThrows
     @Transactional
     void processMessage(final Message message) {
+
+        if (message.isCommand() && !knownCommands.containsKey(message.getText().split(" ")[0])) {
+            throw new UnknownCommandException(message.getChatId(), message.getText());
+        }
 
         if (message.getChat().isGroupChat()) {
             processGroupMessage(message);
@@ -116,8 +124,7 @@ class MessageService {
         if (gameDuration.isEmpty()) {
             return;
         }
-        gameSessionService.recordGameSession(message.getFrom().getId(), message.getChatId(), message.getFrom().getUserName(),
-                                             gameDuration.get());
+        gameSessionService.recordGameSession(message.getFrom().getId(), message.getChatId(), message.getFrom().getUserName(), gameDuration.get());
     }
 
     private boolean isBotRemovedFromGroup(final Message message) {
@@ -163,8 +170,8 @@ class MessageService {
 
     @Transactional
     public void dailyRanking(final Message message) {
-        telegramGroupService.findGroup(message.getChat().getId())
-                            .ifPresent(telegramGroup -> groupRankingService.createDailyRanking(telegramGroup, LinkedinTimeUtils.todayGameDay()));
+        telegramGroupService.findGroup(message.getChat().getId()).ifPresent(
+                telegramGroup -> groupRankingService.createDailyRanking(telegramGroup, LinkedinTimeUtils.todayGameDay()));
     }
 
     @SneakyThrows
@@ -184,8 +191,8 @@ class MessageService {
         gameSessionService.manuallRrecordGameSession(message.getChatId(), username, new GameDuration(gameType, duration.get()));
     }
 
-    public void help(final Message message, final Map<String, Ability> abilities) {
-        chatService.help(message.getChatId(), abilities);
+    public void help(final Message message) {
+        chatService.help(message.getChatId(), knownCommands);
     }
 
     public void privateStart(final Message message) {

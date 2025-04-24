@@ -1,6 +1,7 @@
 package dev.rubasace.linkedin.games.ldrbot.message;
 
 import dev.rubasace.linkedin.games.ldrbot.configuration.TelegramBotProperties;
+import dev.rubasace.linkedin.games.ldrbot.exception.HandleBotExceptions;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import java.util.concurrent.Executors;
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
+@HandleBotExceptions
 @Component
 public class MessageController extends AbilityBot implements SpringLongPollingBot {
 
@@ -59,10 +61,6 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
             messageService.registerOrUpdateGroup(update.getMessage().getChatId(), update.getMessage().getChat().getTitle());
         }
         super.consume(update);
-
-        if (update.getMessage().isCommand()) {
-            return;
-        }
         messageService.processMessage(update.getMessage());
     }
 
@@ -73,6 +71,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
                                                   .filter(ability -> ability.info() != null)
                                                   .map(ability -> new BotCommand(ability.name(), ability.info()))
                                                   .toList();
+        messageService.registerCommands(commands);
         try {
             telegramClient.execute(new SetMyCommands(commands));
         } catch (TelegramApiException e) {
@@ -179,7 +178,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
                 .info("Displays a list of available commands and how to use the bot.")
                 .locality(ALL)
                 .privacy(PUBLIC)
-                .action(ctx -> messageService.help(ctx.update().getMessage(), getAbilities()))
+                .action(ctx -> messageService.help(ctx.update().getMessage()))
                 .build();
     }
 
