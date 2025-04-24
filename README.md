@@ -1,4 +1,10 @@
-<img align="right" src="docs/avatar.png" alt="LDRBot avatar" width="120"/>
+</br>
+
+
+<img align="right" src="docs/avatar.png" alt="LDRBot avatar" width="150"/>
+
+</br>
+</br>
 
 # 🤖 LDRBot
 
