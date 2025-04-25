@@ -67,7 +67,7 @@ class RankingMessageFactory {
             if (i > 0) {
                 sb.append(", ");
             }
-            sb.append("@").append(winners.get(i)).append(" 🏆");
+            sb.append(winners.get(i)).append(" 🏆");
         }
         sb.append(" 🎉🎉🎉</b>\n\n<b>");
         sb.append(winners.size() > 1 ? "You are today's champions" : "You are today's champion");
@@ -76,7 +76,7 @@ class RankingMessageFactory {
 
     private String formatRankingLine(int position, String username, Duration duration, int points) {
         String icon = rankingIcon(position);
-        String paddedUser = String.format("@%s", username);
+        String paddedUser = String.format("%s", username);
         String durationStr = FormatUtils.formatDuration(duration);
         return String.format("%s %s (%s) — %d pts\n", icon, paddedUser, durationStr, points);
     }
