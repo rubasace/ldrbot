@@ -69,10 +69,9 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
         }));
     }
 
-    //TODO think if we want to ignore bots
     @Override
     public void consume(Update update) {
-        if (!update.hasMessage()) {
+        if (!update.hasMessage() || update.getMessage().getFrom().getIsBot()) {
             return;
         }
         if (update.getMessage().getChat().isGroupChat()) {
