@@ -20,7 +20,7 @@ class CustomTelegramClient {
     }
 
     void html(final String text, final Long chatId) {
-        sendMessage(text, chatId, ParseMode.HTML);
+        sendMessage(text, chatId);
     }
 
     void info(final String text, final Long chatId) {
@@ -41,18 +41,14 @@ class CustomTelegramClient {
                 
                     %s
                 """.formatted(text);
-        sendMessage(formatted, chatId, ParseMode.HTML);
+        sendMessage(formatted, chatId);
     }
 
     private void sendMessage(final String text, final Long chatId) {
-        sendMessage(text, chatId, null);
-    }
-
-    private void sendMessage(final String text, final Long chatId, String parseMode) {
         SendMessage message = SendMessage.builder()
                                          .chatId(chatId)
                                          .text(text)
-                                         .parseMode(parseMode)
+                                         .parseMode(ParseMode.HTML)
                                          .build();
         try {
             telegramClient.execute(message);

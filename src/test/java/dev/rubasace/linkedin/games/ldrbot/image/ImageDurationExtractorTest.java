@@ -2,6 +2,7 @@ package dev.rubasace.linkedin.games.ldrbot.image;
 
 import dev.rubasace.linkedin.games.ldrbot.session.GameDuration;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
+import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.converter.ArgumentConversionException;
 import org.junit.jupiter.params.converter.ConvertWith;
@@ -37,7 +38,7 @@ class ImageDurationExtractorTest {
             DurationConverter.class) final Duration expectedDuration) throws GameDurationExtractionException {
 
         File imageFile = new File("src/test/resources/images/" + imageName);
-        Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, 1L, "test");
+        Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, 1L, new UserInfo(-1L, "", "Test", ""));
         assertAll(
                 () -> assertEquals(Optional.of(expectedDuration), gameDuration.map(GameDuration::duration)),
                 () -> assertEquals(Optional.of(game), gameDuration.map(GameDuration::type))

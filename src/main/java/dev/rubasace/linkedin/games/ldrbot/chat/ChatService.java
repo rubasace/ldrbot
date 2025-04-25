@@ -1,9 +1,11 @@
 package dev.rubasace.linkedin.games.ldrbot.chat;
 
+import dev.rubasace.linkedin.games.ldrbot.group.GroupInfo;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.message.InvalidUserInputException;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
+import dev.rubasace.linkedin.games.ldrbot.util.EscapeUtils;
 import dev.rubasace.linkedin.games.ldrbot.util.FormatUtils;
 import dev.rubasace.linkedin.games.ldrbot.util.UsageFormatUtils;
 import org.jetbrains.annotations.NotNull;
@@ -65,17 +67,17 @@ public class ChatService {
         this.telegramGroupService = telegramGroupService;
     }
 
-    public void listTrackedGames(final Long chatId) throws GroupNotFoundException, InvalidUserInputException {
-        Set<GameType> trackedGames = telegramGroupService.listTrackedGames(chatId);
+    public void listTrackedGames(final GroupInfo groupInfo) throws GroupNotFoundException, InvalidUserInputException {
+        Set<GameType> trackedGames = telegramGroupService.listTrackedGames(groupInfo);
         if (CollectionUtils.isEmpty(trackedGames)) {
-            throw new InvalidUserInputException("This group is not tracking any games.", chatId);
+            throw new InvalidUserInputException("This group is not tracking any games.", groupInfo.chatId());
         } else {
             String text = trackedGames.stream()
                                       .sorted()
                                       .map(game -> "%s %s".formatted(FormatUtils.gameIcon(game), game.name()))
                                       .collect(Collectors.joining("\n"));
 
-            customTelegramClient.info("This group is currently tracking:\n" + text, chatId);
+            customTelegramClient.info("This group is currently tracking:\n" + text, groupInfo.chatId());
         }
     }
 
@@ -99,9 +101,9 @@ public class ChatService {
         Optional<String> usage = UsageFormatUtils.extractUsage(description);
 
         return usage
-                .map(u -> (COMMAND_HELP_FORMAT + "\n    usage:  <code>%s</code>").formatted(commandName, escapeText(UsageFormatUtils.extractDescription(description)),
-                                                                                            escapeText((u))))
-                .orElse(COMMAND_HELP_FORMAT.formatted(commandName, escapeText(description)));
+                .map(u -> (COMMAND_HELP_FORMAT + "\n    usage:  <code>%s</code>").formatted(commandName, EscapeUtils.escapeText(UsageFormatUtils.extractDescription(description)),
+                                                                                            EscapeUtils.escapeText((u))))
+                .orElse(COMMAND_HELP_FORMAT.formatted(commandName, EscapeUtils.escapeText(description)));
     }
 
     public void privateStart(final Long chatId) {
@@ -112,10 +114,5 @@ public class ChatService {
         customTelegramClient.html(GROUP_START_MESSAGE, chatId);
     }
 
-    private String escapeText(final String text) {
-        return text
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;");
-    }
+
 }

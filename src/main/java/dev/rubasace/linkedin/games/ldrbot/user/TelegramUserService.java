@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -13,20 +13,22 @@ import java.util.stream.Stream;
 public class TelegramUserService {
 
     private final TelegramUserRepository telegramUserRepository;
+    private final TelegramUserAdapter telegramUserAdapter;
 
-    public TelegramUserService(final TelegramUserRepository telegramUserRepository) {
+    TelegramUserService(final TelegramUserRepository telegramUserRepository, final TelegramUserAdapter telegramUserAdapter) {
         this.telegramUserRepository = telegramUserRepository;
+        this.telegramUserAdapter = telegramUserAdapter;
     }
 
-    public Optional<TelegramUser> find(final Long userId) {
-        return telegramUserRepository.findById(userId);
+    public Optional<TelegramUser> find(final UserInfo userInfo) {
+        return telegramUserRepository.findById(userInfo.id());
     }
 
     @Transactional
-    public TelegramUser findOrCreate(final Long userId, final String userName) {
-            return telegramUserRepository.findById(userId)
-                                         .map(telegramUser -> updateUserData(telegramUser, userName))
-                                         .orElseGet(() -> this.createUser(userId, userName));
+    public TelegramUser findOrCreate(final UserInfo userInfo) {
+        return telegramUserRepository.findById(userInfo.id())
+                                     .map(telegramUser -> updateUserData(telegramUser, userInfo))
+                                     .orElseGet(() -> this.createUser(userInfo));
     }
 
     public Stream<MissingSessionUserProjection> findUsersWithMissingSessions(final LocalDate gameDay) {
@@ -37,15 +39,19 @@ public class TelegramUserService {
         return telegramUserRepository.findByUserName(userName);
     }
 
-    private TelegramUser updateUserData(TelegramUser telegramUser, final String userName) {
-        if (telegramUser.getUserName().equals(userName)) {
+    private TelegramUser updateUserData(TelegramUser telegramUser, final UserInfo userInfo) {
+        if (Objects.equals(telegramUser.getUserName(), userInfo.userName())
+                && Objects.equals(telegramUser.getFirstName(), userInfo.firstName())
+                && Objects.equals(telegramUser.getLastName(), userInfo.lastName())) {
             return telegramUser;
         }
-        telegramUser.setUserName(userName);
+        telegramUser.setUserName(userInfo.userName());
+        telegramUser.setFirstName(userInfo.firstName());
+        telegramUser.setLastName(userInfo.lastName());
         return telegramUserRepository.save(telegramUser);
     }
 
-    private TelegramUser createUser(final Long userId, final String userName) {
-        return telegramUserRepository.saveAndFlush(new TelegramUser(userId, userName, new HashSet<>(), new HashSet<>()));
+    private TelegramUser createUser(final UserInfo userInfo) {
+        return telegramUserRepository.saveAndFlush(telegramUserAdapter.adapt(userInfo));
     }
 }

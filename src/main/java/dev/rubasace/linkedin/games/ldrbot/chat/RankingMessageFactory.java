@@ -37,7 +37,7 @@ class RankingMessageFactory {
         sb.append(toTile(FormatUtils.gameIcon(gameType), gameType.name()));
 
         for (GameScoreData score : scores) {
-            sb.append(formatRankingLine(score.position(), score.userName(), score.duration(), score.points()));
+            sb.append(formatRankingLine(score.position(), FormatUtils.formatUserMention(score.userInfo()), score.duration(), score.points()));
         }
     }
 
@@ -50,7 +50,7 @@ class RankingMessageFactory {
         sb.append(toTile("🏆", "Global Score"));
 
         for (GlobalScoreData scoreData : global) {
-            sb.append(formatRankingLine(scoreData.getPosition(), scoreData.getUserName(), scoreData.getTotalDuration(), scoreData.getPoints()));
+            sb.append(formatRankingLine(scoreData.getPosition(), FormatUtils.formatUserMention(scoreData.getUserInfo()), scoreData.getTotalDuration(), scoreData.getPoints()));
         }
     }
 
@@ -60,7 +60,7 @@ class RankingMessageFactory {
             if (score.getPosition() != 1) {
                 break;
             }
-            winners.add(score.getUserName());
+            winners.add(FormatUtils.formatUserMention(score.getUserInfo()));
         }
         sb.append("\n<b>🎉🎉🎉 Congratulations ");
         for (int i = 0; i < winners.size(); i++) {

@@ -69,13 +69,14 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
         }));
     }
 
+    //TODO think if we want to ignore bots
     @Override
     public void consume(Update update) {
         if (!update.hasMessage()) {
             return;
         }
         if (update.getMessage().getChat().isGroupChat()) {
-            messageService.registerOrUpdateGroup(update.getMessage().getChatId(), update.getMessage().getChat().getTitle());
+            messageService.registerOrUpdateGroup(update.getMessage());
         }
         super.consume(update);
         messageService.processMessage(update.getMessage());
@@ -135,16 +136,6 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
                       .locality(ALL)
                       .privacy(PUBLIC)
                       .action(ctx -> messageService.start(ctx.update().getMessage()))
-                      .build();
-    }
-
-    public Ability join() {
-        return Ability.builder()
-                      .name("join")
-                      .info("Register yourself as a player in this group.")
-                      .locality(Locality.GROUP)
-                      .privacy(PUBLIC)
-                      .action(ctx -> messageService.addUserToGroup(ctx.update().getMessage()))
                       .build();
     }
 

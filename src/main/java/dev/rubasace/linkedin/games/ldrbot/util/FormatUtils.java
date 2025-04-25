@@ -1,11 +1,24 @@
 package dev.rubasace.linkedin.games.ldrbot.util;
 
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
+import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 
 import java.time.Duration;
 import java.time.LocalDate;
 
 public class FormatUtils {
+
+    public static String formatUserMention(final UserInfo userInfo) {
+        if (userInfo.userName() != null) {
+            return "@" + userInfo.userName();
+        } else {
+            String fullName = userInfo.firstName();
+            if (userInfo.lastName() != null) {
+                fullName += " " + userInfo.lastName();
+            }
+            return "<a href=\"tg://user?id=" + userInfo.id() + "\">" + EscapeUtils.escapeText(fullName) + "</a>";
+        }
+    }
 
     public static String formatDuration(Duration d) {
         long minutes = d.toMinutes();

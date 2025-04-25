@@ -12,13 +12,13 @@ import java.util.Map;
 class GlobalScoreDataAdapter {
 
     public List<GlobalScoreData> adapt(Map<GameType, List<GameScoreData>> gameScores) {
-        Map<String, GlobalScoreData> aggregated = new HashMap<>();
+        Map<Long, GlobalScoreData> aggregated = new HashMap<>();
 
         gameScores.values().stream()
                   .flatMap(List::stream)
-                  .forEach(score -> aggregated.compute(score.userName(), (user, existing) -> {
+                  .forEach(score -> aggregated.compute(score.userInfo().id(), (user, existing) -> {
                       if (existing == null) {
-                          return new GlobalScoreData(score.userName(), score.duration(), 0, score.points());
+                          return new GlobalScoreData(score.userInfo(), score.groupInfo(), score.duration(), 0, score.points());
                       } else {
                           existing.setTotalDuration(existing.getTotalDuration().plus(score.duration()));
                           existing.setPoints(existing.getPoints() + score.points());

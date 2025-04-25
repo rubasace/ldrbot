@@ -1,19 +1,19 @@
 package dev.rubasace.linkedin.games.ldrbot.group;
 
+import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
 @Getter
 public class UserLeftGroupEvent extends ApplicationEvent {
 
-    private final Long userId;
-    private final String userName;
-    private final Long chatId;
+    private final GroupInfo groupInfo;
+    private final UserInfo userInfo;
 
-    public UserLeftGroupEvent(final Object source, final Long userId, final String userName, final Long chatId) {
+    public UserLeftGroupEvent(final Object source, final GroupInfo groupInfo, final UserInfo userInfo) {
         super(source);
-        this.userId = userId;
-        this.userName = userName;
-        this.chatId = chatId;
+
+        this.groupInfo = groupInfo;
+        this.userInfo = userInfo;
     }
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public record GroupDailyScore(
+        //TODO move to groupInfo
         Long chatId,
         LocalDate gameDay,
         Map<GameType, List<GameScoreData>> gameScores,

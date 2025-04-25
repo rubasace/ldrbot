@@ -1,32 +1,31 @@
 package dev.rubasace.linkedin.games.ldrbot.session;
 
+import dev.rubasace.linkedin.games.ldrbot.group.GroupInfo;
+import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
 @Getter
 public class GameSessionDeletionEvent extends ApplicationEvent {
 
-    private final Long userId;
-    private final String userName;
+    private final GroupInfo groupInfo;
+    private final UserInfo userInfo;
     private final GameType game;
-    private final Long chatId;
     private final boolean allGames;
 
-    public GameSessionDeletionEvent(final Object source, final Long userId, final String userName, final GameType game, final Long chatId) {
+    public GameSessionDeletionEvent(final Object source, final GroupInfo groupInfo, UserInfo userInfo, final GameType game) {
         super(source);
-        this.userId = userId;
-        this.userName = userName;
+        this.groupInfo = groupInfo;
+        this.userInfo = userInfo;
         this.game = game;
-        this.chatId = chatId;
         this.allGames = false;
     }
 
-    public GameSessionDeletionEvent(final Object source, final Long userId, final String userName, final Long chatId) {
+    public GameSessionDeletionEvent(final Object source, final GroupInfo groupInfo, UserInfo userInfo) {
         super(source);
-        this.userId = userId;
-        this.userName = userName;
+        this.groupInfo = groupInfo;
+        this.userInfo = userInfo;
         this.game = null;
-        this.chatId = chatId;
         this.allGames = true;
     }
 

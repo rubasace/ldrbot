@@ -83,7 +83,6 @@ images.
 
 | Command                               | Description                                                                                                                                |
 |---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| `/join`                               | Explicitly registers you to compete in the group (optional, done automatically the moment you message in the group).                       |
 | `/games`                              | Lists the games being tracked by the bot.                                                                                                  |
 | `/delete <game>`                      | Removes your score for today's selected game.                                                                                              |
 | `/deleteAll`                          | Removes all of your submitted results for the current day.                                                                                 |
@@ -103,16 +102,13 @@ images.
 1. **Add the bot to your group**  
    LDRBot will start tracking scores and players from the moment it's added.
 
-2. **Run `/join` (optional)**  
-   Registers you manually. Optional as it happens automatically when you send any message on the tracked group.
-
-3. **Submit your LinkedIn score screenshot**  
+2. **Submit your LinkedIn score screenshot**  
    LDRBot will extract your time and game, and track it for the day.
 
-4. **Manage your score (optional)**  
+3. **Manage your score (optional)**  
    Use `/delete`, `/deleteall`, or `/override` (admin-only) to modify the results if needed. Useful for correcting misprocessed or mistaken submissions.
 
-5. **Watch the leaderboard evolve**  
+4. **Watch the leaderboard evolve**  
    Once everyone submits (or at day’s end), LDRBot will post the updated rankings.
 
 ## 💻 Tech Stack

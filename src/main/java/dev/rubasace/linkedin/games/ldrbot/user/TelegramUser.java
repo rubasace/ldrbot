@@ -25,6 +25,8 @@ public class TelegramUser {
     @Id
     private Long id;
     private String userName;
+    private String firstName;
+    private String lastName;
     @JsonIgnoreProperties("members")
     @ManyToMany(mappedBy = "members")
     private Set<TelegramGroup> groups;

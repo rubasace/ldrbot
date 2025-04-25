@@ -1,5 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.summary;
 
+import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroup;
 import dev.rubasace.linkedin.games.ldrbot.ranking.DailyGameScore;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSession;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
@@ -189,7 +190,7 @@ class GroupDailyScoreAdapterTest {
 
     private void assertGlobalScore(final String userName, final Duration duration, final int positions, final int points, final GlobalScoreData globalScoreData) {
         assertAll(
-                () -> assertEquals(userName, globalScoreData.getUserName()),
+                () -> assertEquals(userName, globalScoreData.getUserInfo().userName()),
                 () -> assertEquals(duration, globalScoreData.getTotalDuration()),
                 () -> assertEquals(positions, globalScoreData.getPosition()),
                 () -> assertEquals(points, globalScoreData.getPoints())
@@ -198,7 +199,7 @@ class GroupDailyScoreAdapterTest {
 
     private void assertGameScoreData(final DailyGameScore dailyGameScore, final GameScoreData gameScoreData) {
         assertAll(
-                () -> assertEquals(dailyGameScore.getUser().getUserName(), gameScoreData.userName()),
+                () -> assertEquals(dailyGameScore.getUser().getUserName(), gameScoreData.userInfo().userName()),
                 () -> assertEquals(dailyGameScore.getGame(), gameScoreData.game()),
                 () -> assertEquals(dailyGameScore.getGameSession().getDuration(), gameScoreData.duration()),
                 () -> assertEquals(dailyGameScore.getPosition(), gameScoreData.position()),
@@ -210,8 +211,10 @@ class GroupDailyScoreAdapterTest {
         DailyGameScore dailyGameScore = new DailyGameScore();
         GameSession gameSession = new GameSession();
         gameSession.setDuration(duration);
+        dailyGameScore.setGroup(new TelegramGroup());
         TelegramUser telegramUser = new TelegramUser();
         telegramUser.setUserName(userName);
+        telegramUser.setId((long) userName.hashCode());
         dailyGameScore.setUser(telegramUser);
         dailyGameScore.setGame(game);
         dailyGameScore.setPosition(position);

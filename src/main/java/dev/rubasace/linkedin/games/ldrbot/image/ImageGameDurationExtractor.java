@@ -2,6 +2,7 @@ package dev.rubasace.linkedin.games.ldrbot.image;
 
 import dev.rubasace.linkedin.games.ldrbot.session.GameDuration;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
+import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class ImageGameDurationExtractor {
         this.imageDurationExtractor = imageDurationExtractor;
     }
 
-    public Optional<GameDuration> extractGameDuration(final File imageFile, final Long chatId, final String username) throws GameDurationExtractionException {
+    public Optional<GameDuration> extractGameDuration(final File imageFile, final Long chatId, final UserInfo userInfo) throws GameDurationExtractionException {
         try (Mat image = opencv_imgcodecs.imread(imageFile.getAbsolutePath())) {
             Optional<GameType> gameType = imageGameExtractor.extractGame(image);
             if (gameType.isEmpty()) {
@@ -40,7 +41,7 @@ public class ImageGameDurationExtractor {
                 } else {
                     LOGGER.error(e.getMessage());
                 }
-                throw new GameDurationExtractionException(chatId, username, gameType.get());
+                throw new GameDurationExtractionException(chatId, userInfo, gameType.get());
             }
         }
     }

@@ -6,12 +6,10 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class GroupCreatedEvent extends ApplicationEvent {
 
-    private final Long chatId;
-    private final String groupName;
+    private final GroupInfo groupInfo;
 
-    public GroupCreatedEvent(final Object source, final Long chatId, final String groupName) {
+    public GroupCreatedEvent(final Object source, final GroupInfo groupInfo) {
         super(source);
-        this.chatId = chatId;
-        this.groupName = groupName;
+        this.groupInfo = groupInfo;
     }
 }
