@@ -83,5 +83,4 @@ public class GameSessionService {
                 user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, chatInfo, userInfo)));
     }
 
-
 }

@@ -14,6 +14,7 @@ import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserAdapter;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserService;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import dev.rubasace.linkedin.games.ldrbot.user.UserNotFoundException;
+import dev.rubasace.linkedin.games.ldrbot.util.InputSanitizer;
 import dev.rubasace.linkedin.games.ldrbot.util.ParseUtils;
 import dev.rubasace.linkedin.games.ldrbot.util.UsageFormatUtils;
 import lombok.SneakyThrows;
@@ -67,13 +68,13 @@ class OverrideAbility implements AbilityImplementation {
                       .info(UsageFormatUtils.formatUsage("/override @<user> <game> <mm:ss>", "Manually set a user’s time (admin-only)."))
                       .locality(Locality.GROUP)
                       .privacy(Privacy.GROUP_ADMIN)
-                      .action(ctx -> overrideTime(ctx.update().getMessage(), ctx.arguments()))
+                      .action(ctx -> overrideTime(ctx.update().getMessage(), InputSanitizer.sanitizeArguments(ctx.arguments())))
                       .build();
     }
 
     @SneakyThrows
     private void overrideTime(final Message message, final String[] arguments) {
-        if (arguments == null || arguments.length != 3) {
+        if (arguments.length != 3) {
             throw new InvalidUserInputException(INVALID_ARGUMENT_MESSAGE_TEMPLATE.formatted(message.getFrom().getUserName()), message.getChatId());
         }
         String username = arguments[0].startsWith("@") ? arguments[0].substring(1) : arguments[0];

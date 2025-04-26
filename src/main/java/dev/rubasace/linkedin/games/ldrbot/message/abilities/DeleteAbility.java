@@ -9,6 +9,7 @@ import dev.rubasace.linkedin.games.ldrbot.message.UserAdapter;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
+import dev.rubasace.linkedin.games.ldrbot.util.InputSanitizer;
 import dev.rubasace.linkedin.games.ldrbot.util.UsageFormatUtils;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -45,13 +46,13 @@ class DeleteAbility implements AbilityImplementation {
                       .info(UsageFormatUtils.formatUsage("/delete <gameInfo>", "Remove your submitted time for a gameInfo."))
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
-                      .action(ctx -> deleteTodayRecord(ctx.update().getMessage(), ctx.arguments()))
+                      .action(ctx -> deleteTodayRecord(ctx.update().getMessage(), InputSanitizer.sanitizeArguments(ctx.arguments())))
                       .build();
     }
 
     @SneakyThrows
     private void deleteTodayRecord(final Message message, final String[] arguments) {
-        if (arguments == null || arguments.length != 1) {
+        if (arguments.length != 1) {
             throw new InvalidUserInputException(INVALID_ARGUMENTS_MESSAGE, message.getChatId());
         }
 

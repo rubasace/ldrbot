@@ -64,7 +64,6 @@ public class TelegramGroupService {
         applicationEventPublisher.publishEvent(new UserJoinedGroupEvent(this, userInfo, chatInfo));
     }
 
-    //TODO make sure recorded games and scores of the day are deleted for the user
     @Transactional
     public void removeUserFromGroup(final ChatInfo chatInfo, final UserInfo userInfo) throws GroupNotFoundException {
         TelegramGroup telegramGroup = findGroupOrThrow(chatInfo);
