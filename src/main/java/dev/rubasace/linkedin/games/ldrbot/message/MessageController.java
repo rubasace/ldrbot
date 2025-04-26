@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
-//TODO add /about command
 //TODO add metrics
 //TODO allow to submit and delete/deleteall on private chat, affecting all joined groups
 @Component

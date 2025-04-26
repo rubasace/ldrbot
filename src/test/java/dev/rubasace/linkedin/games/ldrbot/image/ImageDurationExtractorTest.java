@@ -3,6 +3,8 @@ package dev.rubasace.linkedin.games.ldrbot.image;
 import dev.rubasace.linkedin.games.ldrbot.session.GameDuration;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
+import dev.rubasace.linkedin.games.ldrbot.util.BackpressureExecutors;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.converter.ArgumentConversionException;
 import org.junit.jupiter.params.converter.ConvertWith;
@@ -13,7 +15,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,6 +51,36 @@ class ImageDurationExtractorTest {
         );
 
 
+    }
+
+    @Test
+    void shouldAllowParallelization() {
+
+        ExecutorService executorService = BackpressureExecutors.newBackPressureVirtualThreadPerTaskExecutor("test", 200);
+
+        int taskCount = 50;
+
+        List<CompletableFuture<Void>> futures = IntStream.range(0, taskCount)
+                                                         .mapToObj(i -> CompletableFuture.runAsync(() -> {
+                                                             try {
+                                                                 File imageFile = new File("src/test/resources/images/1.jpeg");
+                                                                 Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, 1L,
+                                                                                                                                                      new UserInfo(-1L, "", "Test",
+                                                                                                                                                                   ""));
+
+                                                                 assertAll(
+                                                                         () -> assertEquals(Optional.of(Duration.ofSeconds(28)), gameDuration.map(GameDuration::duration)),
+                                                                         () -> assertEquals(Optional.of(GameType.QUEENS), gameDuration.map(GameDuration::type))
+                                                                 );
+                                                             } catch (Exception e) {
+                                                                 throw new RuntimeException(e);
+                                                             }
+                                                         }, executorService))
+                                                         .toList();
+
+        futures.forEach(CompletableFuture::join);
+
+        executorService.shutdown();
     }
 
     private static class DurationConverter extends SimpleArgumentConverter {

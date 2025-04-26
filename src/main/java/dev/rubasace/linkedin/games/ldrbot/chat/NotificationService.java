@@ -31,6 +31,7 @@ public class NotificationService {
             
             
             """ + ChatConstants.HELP_SUGGESTION;
+    //TODO improve escaping of messages
     private static final String ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE = "%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall";
     private static final String SUBMISSION_MESSAGE_TEMPLATE = "%s submitted their result for today's %s with a time of %s";
 
@@ -64,11 +65,10 @@ public class NotificationService {
         if (userFeedbackException instanceof UnknownCommandException unknownCommandException) {
             customTelegramClient.errorMessage(UNKNOWN_COMMAND_MESSAGE_TEMPLATE.formatted(unknownCommandException.getCommand()), unknownCommandException.getChatId());
         } else if (userFeedbackException instanceof SessionAlreadyRegisteredException sessionAlreadyRegisteredException) {
-            customTelegramClient.errorMessage(
-                    ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(sessionAlreadyRegisteredException.getUserInfo()),
-                                                                          sessionAlreadyRegisteredException.getGameType().name(),
-                                                                          sessionAlreadyRegisteredException.getGameType().name().toLowerCase()),
-                    sessionAlreadyRegisteredException.getChatId());
+            String text = ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(sessionAlreadyRegisteredException.getUserInfo()),
+                                                                                sessionAlreadyRegisteredException.getGameType().name(),
+                                                                                sessionAlreadyRegisteredException.getGameType().name().toLowerCase());
+            customTelegramClient.errorMessage(EscapeUtils.escapeText(text), sessionAlreadyRegisteredException.getChatId());
         } else if (userFeedbackException instanceof UserNotFoundException userNotFoundException) {
             customTelegramClient.errorMessage("User %s not found".formatted(FormatUtils.formatUserMention(userNotFoundException.getUserInfo())), userNotFoundException.getChatId());
         } else if (userFeedbackException instanceof GameNameNotFoundException gameNameNotFoundException) {
