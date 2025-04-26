@@ -15,7 +15,7 @@ public class BackpressureExecutors {
 
     public static ExecutorService newBackPressureVirtualThreadPerTaskExecutor(String name, int maxConcurrency) {
         ThreadFactory factory = Thread.ofVirtual().name(name, 1).factory();
-        ExecutorService delegate = Executors.newThreadPerTaskExecutor(factory);
+        ExecutorService delegate = Executors.newFixedThreadPool(maxConcurrency, factory);
         return new BackpressureExecutorService(delegate, maxConcurrency, name);
     }
 
