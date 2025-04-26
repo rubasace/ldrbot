@@ -70,7 +70,7 @@ class HelpAbility implements AbilityImplementation, ApplicationListener<Applicat
 
 
     public void help(final Long chatId) {
-        customTelegramClient.info(this.helpMessage, chatId);
+        customTelegramClient.message(this.helpMessage, chatId);
     }
 
 

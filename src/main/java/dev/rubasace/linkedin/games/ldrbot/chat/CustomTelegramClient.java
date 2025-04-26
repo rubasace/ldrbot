@@ -19,31 +19,21 @@ public class CustomTelegramClient {
         this.telegramClient = telegramClient;
     }
 
-    //TODO unify with info
+    //TODO unify with message
     void html(final String text, final Long chatId) {
         sendMessage(text, chatId);
     }
 
-    public void info(final String text, final Long chatId) {
+    public void message(final String text, final Long chatId) {
         sendMessage(text, chatId);
     }
 
-    public void success(final String text, final Long chatId) {
+    public void successMessage(final String text, final Long chatId) {
         sendMessage("✅ " + text, chatId);
     }
 
-    public void error(final String text, final Long chatId) {
+    public void errorMessage(final String text, final Long chatId) {
         sendMessage("❌ " + text, chatId);
-    }
-
-    //TODO cleanup
-    void reminder(final String text, final Long chatId) {
-        String formatted = """
-                    ⏰ <b>Don't forget!</b> ⏰
-                
-                    %s
-                """.formatted(text);
-        sendMessage(formatted, chatId);
     }
 
     private void sendMessage(final String text, final Long chatId) {

@@ -58,7 +58,7 @@ class GamesAbility implements AbilityImplementation {
                                       .map(game -> "%s %s".formatted(FormatUtils.gameIcon(game), game.name()))
                                       .collect(Collectors.joining("\n"));
 
-            customTelegramClient.info("This group is currently tracking:\n" + text, chatInfo.chatId());
+            customTelegramClient.message("This group is currently tracking:\n" + text, chatInfo.chatId());
         }
     }
 

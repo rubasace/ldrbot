@@ -52,9 +52,9 @@ class StartAbility implements AbilityImplementation {
 
     private void start(final Message message) {
         if (message.getChat().isGroupChat()) {
-            customTelegramClient.info(GROUP_START_MESSAGE, message.getChatId());
+            customTelegramClient.message(GROUP_START_MESSAGE, message.getChatId());
         } else {
-            customTelegramClient.info(PRIVATE_START_MESSAGE, message.getChatId());
+            customTelegramClient.message(PRIVATE_START_MESSAGE, message.getChatId());
         }
     }
 
