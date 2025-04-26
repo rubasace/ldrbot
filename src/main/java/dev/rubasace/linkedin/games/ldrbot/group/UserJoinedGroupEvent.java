@@ -8,11 +8,11 @@ import org.springframework.context.ApplicationEvent;
 public class UserJoinedGroupEvent extends ApplicationEvent {
 
     private final UserInfo userInfo;
-    private final GroupInfo groupInfo;
+    private final ChatInfo chatInfo;
 
-    public UserJoinedGroupEvent(final Object source, final UserInfo userInfo, final GroupInfo groupInfo) {
+    public UserJoinedGroupEvent(final Object source, final UserInfo userInfo, final ChatInfo chatInfo) {
         super(source);
         this.userInfo = userInfo;
-        this.groupInfo = groupInfo;
+        this.chatInfo = chatInfo;
     }
 }

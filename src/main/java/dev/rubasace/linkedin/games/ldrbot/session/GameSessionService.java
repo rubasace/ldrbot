@@ -1,6 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.session;
 
-import dev.rubasace.linkedin.games.ldrbot.group.GroupInfo;
+import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroup;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
@@ -34,15 +34,15 @@ public class GameSessionService {
     }
 
     @Transactional
-    public Optional<GameSession> recordGameSession(final GroupInfo groupInfo, final UserInfo userInfo, final GameDuration gameDuration) throws SessionAlreadyRegisteredException, GroupNotFoundException {
-        TelegramGroup telegramGroup = telegramGroupService.findGroupOrThrow(groupInfo);
+    public Optional<GameSession> recordGameSession(final ChatInfo chatInfo, final UserInfo userInfo, final GameDuration gameDuration) throws SessionAlreadyRegisteredException, GroupNotFoundException {
+        TelegramGroup telegramGroup = telegramGroupService.findGroupOrThrow(chatInfo);
         TelegramUser telegramUser = telegramUserService.findOrCreate(userInfo);
         if (!telegramGroup.getTrackedGames().contains(gameDuration.type())) {
             return Optional.empty();
         }
         LocalDate gameDay = LinkedinTimeUtils.todayGameDay();
         if (gameSessionRepository.existsByUserIdAndGroupChatIdAndGameAndGameDay(telegramUser.getId(), telegramGroup.getChatId(), gameDuration.type(), gameDay)) {
-            throw new SessionAlreadyRegisteredException(groupInfo, userInfo, gameDuration.type());
+            throw new SessionAlreadyRegisteredException(chatInfo, userInfo, gameDuration.type());
         }
         GameSession gameSession = new GameSession();
         gameSession.setGame(gameDuration.type());
@@ -52,20 +52,20 @@ public class GameSessionService {
         gameSession.setDuration(gameDuration.duration());
         GameSession savedSession = gameSessionRepository.saveAndFlush(gameSession);
         applicationEventPublisher.publishEvent(
-                new GameSessionRegistrationEvent(this, groupInfo, userInfo, gameSession.getGame(), gameSession.getDuration(), gameDay,
+                new GameSessionRegistrationEvent(this, chatInfo, userInfo, gameSession.getGame(), gameSession.getDuration(), gameDay,
                                                  telegramGroup.getChatId()));
         return Optional.of(savedSession);
     }
 
     @Transactional
-    public void deleteTodaySession(final GroupInfo groupInfo, final UserInfo userInfo, final GameType game) {
-        gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameAndGameDay(userInfo.id(), groupInfo.chatId(), game, LinkedinTimeUtils.todayGameDay());
+    public void deleteTodaySession(final ChatInfo chatInfo, final UserInfo userInfo, final GameType game) {
+        gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameAndGameDay(userInfo.id(), chatInfo.chatId(), game, LinkedinTimeUtils.todayGameDay());
         telegramUserService.find(userInfo).ifPresent(
-                user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, groupInfo, userInfo, game)));
+                user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, chatInfo, userInfo, game)));
     }
 
-    public Stream<GameSession> getDaySessions(final GroupInfo groupInfo, final UserInfo userInfo, final LocalDate gameDay) {
-        return gameSessionRepository.getByUserIdAndGroupChatIdAndGameDay(userInfo.id(), groupInfo.chatId(), gameDay);
+    public Stream<GameSession> getDaySessions(final ChatInfo chatInfo, final UserInfo userInfo, final LocalDate gameDay) {
+        return gameSessionRepository.getByUserIdAndGroupChatIdAndGameDay(userInfo.id(), chatInfo.chatId(), gameDay);
     }
 
     public Stream<GameSession> getDaySessions(final Set<Long> userIds, final Long chatId, final LocalDate gameDay) {
@@ -73,10 +73,10 @@ public class GameSessionService {
     }
 
     @Transactional
-    public void deleteDaySessions(final GroupInfo groupInfo, final UserInfo userInfo, final LocalDate gameDay) {
-        gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameDay(userInfo.id(), groupInfo.chatId(), gameDay);
+    public void deleteDaySessions(final ChatInfo chatInfo, final UserInfo userInfo, final LocalDate gameDay) {
+        gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameDay(userInfo.id(), chatInfo.chatId(), gameDay);
         telegramUserService.find(userInfo).ifPresent(
-                user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, groupInfo, userInfo)));
+                user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, chatInfo, userInfo)));
     }
 
 

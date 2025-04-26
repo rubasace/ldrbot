@@ -7,13 +7,13 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class UserLeftGroupEvent extends ApplicationEvent {
 
-    private final GroupInfo groupInfo;
+    private final ChatInfo chatInfo;
     private final UserInfo userInfo;
 
-    public UserLeftGroupEvent(final Object source, final GroupInfo groupInfo, final UserInfo userInfo) {
+    public UserLeftGroupEvent(final Object source, final ChatInfo chatInfo, final UserInfo userInfo) {
         super(source);
 
-        this.groupInfo = groupInfo;
+        this.chatInfo = chatInfo;
         this.userInfo = userInfo;
     }
 }

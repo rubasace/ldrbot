@@ -93,7 +93,7 @@ public class NotificationService {
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleGroupCreation(final GroupCreatedEvent groupCreatedEvent) {
-        customTelegramClient.info(GROUP_GREETING_MESSAGE, groupCreatedEvent.getGroupInfo().chatId());
+        customTelegramClient.info(GROUP_GREETING_MESSAGE, groupCreatedEvent.getChatInfo().chatId());
     }
 
     @Order(DAILY_RANKING_NOTIFICATION_ORDER)
@@ -118,7 +118,7 @@ public class NotificationService {
         customTelegramClient.info(SUBMISSION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(gameSessionRegistrationEvent.getUserInfo()),
                                                                         gameSessionRegistrationEvent.getGame().name().toLowerCase(),
                                                                         FormatUtils.formatDuration(gameSessionRegistrationEvent.getDuration())),
-                                  gameSessionRegistrationEvent.getGroupInfo().chatId());
+                                  gameSessionRegistrationEvent.getChatInfo().chatId());
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)
@@ -127,12 +127,12 @@ public class NotificationService {
     void handleSessionDeletion(final GameSessionDeletionEvent gameSessionDeletionEvent) {
         if (gameSessionDeletionEvent.isAllGames()) {
             customTelegramClient.success(ALL_SESSION_DELETION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(gameSessionDeletionEvent.getUserInfo())),
-                                         gameSessionDeletionEvent.getGroupInfo().chatId());
+                                         gameSessionDeletionEvent.getChatInfo().chatId());
         } else {
             customTelegramClient.success(
                     GAME_SESSION_DELETION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(gameSessionDeletionEvent.getUserInfo()),
                                                                      gameSessionDeletionEvent.getGame().name().toLowerCase()),
-                    gameSessionDeletionEvent.getGroupInfo().chatId());
+                    gameSessionDeletionEvent.getChatInfo().chatId());
         }
     }
 
@@ -141,7 +141,7 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleUserJoin(final UserJoinedGroupEvent userJoinedGroupEvent) {
         customTelegramClient.info(USER_JOIN_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(userJoinedGroupEvent.getUserInfo())),
-                                  userJoinedGroupEvent.getGroupInfo().chatId());
+                                  userJoinedGroupEvent.getChatInfo().chatId());
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)
@@ -149,7 +149,7 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleUserLeave(final UserLeftGroupEvent userLeftGroupEvent) {
         customTelegramClient.info(USER_LEAVE_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(userLeftGroupEvent.getUserInfo())),
-                                  userLeftGroupEvent.getGroupInfo().chatId());
+                                  userLeftGroupEvent.getChatInfo().chatId());
     }
 
     @Order(REMINDER_NOTIFICATION_ORDER)
@@ -157,7 +157,7 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleUserMissingSessionsReminder(final UserMissingSessionsReminderEvent userMissingSessionsReminderEvent) {
         customTelegramClient.reminder(USER_MISSING_SESSIONS_REMINDER.formatted(FormatUtils.formatUserMention(userMissingSessionsReminderEvent.getUserInfo())),
-                                      userMissingSessionsReminderEvent.getGroupInfo().chatId());
+                                      userMissingSessionsReminderEvent.getChatInfo().chatId());
     }
 
 

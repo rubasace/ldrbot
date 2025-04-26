@@ -133,6 +133,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
         return -1;
     }
 
+    //TODO add /about command
     //TODO add metrics
     //TODO allow to submit and delete/deleteall on private chat, affecting all joined groups
     //TODO move actions to separate classes to control a bit better the implementation (probably move away from main chatService into dedicated components)

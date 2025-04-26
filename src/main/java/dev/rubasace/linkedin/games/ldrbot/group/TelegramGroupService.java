@@ -34,21 +34,21 @@ public class TelegramGroupService {
         return telegramGroupRepository.findById(chatId);
     }
 
-    public TelegramGroup findGroupOrThrow(final GroupInfo groupInfo) throws GroupNotFoundException {
-        return this.findGroup(groupInfo.chatId()).orElseThrow(() -> new GroupNotFoundException(groupInfo));
+    public TelegramGroup findGroupOrThrow(final ChatInfo chatInfo) throws GroupNotFoundException {
+        return this.findGroup(chatInfo.chatId()).orElseThrow(() -> new GroupNotFoundException(chatInfo));
     }
 
 
     @Transactional
-    public TelegramGroup registerOrUpdateGroup(final GroupInfo groupInfo) {
-        return telegramGroupRepository.findById(groupInfo.chatId())
-                                      .map(telegramGroup -> udpateGroupData(telegramGroup, groupInfo))
-                                      .orElseGet(() -> this.createGroup(groupInfo));
+    public TelegramGroup registerOrUpdateGroup(final ChatInfo chatInfo) {
+        return telegramGroupRepository.findById(chatInfo.chatId())
+                                      .map(telegramGroup -> udpateGroupData(telegramGroup, chatInfo))
+                                      .orElseGet(() -> this.createGroup(chatInfo));
     }
 
     @Transactional
-    public void addUserToGroup(final GroupInfo groupInfo, final UserInfo userInfo) throws GroupNotFoundException {
-        TelegramGroup telegramGroup = findGroupOrThrow(groupInfo);
+    public void addUserToGroup(final ChatInfo chatInfo, final UserInfo userInfo) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatInfo);
 
         TelegramUser telegramUser = telegramUserService.findOrCreate(userInfo);
         if (telegramGroup.getMembers().contains(telegramUser)) {
@@ -56,13 +56,13 @@ public class TelegramGroupService {
         }
         telegramGroup.getMembers().add(telegramUser);
         telegramGroupRepository.save(telegramGroup);
-        applicationEventPublisher.publishEvent(new UserJoinedGroupEvent(this, userInfo, groupInfo));
+        applicationEventPublisher.publishEvent(new UserJoinedGroupEvent(this, userInfo, chatInfo));
     }
 
     //TODO make sure recorded games and scores of the day are deleted for the user
     @Transactional
-    public void removeUserFromGroup(final GroupInfo groupInfo, final UserInfo userInfo) throws GroupNotFoundException {
-        TelegramGroup telegramGroup = findGroupOrThrow(groupInfo);
+    public void removeUserFromGroup(final ChatInfo chatInfo, final UserInfo userInfo) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatInfo);
 
         Optional<TelegramUser> telegramUser = telegramUserService.find(userInfo);
         if (telegramUser.isEmpty() || !telegramGroup.getMembers().contains(telegramUser.get())) {
@@ -70,38 +70,38 @@ public class TelegramGroupService {
         }
         telegramGroup.getMembers().remove(telegramUser.get());
         telegramGroupRepository.save(telegramGroup);
-        applicationEventPublisher.publishEvent(new UserLeftGroupEvent(this, groupInfo, userInfo));
+        applicationEventPublisher.publishEvent(new UserLeftGroupEvent(this, chatInfo, userInfo));
     }
 
     public Stream<TelegramGroup> findGroupsWithMissingScores(final LocalDate gameDay) {
         return telegramGroupRepository.findGroupsWithMissingScores(gameDay);
     }
 
-    private TelegramGroup udpateGroupData(final TelegramGroup telegramGroup, final GroupInfo groupInfo) {
-        if (telegramGroup.getGroupName().equals(groupInfo.title())) {
+    private TelegramGroup udpateGroupData(final TelegramGroup telegramGroup, final ChatInfo chatInfo) {
+        if (telegramGroup.getGroupName().equals(chatInfo.title())) {
             return telegramGroup;
         }
-        telegramGroup.setGroupName(groupInfo.title());
+        telegramGroup.setGroupName(chatInfo.title());
         return telegramGroupRepository.save(telegramGroup);
     }
 
 
-    private TelegramGroup createGroup(final GroupInfo groupInfo) {
+    private TelegramGroup createGroup(final ChatInfo chatInfo) {
         //TODO stop hardcoding the timezone and request it as part of the command interaction
-        TelegramGroup telegramGroup = new TelegramGroup(groupInfo.chatId(), groupInfo.title(), ZoneId.of("Europe/Madrid"), EnumSet.allOf(GameType.class), new HashSet<>(),
+        TelegramGroup telegramGroup = new TelegramGroup(chatInfo.chatId(), chatInfo.title(), ZoneId.of("Europe/Madrid"), EnumSet.allOf(GameType.class), new HashSet<>(),
                                                         Set.of());
         TelegramGroup createdTelegramGroup = telegramGroupRepository.save(telegramGroup);
-        applicationEventPublisher.publishEvent(new GroupCreatedEvent(this, groupInfo));
+        applicationEventPublisher.publishEvent(new GroupCreatedEvent(this, chatInfo));
         return createdTelegramGroup;
     }
 
-    public Set<GameType> listTrackedGames(final GroupInfo groupInfo) throws GroupNotFoundException {
-        TelegramGroup telegramGroup = findGroupOrThrow(groupInfo);
+    public Set<GameType> listTrackedGames(final ChatInfo chatInfo) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatInfo);
         return telegramGroup.getTrackedGames();
     }
 
     @Transactional
-    public void removeGroup(final GroupInfo groupInfo) {
+    public void removeGroup(final ChatInfo chatInfo) {
         //TODO allow to remove groups, probably with soft deletion
         //        telegramGroupRepository.deleteById(chatId);
     }

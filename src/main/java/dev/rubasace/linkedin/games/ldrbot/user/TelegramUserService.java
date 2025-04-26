@@ -13,11 +13,11 @@ import java.util.stream.Stream;
 public class TelegramUserService {
 
     private final TelegramUserRepository telegramUserRepository;
-    private final TelegramUserAdapter telegramUserAdapter;
+    private final TelegramUserMapper telegramUserMapper;
 
-    TelegramUserService(final TelegramUserRepository telegramUserRepository, final TelegramUserAdapter telegramUserAdapter) {
+    TelegramUserService(final TelegramUserRepository telegramUserRepository, final TelegramUserMapper telegramUserMapper) {
         this.telegramUserRepository = telegramUserRepository;
-        this.telegramUserAdapter = telegramUserAdapter;
+        this.telegramUserMapper = telegramUserMapper;
     }
 
     public Optional<TelegramUser> find(final UserInfo userInfo) {
@@ -52,6 +52,6 @@ public class TelegramUserService {
     }
 
     private TelegramUser createUser(final UserInfo userInfo) {
-        return telegramUserRepository.saveAndFlush(telegramUserAdapter.adapt(userInfo));
+        return telegramUserRepository.saveAndFlush(telegramUserMapper.map(userInfo));
     }
 }

@@ -1,6 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.reminder;
 
-import dev.rubasace.linkedin.games.ldrbot.group.GroupInfo;
+import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
 import dev.rubasace.linkedin.games.ldrbot.user.MissingSessionUserProjection;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserService;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
@@ -14,10 +14,14 @@ public class RemindersService {
 
     private final TelegramUserService telegramUserService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final MissingSessionUserProjectionUserInfoAdapter missingSessionUserProjectionUserInfoAdapter;
+    private final MissingSessionUserProjectionChatInfoAdapter missingSessionUserProjectionChatInfoAdapter;
 
-    public RemindersService(final TelegramUserService telegramUserService, final ApplicationEventPublisher applicationEventPublisher) {
+    public RemindersService(final TelegramUserService telegramUserService, final ApplicationEventPublisher applicationEventPublisher, final MissingSessionUserProjectionUserInfoAdapter missingSessionUserProjectionUserInfoAdapter, final MissingSessionUserProjectionChatInfoAdapter missingSessionUserProjectionChatInfoAdapter) {
         this.telegramUserService = telegramUserService;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.missingSessionUserProjectionUserInfoAdapter = missingSessionUserProjectionUserInfoAdapter;
+        this.missingSessionUserProjectionChatInfoAdapter = missingSessionUserProjectionChatInfoAdapter;
     }
 
     //TODO also parallelize and run in isolated transactions
@@ -29,9 +33,10 @@ public class RemindersService {
 
     private void remindMissingUser(MissingSessionUserProjection missingSessionUserProjection) {
 
-        GroupInfo groupInfo = new GroupInfo(missingSessionUserProjection.getChatId(), missingSessionUserProjection.getGroupName());
-        UserInfo userInfo = new UserInfo(missingSessionUserProjection.getUserId(), missingSessionUserProjection.getUserName(), missingSessionUserProjection.getFirstName(),
-                                         missingSessionUserProjection.getLastName());
-        applicationEventPublisher.publishEvent(new UserMissingSessionsReminderEvent(this, groupInfo, userInfo));
+        ChatInfo chatInfo = missingSessionUserProjectionChatInfoAdapter.adapt(missingSessionUserProjection);
+        UserInfo userInfo = missingSessionUserProjectionUserInfoAdapter.adapt(missingSessionUserProjection);
+        applicationEventPublisher.publishEvent(new UserMissingSessionsReminderEvent(this, chatInfo, userInfo));
     }
+
+
 }

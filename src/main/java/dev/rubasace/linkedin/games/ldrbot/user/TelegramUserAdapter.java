@@ -2,12 +2,10 @@ package dev.rubasace.linkedin.games.ldrbot.user;
 
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-
 @Component
-class TelegramUserAdapter {
+public class TelegramUserAdapter {
 
-    TelegramUser adapt(final UserInfo userInfo) {
-        return new TelegramUser(userInfo.id(), userInfo.userName(), userInfo.firstName(), userInfo.lastName(), new HashSet<>(), new HashSet<>());
+    public UserInfo adapt(final TelegramUser telegramUser) {
+        return new UserInfo(telegramUser.getId(), telegramUser.getUserName(), telegramUser.getFirstName(), telegramUser.getLastName());
     }
 }

@@ -1,10 +1,12 @@
 package dev.rubasace.linkedin.games.ldrbot.summary;
 
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroup;
+import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupAdapter;
 import dev.rubasace.linkedin.games.ldrbot.ranking.DailyGameScore;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSession;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
+import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserAdapter;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -18,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GroupDailyScoreAdapterTest {
 
-    private final GroupDailyScoreAdapter groupDailyScoreAdapter = new GroupDailyScoreAdapter(new GameScoreDataAdapter(), new GlobalScoreDataAdapter());
+    private final GroupDailyScoreAdapter groupDailyScoreAdapter = new GroupDailyScoreAdapter(new GameScoreDataAdapter(new TelegramGroupAdapter(), new TelegramUserAdapter()),
+                                                                                             new GlobalScoreDataAdapter());
 
     @Test
     void shouldAdapt() {

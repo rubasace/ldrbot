@@ -5,10 +5,10 @@ import lombok.Getter;
 @Getter
 public class GroupNotFoundException extends Exception {
 
-    private final GroupInfo groupInfo;
+    private final ChatInfo chatInfo;
 
-    public GroupNotFoundException(final GroupInfo groupInfo) {
-        super("Couldn't find group with id " + groupInfo.chatId());
-        this.groupInfo = groupInfo;
+    public GroupNotFoundException(final ChatInfo chatInfo) {
+        super("Couldn't find group with id " + chatInfo.chatId());
+        this.chatInfo = chatInfo;
     }
 }

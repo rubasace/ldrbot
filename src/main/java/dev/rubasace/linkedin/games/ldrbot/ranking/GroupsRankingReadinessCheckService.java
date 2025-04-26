@@ -1,13 +1,15 @@
 package dev.rubasace.linkedin.games.ldrbot.ranking;
 
-import dev.rubasace.linkedin.games.ldrbot.group.GroupInfo;
+import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroup;
+import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupAdapter;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSession;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionRegistrationEvent;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
+import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserAdapter;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,11 +26,15 @@ class GroupsRankingReadinessCheckService {
     private final TelegramGroupService telegramGroupService;
     private final GameSessionService gameSessionService;
     private final GroupRankingService groupRankingService;
+    private final TelegramUserAdapter telegramUserAdapter;
+    private final TelegramGroupAdapter telegramGroupAdapter;
 
-    GroupsRankingReadinessCheckService(final TelegramGroupService telegramGroupService, final GameSessionService gameSessionService, final GroupRankingService groupRankingService) {
+    GroupsRankingReadinessCheckService(final TelegramGroupService telegramGroupService, final GameSessionService gameSessionService, final GroupRankingService groupRankingService, final TelegramUserAdapter telegramUserAdapter, final TelegramGroupAdapter telegramGroupAdapter) {
         this.telegramGroupService = telegramGroupService;
         this.gameSessionService = gameSessionService;
         this.groupRankingService = groupRankingService;
+        this.telegramUserAdapter = telegramUserAdapter;
+        this.telegramGroupAdapter = telegramGroupAdapter;
     }
 
 
@@ -48,10 +54,9 @@ class GroupsRankingReadinessCheckService {
     }
 
     private boolean submittedAllGames(final TelegramUser telegramUser, final TelegramGroup telegramGroup, final LocalDate gameDay) {
-        //TODO use adapters
-        GroupInfo groupInfo = new GroupInfo(telegramGroup.getChatId(), telegramGroup.getGroupName());
-        UserInfo userInfo = new UserInfo(telegramUser.getId(), telegramUser.getUserName(), telegramUser.getFirstName(), telegramUser.getLastName());
-        Set<GameType> submittedGames = gameSessionService.getDaySessions(groupInfo, userInfo, gameDay)
+        ChatInfo chatInfo = telegramGroupAdapter.adapt(telegramGroup);
+        UserInfo userInfo = telegramUserAdapter.adapt(telegramUser);
+        Set<GameType> submittedGames = gameSessionService.getDaySessions(chatInfo, userInfo, gameDay)
                                                          .map(GameSession::getGame)
                                                          .collect(Collectors.toSet());
         return submittedGames.containsAll(telegramGroup.getTrackedGames());

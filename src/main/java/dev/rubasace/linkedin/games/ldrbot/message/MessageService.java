@@ -4,7 +4,7 @@ import dev.rubasace.linkedin.games.ldrbot.assets.AssetsDownloader;
 import dev.rubasace.linkedin.games.ldrbot.chat.ChatService;
 import dev.rubasace.linkedin.games.ldrbot.configuration.TelegramBotProperties;
 import dev.rubasace.linkedin.games.ldrbot.exception.HandleBotExceptions;
-import dev.rubasace.linkedin.games.ldrbot.group.GroupInfo;
+import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroup;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
@@ -17,6 +17,7 @@ import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.session.SessionAlreadyRegisteredException;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
+import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserAdapter;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserService;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import dev.rubasace.linkedin.games.ldrbot.user.UserNotFoundException;
@@ -53,11 +54,12 @@ class MessageService {
     private final GroupRankingService groupRankingService;
     private final TelegramBotProperties telegramBotProperties;
     private final Map<String, BotCommand> knownCommands;
-    private final UserInfoAdapter userInfoAdapter;
-    private final GroupInfoAdapter groupInfoAdapter;
+    private final UserAdapter userAdapter;
+    private final ChatAdapter chatAdapter;
     private final TelegramUserService telegramUserService;
+    private final TelegramUserAdapter telegramUserAdapter;
 
-    MessageService(final ImageGameDurationExtractor imageGameDurationExtractor, final AssetsDownloader assetsDownloader, final GameSessionService gameSessionService, final TelegramGroupService telegramGroupService, final ChatService chatService, final GroupRankingService groupRankingService, final TelegramBotProperties telegramBotProperties, final UserInfoAdapter userInfoAdapter, final GroupInfoAdapter groupInfoAdapter, final TelegramUserService telegramUserService) {
+    MessageService(final ImageGameDurationExtractor imageGameDurationExtractor, final AssetsDownloader assetsDownloader, final GameSessionService gameSessionService, final TelegramGroupService telegramGroupService, final ChatService chatService, final GroupRankingService groupRankingService, final TelegramBotProperties telegramBotProperties, final UserAdapter userAdapter, final ChatAdapter chatAdapter, final TelegramUserService telegramUserService, final TelegramUserAdapter telegramUserAdapter) {
         this.imageGameDurationExtractor = imageGameDurationExtractor;
         this.assetsDownloader = assetsDownloader;
         this.gameSessionService = gameSessionService;
@@ -65,9 +67,10 @@ class MessageService {
         this.chatService = chatService;
         this.groupRankingService = groupRankingService;
         this.telegramBotProperties = telegramBotProperties;
-        this.userInfoAdapter = userInfoAdapter;
-        this.groupInfoAdapter = groupInfoAdapter;
-        knownCommands = new HashMap<>();
+        this.userAdapter = userAdapter;
+        this.chatAdapter = chatAdapter;
+        this.telegramUserAdapter = telegramUserAdapter;
+        this.knownCommands = new HashMap<>();
         this.telegramUserService = telegramUserService;
     }
 
@@ -78,16 +81,16 @@ class MessageService {
 
     @Transactional
     TelegramGroup registerOrUpdateGroup(final Message message) {
-        GroupInfo groupInfo = groupInfoAdapter.adapt(message.getChat());
-        return telegramGroupService.registerOrUpdateGroup(groupInfo);
+        ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
+        return telegramGroupService.registerOrUpdateGroup(chatInfo);
     }
 
     @SneakyThrows
     @Transactional
     void addUserToGroup(final Message message) {
-        GroupInfo groupInfo = groupInfoAdapter.adapt(message.getChat());
-        UserInfo userInfo = userInfoAdapter.adapt(message.getFrom());
-        telegramGroupService.addUserToGroup(groupInfo, userInfo);
+        ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
+        UserInfo userInfo = userAdapter.adapt(message.getFrom());
+        telegramGroupService.addUserToGroup(chatInfo, userInfo);
     }
 
     @SneakyThrows
@@ -111,23 +114,23 @@ class MessageService {
     }
 
     private void processGroupMessage(final Message message) throws GroupNotFoundException, SessionAlreadyRegisteredException, GameDurationExtractionException {
-        GroupInfo groupInfo = groupInfoAdapter.adapt(message.getChat());
+        ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
         if (isBotRemovedFromGroup(message)) {
-            telegramGroupService.removeGroup(groupInfo);
+            telegramGroupService.removeGroup(chatInfo);
             return;
         }
         addUserToGroup(message);
         if (!CollectionUtils.isEmpty(message.getNewChatMembers())) {
             for (User user : message.getNewChatMembers()) {
                 if (!telegramBotProperties.getUsername().equalsIgnoreCase(user.getUserName())) {
-                    telegramGroupService.addUserToGroup(groupInfo, userInfoAdapter.adapt(user));
+                    telegramGroupService.addUserToGroup(chatInfo, userAdapter.adapt(user));
                 }
             }
             return;
         }
         if (message.getLeftChatMember() != null) {
-            UserInfo userInfo = userInfoAdapter.adapt(message.getLeftChatMember());
-            telegramGroupService.removeUserFromGroup(groupInfo, userInfo);
+            UserInfo userInfo = userAdapter.adapt(message.getLeftChatMember());
+            telegramGroupService.removeUserFromGroup(chatInfo, userInfo);
             return;
         }
 
@@ -136,13 +139,13 @@ class MessageService {
             return;
         }
 
-        UserInfo userInfo = userInfoAdapter.adapt(message.getFrom());
+        UserInfo userInfo = userAdapter.adapt(message.getFrom());
         File imageFile = assetsDownloader.getImage(photoSizeList);
         Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, message.getChatId(), userInfo);
         if (gameDuration.isEmpty()) {
             return;
         }
-        gameSessionService.recordGameSession(groupInfo, userInfo, gameDuration.get());
+        gameSessionService.recordGameSession(chatInfo, userInfo, gameDuration.get());
     }
 
     private boolean isBotRemovedFromGroup(final Message message) {
@@ -167,10 +170,10 @@ class MessageService {
         }
 
         String gameName = arguments[0];
-        GroupInfo groupInfo = groupInfoAdapter.adapt(message.getChat());
-        UserInfo userInfo = userInfoAdapter.adapt(message.getFrom());
+        ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
+        UserInfo userInfo = userAdapter.adapt(message.getFrom());
         GameType gameType = getGameType(gameName, message.getChatId());
-        gameSessionService.deleteTodaySession(groupInfo, userInfo, gameType);
+        gameSessionService.deleteTodaySession(chatInfo, userInfo, gameType);
     }
 
     private GameType getGameType(final String gameName, final Long chatId) throws GameNameNotFoundException {
@@ -185,9 +188,9 @@ class MessageService {
 
     @Transactional
     public void deleteTodayRecords(final Message message) {
-        GroupInfo groupInfo = groupInfoAdapter.adapt(message.getChat());
-        UserInfo userInfo = userInfoAdapter.adapt(message.getFrom());
-        gameSessionService.deleteDaySessions(groupInfo, userInfo, LinkedinTimeUtils.todayGameDay());
+        ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
+        UserInfo userInfo = userAdapter.adapt(message.getFrom());
+        gameSessionService.deleteDaySessions(chatInfo, userInfo, LinkedinTimeUtils.todayGameDay());
     }
 
     @Transactional
@@ -198,8 +201,8 @@ class MessageService {
 
     @SneakyThrows
     public void listTrackedGames(final Message message) {
-        GroupInfo groupInfo = groupInfoAdapter.adapt(message.getChat());
-        chatService.listTrackedGames(groupInfo);
+        ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
+        chatService.listTrackedGames(chatInfo);
     }
 
     @Transactional
@@ -211,17 +214,16 @@ class MessageService {
         if (duration.isEmpty()) {
             throw new InvalidUserInputException("Invalid time format. Use `mm:ss`, e.g. `1:30` or `12:05`", message.getChatId());
         }
-        GroupInfo groupInfo = groupInfoAdapter.adapt(message.getChat());
+        ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
         Optional<User> mentionedUser = getMentionedUser(message);
         if (mentionedUser.isPresent()) {
-            UserInfo userInfo = userInfoAdapter.adapt(mentionedUser.get());
-            gameSessionService.recordGameSession(groupInfo, userInfo, new GameDuration(gameType, duration.get()));
+            UserInfo userInfo = userAdapter.adapt(mentionedUser.get());
+            gameSessionService.recordGameSession(chatInfo, userInfo, new GameDuration(gameType, duration.get()));
         } else {
             TelegramUser telegramUser = telegramUserService.findByUserName(username)
                                                            .orElseThrow(() -> new UserNotFoundException(message.getChatId(), new UserInfo(null, username, "", "")));
-            //TODO move to adapter
-            UserInfo userInfo = new UserInfo(telegramUser.getId(), telegramUser.getUserName(), telegramUser.getFirstName(), telegramUser.getLastName());
-            gameSessionService.recordGameSession(groupInfo, userInfo, new GameDuration(gameType, duration.get()));
+            UserInfo userInfo = telegramUserAdapter.adapt(telegramUser);
+            gameSessionService.recordGameSession(chatInfo, userInfo, new GameDuration(gameType, duration.get()));
         }
     }
 

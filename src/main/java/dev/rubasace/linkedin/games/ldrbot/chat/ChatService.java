@@ -1,6 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.chat;
 
-import dev.rubasace.linkedin.games.ldrbot.group.GroupInfo;
+import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.message.InvalidUserInputException;
@@ -67,17 +67,17 @@ public class ChatService {
         this.telegramGroupService = telegramGroupService;
     }
 
-    public void listTrackedGames(final GroupInfo groupInfo) throws GroupNotFoundException, InvalidUserInputException {
-        Set<GameType> trackedGames = telegramGroupService.listTrackedGames(groupInfo);
+    public void listTrackedGames(final ChatInfo chatInfo) throws GroupNotFoundException, InvalidUserInputException {
+        Set<GameType> trackedGames = telegramGroupService.listTrackedGames(chatInfo);
         if (CollectionUtils.isEmpty(trackedGames)) {
-            throw new InvalidUserInputException("This group is not tracking any games.", groupInfo.chatId());
+            throw new InvalidUserInputException("This group is not tracking any games.", chatInfo.chatId());
         } else {
             String text = trackedGames.stream()
                                       .sorted()
                                       .map(game -> "%s %s".formatted(FormatUtils.gameIcon(game), game.name()))
                                       .collect(Collectors.joining("\n"));
 
-            customTelegramClient.info("This group is currently tracking:\n" + text, groupInfo.chatId());
+            customTelegramClient.info("This group is currently tracking:\n" + text, chatInfo.chatId());
         }
     }
 
