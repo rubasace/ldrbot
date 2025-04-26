@@ -3,9 +3,9 @@ package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
 import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import dev.rubasace.linkedin.games.ldrbot.message.ChatAdapter;
+import dev.rubasace.linkedin.games.ldrbot.message.GameNameAdapter;
 import dev.rubasace.linkedin.games.ldrbot.message.InvalidUserInputException;
 import dev.rubasace.linkedin.games.ldrbot.message.UserAdapter;
-import dev.rubasace.linkedin.games.ldrbot.session.GameNameNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
@@ -24,11 +24,13 @@ class DeleteAbility implements AbilityImplementation {
     private final GameSessionService gameSessionService;
     private final ChatAdapter chatAdapter;
     private final UserAdapter userAdapter;
+    private final GameNameAdapter gameNameAdapter;
 
-    DeleteAbility(final GameSessionService gameSessionService, final ChatAdapter chatAdapter, final UserAdapter userAdapter) {
+    DeleteAbility(final GameSessionService gameSessionService, final ChatAdapter chatAdapter, final UserAdapter userAdapter, final GameNameAdapter gameNameAdapter) {
         this.gameSessionService = gameSessionService;
         this.chatAdapter = chatAdapter;
         this.userAdapter = userAdapter;
+        this.gameNameAdapter = gameNameAdapter;
     }
 
     @Override
@@ -53,19 +55,9 @@ class DeleteAbility implements AbilityImplementation {
         String gameName = arguments[0];
         ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
         UserInfo userInfo = userAdapter.adapt(message.getFrom());
-        GameType gameType = getGameType(gameName, message.getChatId());
+        GameType gameType = gameNameAdapter.adapt(gameName, message.getChatId());
         gameSessionService.deleteTodaySession(chatInfo, userInfo, gameType);
     }
 
-    //TODO unify in convenience class (or enum itself)
-    private GameType getGameType(final String gameName, final Long chatId) throws GameNameNotFoundException {
-        GameType gameType;
-        try {
-            gameType = GameType.valueOf(gameName.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new GameNameNotFoundException(chatId, gameName);
-        }
-        return gameType;
-    }
 
 }

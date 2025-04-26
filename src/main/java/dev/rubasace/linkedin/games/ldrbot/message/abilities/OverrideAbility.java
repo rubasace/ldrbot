@@ -3,10 +3,10 @@ package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
 import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import dev.rubasace.linkedin.games.ldrbot.message.ChatAdapter;
+import dev.rubasace.linkedin.games.ldrbot.message.GameNameAdapter;
 import dev.rubasace.linkedin.games.ldrbot.message.InvalidUserInputException;
 import dev.rubasace.linkedin.games.ldrbot.message.UserAdapter;
 import dev.rubasace.linkedin.games.ldrbot.session.GameDuration;
-import dev.rubasace.linkedin.games.ldrbot.session.GameNameNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
@@ -37,13 +37,15 @@ class OverrideAbility implements AbilityImplementation {
     private final ChatAdapter chatAdapter;
     private final UserAdapter userAdapter;
     private final TelegramUserAdapter telegramUserAdapter;
+    private final GameNameAdapter gameNameAdapter;
 
-    OverrideAbility(final TelegramUserService telegramUserService, final GameSessionService gameSessionService, final ChatAdapter chatAdapter, final UserAdapter userAdapter, final TelegramUserAdapter telegramUserAdapter) {
+    OverrideAbility(final TelegramUserService telegramUserService, final GameSessionService gameSessionService, final ChatAdapter chatAdapter, final UserAdapter userAdapter, final TelegramUserAdapter telegramUserAdapter, final GameNameAdapter gameNameAdapter) {
         this.telegramUserService = telegramUserService;
         this.gameSessionService = gameSessionService;
         this.chatAdapter = chatAdapter;
         this.userAdapter = userAdapter;
         this.telegramUserAdapter = telegramUserAdapter;
+        this.gameNameAdapter = gameNameAdapter;
     }
 
 
@@ -55,14 +57,14 @@ class OverrideAbility implements AbilityImplementation {
                       .input(3)
                       .locality(Locality.GROUP)
                       .privacy(Privacy.GROUP_ADMIN)
-                      .action(ctx -> registerSessionManually(ctx.update().getMessage(), ctx.arguments()))
+                      .action(ctx -> overrideTime(ctx.update().getMessage(), ctx.arguments()))
                       .build();
     }
 
     @SneakyThrows
-    private void registerSessionManually(final Message message, final String[] arguments) {
+    private void overrideTime(final Message message, final String[] arguments) {
         String username = arguments[0].startsWith("@") ? arguments[0].substring(1) : arguments[0];
-        GameType gameType = getGameType(arguments[1], message.getChatId());
+        GameType gameType = gameNameAdapter.adapt(arguments[1], message.getChatId());
         Optional<Duration> duration = ParseUtils.parseDuration(arguments[2]);
         if (duration.isEmpty()) {
             throw new InvalidUserInputException("Invalid time format. Use `mm:ss`, e.g. `1:30` or `12:05`", message.getChatId());
@@ -88,15 +90,4 @@ class OverrideAbility implements AbilityImplementation {
                                                     .map(MessageEntity::getUser));
 
     }
-
-    private GameType getGameType(final String gameName, final Long chatId) throws GameNameNotFoundException {
-        GameType gameType;
-        try {
-            gameType = GameType.valueOf(gameName.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new GameNameNotFoundException(chatId, gameName);
-        }
-        return gameType;
-    }
-
 }

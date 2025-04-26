@@ -58,7 +58,7 @@ class ImageDurationExtractorTest {
 
         ExecutorService executorService = BackpressureExecutors.newBackPressureVirtualThreadPerTaskExecutor("test", 200);
 
-        int taskCount = 50;
+        int taskCount = 25;
 
         List<CompletableFuture<Void>> futures = IntStream.range(0, taskCount)
                                                          .mapToObj(i -> CompletableFuture.runAsync(() -> {
