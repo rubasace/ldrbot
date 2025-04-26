@@ -53,7 +53,6 @@ class ImageHelper {
         int g = Integer.parseInt(hex.substring(3, 5), 16);
         int b = Integer.parseInt(hex.substring(5, 7), 16);
 
-        // Convert BGR to HSV
         Mat bgr = new Mat(1, 1, opencv_core.CV_8UC3, new Scalar(b, g, r, 0));
         Mat hsv = new Mat();
         opencv_imgproc.cvtColor(bgr, hsv, opencv_imgproc.COLOR_BGR2HSV);
