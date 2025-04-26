@@ -11,7 +11,7 @@ public class LinkedinTimeUtils {
     private static final ZoneId LINKEDIN_ZONE_ID = ZoneId.of(LINKEDIN_ZONE);
 
     /**
-     * Convenience method to return the current game day, as games last 24h and get published at midnight, Los Angeles timezone
+     * Convenience method to return the current game day, as games last 24h and get published world-wide at midnight, their time zone,
      */
     public static LocalDate todayGameDay() {
         return ZonedDateTime.now(LINKEDIN_ZONE_ID).toLocalDate();
