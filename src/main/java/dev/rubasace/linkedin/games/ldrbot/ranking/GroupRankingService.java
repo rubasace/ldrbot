@@ -57,11 +57,11 @@ public class GroupRankingService {
             List<DailyGameScore> dailyGameScores = dailyGameScoreCalculator.calculateScores(sessions, telegramGroup);
             gameScores.put(gameType, dailyScoreService.updateDailyScores(dailyGameScores, telegramGroup.getChatId(), gameType));
         }
-        notifyRankingCreation(telegramGroup.getChatId(), gameScores, gameDay);
+        notifyRankingCreation(telegramGroup, gameScores, gameDay);
     }
 
-    private void notifyRankingCreation(final Long chatId, final Map<GameType, List<DailyGameScore>> gameScores, final LocalDate gameDay) {
-        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, gameScores, gameDay);
+    private void notifyRankingCreation(final TelegramGroup telegramGroup, final Map<GameType, List<DailyGameScore>> gameScores, final LocalDate gameDay) {
+        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(telegramGroup, gameScores, gameDay);
         applicationEventPublisher.publishEvent(new GroupDailyScoreCreatedEvent(this, groupDailyScore));
     }
 

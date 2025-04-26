@@ -103,12 +103,12 @@ public class NotificationService {
         GroupDailyScore groupDailyScore = groupDailyScoreCreatedEvent.getGroupDailyScore();
         if (groupDailyScore.globalScore().isEmpty()) {
             customTelegramClient.error("No games have been registered yet for %s, cannot calculate the ranking".formatted(FormatUtils.formatDate(groupDailyScore.gameDay())),
-                                       groupDailyScore.chatId());
+                                       groupDailyScore.chatInfo().chatId());
             return;
         }
 
         String htmlSummary = rankingMessageFactory.createRankingMessage(groupDailyScore);
-        customTelegramClient.html(htmlSummary, groupDailyScore.chatId());
+        customTelegramClient.html(htmlSummary, groupDailyScore.chatInfo().chatId());
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)

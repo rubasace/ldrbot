@@ -21,12 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class GroupDailyScoreAdapterTest {
 
     private final GroupDailyScoreAdapter groupDailyScoreAdapter = new GroupDailyScoreAdapter(new GameScoreDataAdapter(new TelegramGroupAdapter(), new TelegramUserAdapter()),
-                                                                                             new GlobalScoreDataAdapter());
+                                                                                             new GlobalScoreDataAdapter(), new TelegramGroupAdapter());
 
     @Test
     void shouldAdapt() {
 
-        long chatId = -1L;
+        TelegramGroup telegramGroup = new TelegramGroup();
+        telegramGroup.setChatId(-1L);
         LocalDate gameDay = LocalDate.now();
 
         Map<GameType, List<DailyGameScore>> dailyGameScores = new HashMap<>();
@@ -46,7 +47,7 @@ class GroupDailyScoreAdapterTest {
         List<DailyGameScore> queensGameScores = List.of(jonQueensGameScore, aliceQueensGameScore, bobQueensGameScore);
         dailyGameScores.put(GameType.QUEENS, queensGameScores);
 
-        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, gameDay);
+        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(telegramGroup, dailyGameScores, gameDay);
 
         assertAll(
                 () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
@@ -68,7 +69,8 @@ class GroupDailyScoreAdapterTest {
     @Test
     void shouldAdaptWithGameTies() {
 
-        long chatId = -1L;
+        TelegramGroup telegramGroup = new TelegramGroup();
+        telegramGroup.setChatId(-1L);
         LocalDate gameDay = LocalDate.now();
 
         Map<GameType, List<DailyGameScore>> dailyGameScores = new HashMap<>();
@@ -88,7 +90,7 @@ class GroupDailyScoreAdapterTest {
         List<DailyGameScore> queensGameScores = List.of(jonQueensGameScore, aliceQueensGameScore, bobQueensGameScore);
         dailyGameScores.put(GameType.QUEENS, queensGameScores);
 
-        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, gameDay);
+        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(telegramGroup, dailyGameScores, gameDay);
 
         assertAll(
                 () -> assertGameScoreData(bobZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
@@ -110,7 +112,8 @@ class GroupDailyScoreAdapterTest {
     @Test
     void shouldAdaptWithGlobalTiesSamePointsAndDifferentDurations() {
 
-        long chatId = -1L;
+        TelegramGroup telegramGroup = new TelegramGroup();
+        telegramGroup.setChatId(-1L);
         LocalDate gameDay = LocalDate.now();
 
         Map<GameType, List<DailyGameScore>> dailyGameScores = new HashMap<>();
@@ -130,7 +133,7 @@ class GroupDailyScoreAdapterTest {
         List<DailyGameScore> queensGameScores = List.of(jonQueensGameScore, aliceQueensGameScore, bobQueensGameScore);
         dailyGameScores.put(GameType.QUEENS, queensGameScores);
 
-        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, gameDay);
+        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(telegramGroup, dailyGameScores, gameDay);
 
         assertAll(
                 () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
@@ -152,7 +155,8 @@ class GroupDailyScoreAdapterTest {
     @Test
     void shouldAdaptWithGlobalTiesSamePointsAndSameDurations() {
 
-        long chatId = -1L;
+        TelegramGroup telegramGroup = new TelegramGroup();
+        telegramGroup.setChatId(-1L);
         LocalDate gameDay = LocalDate.now();
 
         Map<GameType, List<DailyGameScore>> dailyGameScores = new HashMap<>();
@@ -172,7 +176,7 @@ class GroupDailyScoreAdapterTest {
         List<DailyGameScore> queensGameScores = List.of(jonQueensGameScore, aliceQueensGameScore, bobQueensGameScore);
         dailyGameScores.put(GameType.QUEENS, queensGameScores);
 
-        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(chatId, dailyGameScores, gameDay);
+        GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(telegramGroup, dailyGameScores, gameDay);
 
         assertAll(
                 () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
