@@ -12,8 +12,6 @@ import java.util.List;
 @Component
 class DailyGameScoreCalculator {
 
-    private static final int[] POINTS_PER_POSITION = new int[]{3, 2, 1};
-
     List<DailyGameScore> calculateScores(final List<GameSession> gameSessions, final TelegramGroup group) {
 
         List<GameSession> sessionsByDuration = gameSessions.stream()
@@ -46,12 +44,12 @@ class DailyGameScoreCalculator {
         dailyGameScore.setGame(session.getGame());
         dailyGameScore.setGameSession(session);
         dailyGameScore.setPosition(position);
-        dailyGameScore.setPoints(calculatePoints(position));
+        dailyGameScore.setPoints(calculatePoints(position, group.getMembers().size()));
         return dailyGameScore;
     }
 
-    private static int calculatePoints(final int position) {
-        return position <= POINTS_PER_POSITION.length ? POINTS_PER_POSITION[position - 1] : 0;
+    private static int calculatePoints(final int position, final int participants) {
+        return participants - (position - 1);
     }
 
 }

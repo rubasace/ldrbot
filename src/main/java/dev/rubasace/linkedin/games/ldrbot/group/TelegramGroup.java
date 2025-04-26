@@ -22,6 +22,7 @@ import lombok.Setter;
 
 import java.time.ZoneId;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -56,7 +57,7 @@ public class TelegramGroup {
 
     @JsonIgnoreProperties({"groups", "sessions"})
     @ManyToMany
-    Set<TelegramUser> members;
+    Set<TelegramUser> members = new HashSet<>();
 
     @Override
     public boolean equals(final Object o) {

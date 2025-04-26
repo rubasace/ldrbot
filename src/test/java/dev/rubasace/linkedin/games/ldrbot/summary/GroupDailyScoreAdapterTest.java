@@ -20,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GroupDailyScoreAdapterTest {
 
-    private final GroupDailyScoreAdapter groupDailyScoreAdapter = new GroupDailyScoreAdapter(new GameScoreDataAdapter(new TelegramGroupAdapter(), new TelegramUserAdapter()),
+    private final GameScoreDataAdapter gameScoreDataAdapter = new GameScoreDataAdapter(new TelegramGroupAdapter(), new TelegramUserAdapter());
+    private final GroupDailyScoreAdapter groupDailyScoreAdapter = new GroupDailyScoreAdapter(gameScoreDataAdapter,
                                                                                              new GlobalScoreDataAdapter(), new TelegramGroupAdapter());
 
     @Test

@@ -4,12 +4,15 @@ import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroup;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSession;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,23 +31,45 @@ class DailyGameScoreCalculatorTest {
         telegramGroup.setChatId(1L);
         telegramGroup.setGroupName("Test Group");
 
-        GameSession first = createSession("Dave", Duration.ofSeconds(3));
-        GameSession second = createSession("Charlie", Duration.ofSeconds(8));
-        GameSession third = createSession("Alice", Duration.ofSeconds(12));
-        GameSession fourth = createSession("Bob", Duration.ofSeconds(15));
-        GameSession fifth = createSession("Eve", Duration.ofSeconds(20));
-
-        List<GameSession> sessions = List.of(third, fourth, second, first, fifth);
+        List<GameSession> sessions = createSessions(telegramGroup, 8, 2, 13, 5, 4);
 
         List<DailyGameScore> scores = dailyGameScoreCalculator.calculateScores(sessions, telegramGroup);
 
-        assertEquals(5, scores.size());
+        assertEquals(sessions.size(), scores.size());
         assertAll(
-                () -> assertScore(scores.getFirst(), first, telegramGroup, 1, 3),
-                () -> assertScore(scores.get(1), second, telegramGroup, 2, 2),
-                () -> assertScore(scores.get(2), third, telegramGroup, 3, 1),
-                () -> assertScore(scores.get(3), fourth, telegramGroup, 4, 0),
-                () -> assertScore(scores.get(4), fifth, telegramGroup, 5, 0)
+                () -> assertScore(scores.getFirst(), sessions.get(1), telegramGroup, 1, 5),
+                () -> assertScore(scores.get(1), sessions.get(4), telegramGroup, 2, 4),
+                () -> assertScore(scores.get(2), sessions.get(3), telegramGroup, 3, 3),
+                () -> assertScore(scores.get(3), sessions.getFirst(), telegramGroup, 4, 2),
+                () -> assertScore(scores.get(4), sessions.get(2), telegramGroup, 5, 1)
+        );
+    }
+
+    @NotNull
+    private static TelegramUser getE() {
+        return new TelegramUser();
+    }
+
+    @Test
+    void shouldScoreAtLeastOnePoint() {
+
+        TelegramGroup telegramGroup = new TelegramGroup();
+        telegramGroup.setChatId(1L);
+        telegramGroup.setGroupName("Test Group");
+
+        List<GameSession> sessions = createSessions(telegramGroup, 8, 2, 13, 5, 4, 15, 19);
+
+        List<DailyGameScore> scores = dailyGameScoreCalculator.calculateScores(sessions, telegramGroup);
+
+        assertEquals(sessions.size(), scores.size());
+        assertAll(
+                () -> assertScore(scores.getFirst(), sessions.get(1), telegramGroup, 1, 7),
+                () -> assertScore(scores.get(1), sessions.get(4), telegramGroup, 2, 6),
+                () -> assertScore(scores.get(2), sessions.get(3), telegramGroup, 3, 5),
+                () -> assertScore(scores.get(3), sessions.getFirst(), telegramGroup, 4, 4),
+                () -> assertScore(scores.get(4), sessions.get(2), telegramGroup, 5, 3),
+                () -> assertScore(scores.get(5), sessions.get(5), telegramGroup, 6, 2),
+                () -> assertScore(scores.get(6), sessions.get(6), telegramGroup, 7, 1)
         );
     }
 
@@ -55,23 +80,17 @@ class DailyGameScoreCalculatorTest {
         telegramGroup.setChatId(1L);
         telegramGroup.setGroupName("Test Group");
 
-        GameSession first = createSession("Dave", Duration.ofSeconds(4));
-        GameSession first2 = createSession("Charlie", Duration.ofSeconds(4));
-        GameSession third = createSession("Eve", Duration.ofSeconds(5));
-        GameSession fourth = createSession("Alice", Duration.ofSeconds(8));
-        GameSession fifith = createSession("Bob", Duration.ofSeconds(9));
-
-        List<GameSession> sessions = List.of(fourth, fifith, first, first2, third);
+        List<GameSession> sessions = createSessions(telegramGroup, 8, 2, 13, 2, 8);
 
         List<DailyGameScore> scores = dailyGameScoreCalculator.calculateScores(sessions, telegramGroup);
 
-        assertEquals(5, scores.size());
+        assertEquals(sessions.size(), scores.size());
         assertAll(
-                () -> assertScore(scores.getFirst(), first, telegramGroup, 1, 3),
-                () -> assertScore(scores.get(1), first2, telegramGroup, 1, 3),
-                () -> assertScore(scores.get(2), third, telegramGroup, 3, 1),
-                () -> assertScore(scores.get(3), fourth, telegramGroup, 4, 0),
-                () -> assertScore(scores.get(4), fifith, telegramGroup, 5, 0)
+                () -> assertScore(scores.getFirst(), sessions.get(1), telegramGroup, 1, 5),
+                () -> assertScore(scores.get(1), sessions.get(3), telegramGroup, 1, 5),
+                () -> assertScore(scores.get(2), sessions.getFirst(), telegramGroup, 3, 3),
+                () -> assertScore(scores.get(3), sessions.get(4), telegramGroup, 3, 3),
+                () -> assertScore(scores.get(4), sessions.get(2), telegramGroup, 5, 1)
         );
     }
 
@@ -82,23 +101,17 @@ class DailyGameScoreCalculatorTest {
         telegramGroup.setChatId(1L);
         telegramGroup.setGroupName("Test Group");
 
-        GameSession first = createSession("Dave", Duration.ofSeconds(5));
-        GameSession first2 = createSession("Charlie", Duration.ofSeconds(5));
-        GameSession third = createSession("Eve", Duration.ofSeconds(8));
-        GameSession third2 = createSession("Alice", Duration.ofSeconds(8));
-        GameSession fifith = createSession("Bob", Duration.ofSeconds(13));
-
-        List<GameSession> sessions = List.of(third, fifith, first, first2, third2);
+        List<GameSession> sessions = createSessions(telegramGroup, 8, 2, 5, 5, 11);
 
         List<DailyGameScore> scores = dailyGameScoreCalculator.calculateScores(sessions, telegramGroup);
 
-        assertEquals(5, scores.size());
+        assertEquals(sessions.size(), scores.size());
         assertAll(
-                () -> assertScore(scores.getFirst(), first, telegramGroup, 1, 3),
-                () -> assertScore(scores.get(1), first2, telegramGroup, 1, 3),
-                () -> assertScore(scores.get(2), third, telegramGroup, 3, 1),
-                () -> assertScore(scores.get(3), third2, telegramGroup, 3, 1),
-                () -> assertScore(scores.get(4), fifith, telegramGroup, 5, 0)
+                () -> assertScore(scores.getFirst(), sessions.get(1), telegramGroup, 1, 5),
+                () -> assertScore(scores.get(1), sessions.get(2), telegramGroup, 2, 4),
+                () -> assertScore(scores.get(2), sessions.get(3), telegramGroup, 2, 4),
+                () -> assertScore(scores.get(3), sessions.getFirst(), telegramGroup, 4, 2),
+                () -> assertScore(scores.get(4), sessions.get(4), telegramGroup, 5, 1)
         );
     }
 
@@ -110,51 +123,17 @@ class DailyGameScoreCalculatorTest {
         telegramGroup.setChatId(1L);
         telegramGroup.setGroupName("Test Group");
 
-        GameSession first = createSession("Dave", Duration.ofSeconds(2));
-        GameSession second = createSession("Charlie", Duration.ofSeconds(5));
-        GameSession third = createSession("Eve", Duration.ofSeconds(8));
-        GameSession third2 = createSession("Alice", Duration.ofSeconds(8));
-        GameSession fifth = createSession("Bob", Duration.ofSeconds(13));
-
-        List<GameSession> sessions = List.of(third, fifth, first, second, third2);
+        List<GameSession> sessions = createSessions(telegramGroup, 8, 2, 1, 5, 8);
 
         List<DailyGameScore> scores = dailyGameScoreCalculator.calculateScores(sessions, telegramGroup);
 
-        assertEquals(5, scores.size());
+        assertEquals(sessions.size(), scores.size());
         assertAll(
-                () -> assertScore(scores.getFirst(), first, telegramGroup, 1, 3),
-                () -> assertScore(scores.get(1), second, telegramGroup, 2, 2),
-                () -> assertScore(scores.get(2), third, telegramGroup, 3, 1),
-                () -> assertScore(scores.get(3), third2, telegramGroup, 3, 1),
-                () -> assertScore(scores.get(4), fifth, telegramGroup, 5, 0)
-        );
-    }
-
-
-    @Test
-    void shouldScoreWhenTiedNoScore() {
-
-        TelegramGroup telegramGroup = new TelegramGroup();
-        telegramGroup.setChatId(1L);
-        telegramGroup.setGroupName("Test Group");
-
-        GameSession first = createSession("Dave", Duration.ofSeconds(6));
-        GameSession second = createSession("Charlie", Duration.ofSeconds(9));
-        GameSession third = createSession("Eve", Duration.ofSeconds(10));
-        GameSession fourth = createSession("Alice", Duration.ofSeconds(11));
-        GameSession fourth2 = createSession("Bob", Duration.ofSeconds(11));
-
-        List<GameSession> sessions = List.of(third, fourth, first, second, fourth2);
-
-        List<DailyGameScore> scores = dailyGameScoreCalculator.calculateScores(sessions, telegramGroup);
-
-        assertEquals(5, scores.size());
-        assertAll(
-                () -> assertScore(scores.getFirst(), first, telegramGroup, 1, 3),
-                () -> assertScore(scores.get(1), second, telegramGroup, 2, 2),
-                () -> assertScore(scores.get(2), third, telegramGroup, 3, 1),
-                () -> assertScore(scores.get(3), fourth, telegramGroup, 4, 0),
-                () -> assertScore(scores.get(4), fourth2, telegramGroup, 4, 0)
+                () -> assertScore(scores.getFirst(), sessions.get(2), telegramGroup, 1, 5),
+                () -> assertScore(scores.get(1), sessions.get(1), telegramGroup, 2, 4),
+                () -> assertScore(scores.get(2), sessions.get(3), telegramGroup, 3, 3),
+                () -> assertScore(scores.get(3), sessions.getFirst(), telegramGroup, 4, 2),
+                () -> assertScore(scores.get(4), sessions.get(4), telegramGroup, 4, 2)
         );
     }
 
@@ -169,16 +148,23 @@ class DailyGameScoreCalculatorTest {
         );
     }
 
-    private GameSession createSession(final String username, final Duration duration) {
+    private List<GameSession> createSessions(final TelegramGroup telegramGroup, final int... seconds) {
+        return Arrays.stream(seconds)
+                     .mapToObj(s -> createSession(s, telegramGroup))
+                     .toList();
+    }
+
+    private GameSession createSession(final int seconds, final TelegramGroup telegramGroup) {
         TelegramUser user = new TelegramUser();
         user.setId(new Random().nextLong());
-        user.setUserName(username);
-
+        user.setUserName(UUID.randomUUID().toString());
+        telegramGroup.getMembers().add(user);
         GameSession session = new GameSession();
         session.setUser(user);
         session.setGame(GAME_TYPE);
         session.setGameDay(GAME_DATE);
-        session.setDuration(duration);
+        session.setDuration(Duration.ofSeconds(seconds));
+        session.setGroup(telegramGroup);
         return session;
     }
 }
