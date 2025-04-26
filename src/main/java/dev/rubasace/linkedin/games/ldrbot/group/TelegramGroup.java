@@ -59,6 +59,9 @@ public class TelegramGroup {
     @ManyToMany
     Set<TelegramUser> members = new HashSet<>();
 
+    @Column(nullable = false)
+    private boolean active = true;
+
     @Override
     public boolean equals(final Object o) {
         if (o == null || getClass() != o.getClass()) {

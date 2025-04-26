@@ -10,7 +10,8 @@ public interface TelegramGroupRepository extends CrudRepository<TelegramGroup, L
 
     @Query("""
                 SELECT g FROM TelegramGroup g
-                WHERE (
+                WHERE g.active = true
+                AND (
                     SELECT COUNT(score)
                     FROM DailyGameScore score
                     WHERE score.group = g AND score.gameDay = :gameDay

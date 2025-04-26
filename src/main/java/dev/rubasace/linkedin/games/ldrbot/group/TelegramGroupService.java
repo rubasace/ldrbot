@@ -82,18 +82,24 @@ public class TelegramGroupService {
     }
 
     private TelegramGroup udpateGroupData(final TelegramGroup telegramGroup, final ChatInfo chatInfo) {
-        if (telegramGroup.getGroupName().equals(chatInfo.title())) {
+        boolean active = telegramGroup.isActive();
+        if (active && telegramGroup.getGroupName().equals(chatInfo.title())) {
             return telegramGroup;
         }
         telegramGroup.setGroupName(chatInfo.title());
-        return telegramGroupRepository.save(telegramGroup);
+        telegramGroup.setActive(true);
+        TelegramGroup updatedGroup = telegramGroupRepository.save(telegramGroup);
+        if (!active) {
+            applicationEventPublisher.publishEvent(new GroupCreatedEvent(this, chatInfo));
+        }
+        return updatedGroup;
     }
 
 
     private TelegramGroup createGroup(final ChatInfo chatInfo) {
         //TODO stop hardcoding the timezone and request it as part of the command interaction
-        TelegramGroup telegramGroup = new TelegramGroup(chatInfo.chatId(), chatInfo.title(), ZoneId.of("Europe/Madrid"), EnumSet.allOf(GameType.class), new HashSet<>(),
-                                                        Set.of());
+        TelegramGroup telegramGroup = new TelegramGroup(chatInfo.chatId(), chatInfo.title(), ZoneId.of("Europe/Madrid"), EnumSet.allOf(GameType.class), new HashSet<>(), Set.of(),
+                                                        true);
         TelegramGroup createdTelegramGroup = telegramGroupRepository.save(telegramGroup);
         applicationEventPublisher.publishEvent(new GroupCreatedEvent(this, chatInfo));
         return createdTelegramGroup;
@@ -107,9 +113,10 @@ public class TelegramGroupService {
     }
 
     @Transactional
-    public void removeGroup(final ChatInfo chatInfo) {
-        //TODO allow to remove groups, probably with soft deletion
-        //        telegramGroupRepository.deleteById(chatId);
+    public void removeGroup(final ChatInfo chatInfo) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatInfo);
+        telegramGroup.setActive(false);
+        telegramGroupRepository.save(telegramGroup);
     }
 
 }

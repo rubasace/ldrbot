@@ -15,7 +15,8 @@ public interface TelegramUserRepository extends JpaRepository<TelegramUser, Long
                 SELECT g.chatId AS chatId, g.groupName AS groupName , u.id AS userId, u.userName AS userName, u.firstName AS firstName, u.lastName AS lastName
                 FROM TelegramUser u
                 LEFT JOIN u.groups g
-                WHERE (
+                WHERE g.active = true
+                AND (
                     SELECT COUNT(s)
                     FROM GameSession s
                     WHERE s.group = g AND s.user = u AND s.gameDay = :gameDay
