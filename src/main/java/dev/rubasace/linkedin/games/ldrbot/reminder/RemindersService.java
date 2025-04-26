@@ -24,7 +24,7 @@ public class RemindersService {
                 Don’t leave your group hanging — submit your screenshots and climb the leaderboard! 💪
             """;
 
-    private static final int MAX_PARALLEL_REMINDERS = 20;
+    private static final int MAX_PARALLEL_REMINDERS = 50;
 
     private final TelegramUserService telegramUserService;
     private final CustomTelegramClient customTelegramClient;
