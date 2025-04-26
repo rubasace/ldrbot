@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 @Component
-class UserAdapter {
+public class UserAdapter {
 
-    UserInfo adapt(final User user) {
+    public UserInfo adapt(final User user) {
         return new UserInfo(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName());
     }
 }

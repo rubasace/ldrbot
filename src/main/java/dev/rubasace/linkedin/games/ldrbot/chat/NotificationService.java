@@ -23,7 +23,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-//TODO think about decoupling chatId and user data from events and store them as part of the thread so it's available without having to pass it through (careful with executors)
 @Component
 public class NotificationService {
 

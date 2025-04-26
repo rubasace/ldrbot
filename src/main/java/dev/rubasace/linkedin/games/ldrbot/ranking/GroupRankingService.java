@@ -1,6 +1,9 @@
 package dev.rubasace.linkedin.games.ldrbot.ranking;
 
+import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
+import dev.rubasace.linkedin.games.ldrbot.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroup;
+import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSession;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
@@ -22,22 +25,30 @@ import java.util.stream.Collectors;
 @Service
 public class GroupRankingService {
 
+    private final TelegramGroupService telegramGroupService;
     private final GameSessionService gameSessionService;
     private final DailyGameScoreCalculator dailyGameScoreCalculator;
     private final DailyScoreService dailyScoreService;
     private final GroupDailyScoreAdapter groupDailyScoreAdapter;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    GroupRankingService(final GameSessionService gameSessionService,
+    GroupRankingService(final TelegramGroupService telegramGroupService, final GameSessionService gameSessionService,
                         final DailyGameScoreCalculator dailyGameScoreCalculator,
                         final DailyScoreService dailyScoreService,
                         final GroupDailyScoreAdapter groupDailyScoreAdapter,
                         final ApplicationEventPublisher applicationEventPublisher) {
+        this.telegramGroupService = telegramGroupService;
         this.gameSessionService = gameSessionService;
         this.dailyGameScoreCalculator = dailyGameScoreCalculator;
         this.dailyScoreService = dailyScoreService;
         this.groupDailyScoreAdapter = groupDailyScoreAdapter;
         this.applicationEventPublisher = applicationEventPublisher;
+    }
+
+    @Transactional
+    public void createDailyRanking(final ChatInfo chatInfo, final LocalDate gameDay) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = telegramGroupService.findGroupOrThrow(chatInfo);
+        createDailyRanking(telegramGroup, gameDay);
     }
 
     @Transactional

@@ -9,7 +9,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 @Service
-class CustomTelegramClient {
+public class CustomTelegramClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomTelegramClient.class);
 
@@ -19,22 +19,24 @@ class CustomTelegramClient {
         this.telegramClient = telegramClient;
     }
 
+    //TODO unify with info
     void html(final String text, final Long chatId) {
         sendMessage(text, chatId);
     }
 
-    void info(final String text, final Long chatId) {
+    public void info(final String text, final Long chatId) {
         sendMessage(text, chatId);
     }
 
-    void success(final String text, final Long chatId) {
+    public void success(final String text, final Long chatId) {
         sendMessage("✅ " + text, chatId);
     }
 
-    void error(final String text, final Long chatId) {
+    public void error(final String text, final Long chatId) {
         sendMessage("❌ " + text, chatId);
     }
 
+    //TODO cleanup
     void reminder(final String text, final Long chatId) {
         String formatted = """
                     ⏰ <b>Don't forget!</b> ⏰

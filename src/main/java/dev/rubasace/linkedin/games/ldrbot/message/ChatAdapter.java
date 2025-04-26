@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 
 @Component
-class ChatAdapter {
+public class ChatAdapter {
 
-    ChatInfo adapt(final Chat chat) {
+    public ChatInfo adapt(final Chat chat) {
         return new ChatInfo(chat.getId(), chat.getTitle(), chat.isGroupChat());
     }
 }
