@@ -28,9 +28,20 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import java.time.Duration;
 import java.util.Optional;
 
-
 @Component
 class OverrideAbility implements AbilityImplementation {
+
+    public static final String INVALID_ARGUMENT_MESSAGE_TEMPLATE = """
+            Please provide a user mention, a game name and a time in the format <code>mm:ss</code>.
+            
+            Example: <code>/override @%s queens 1:30</code>
+            """;
+    public static final String INVALID_TIME_FORMAT_MESSAGE = """
+            Invalid time format.
+            
+            Use <code>mm:ss</code>, e.g. <code>1:30</code> or <code>12:05</code>
+            """;
+
 
     private final TelegramUserService telegramUserService;
     private final GameSessionService gameSessionService;
@@ -53,8 +64,7 @@ class OverrideAbility implements AbilityImplementation {
     public Ability getAbility() {
         return Ability.builder()
                       .name("override")
-                      .info(UsageFormatUtils.formatUsage("/override @<user> <gameInfo> <mm:ss>", "Manually set a user’s time (admin-only)."))
-                      .input(3)
+                      .info(UsageFormatUtils.formatUsage("/override @<user> <game> <mm:ss>", "Manually set a user’s time (admin-only)."))
                       .locality(Locality.GROUP)
                       .privacy(Privacy.GROUP_ADMIN)
                       .action(ctx -> overrideTime(ctx.update().getMessage(), ctx.arguments()))
@@ -63,11 +73,14 @@ class OverrideAbility implements AbilityImplementation {
 
     @SneakyThrows
     private void overrideTime(final Message message, final String[] arguments) {
+        if (arguments == null || arguments.length != 3) {
+            throw new InvalidUserInputException(INVALID_ARGUMENT_MESSAGE_TEMPLATE.formatted(message.getFrom().getUserName()), message.getChatId());
+        }
         String username = arguments[0].startsWith("@") ? arguments[0].substring(1) : arguments[0];
         GameType gameType = gameNameAdapter.adapt(arguments[1], message.getChatId());
         Optional<Duration> duration = ParseUtils.parseDuration(arguments[2]);
         if (duration.isEmpty()) {
-            throw new InvalidUserInputException("Invalid time format. Use `mm:ss`, e.g. `1:30` or `12:05`", message.getChatId());
+            throw new InvalidUserInputException(INVALID_TIME_FORMAT_MESSAGE, message.getChatId());
         }
         ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
         Optional<User> mentionedUser = getMentionedUser(message);

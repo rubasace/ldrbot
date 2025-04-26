@@ -19,9 +19,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 public class NotificationService {
 
-    //TODO improve escaping of messages
     private static final String SUBMISSION_MESSAGE_TEMPLATE = "%s submitted their result for today's %s with a time of %s";
-
     private static final String GAME_SESSION_DELETION_MESSAGE_TEMPLATE = "%s result for today's %s has been deleted";
     private static final String ALL_SESSION_DELETION_MESSAGE_TEMPLATE = "All %s results for today games have been deleted";
     private static final String USER_JOIN_MESSAGE_TEMPLATE = "%s joined this group";
@@ -111,6 +109,5 @@ public class NotificationService {
         customTelegramClient.message(USER_LEAVE_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(userLeftGroupEvent.getUserInfo())),
                                      userLeftGroupEvent.getChatInfo().chatId());
     }
-
 
 }

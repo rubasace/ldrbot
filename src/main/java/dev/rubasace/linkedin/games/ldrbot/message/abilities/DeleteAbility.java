@@ -21,6 +21,11 @@ import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 @Component
 class DeleteAbility implements AbilityImplementation {
 
+    public static final String INVALID_ARGUMENTS_MESSAGE = """
+            Please provide a gameInfo name.
+            
+            Example: <code>/delete queens</code>
+            """;
     private final GameSessionService gameSessionService;
     private final ChatAdapter chatAdapter;
     private final UserAdapter userAdapter;
@@ -38,7 +43,6 @@ class DeleteAbility implements AbilityImplementation {
         return Ability.builder()
                       .name("delete")
                       .info(UsageFormatUtils.formatUsage("/delete <gameInfo>", "Remove your submitted time for a gameInfo."))
-                      .input(1)
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
                       .action(ctx -> deleteTodayRecord(ctx.update().getMessage(), ctx.arguments()))
@@ -47,9 +51,8 @@ class DeleteAbility implements AbilityImplementation {
 
     @SneakyThrows
     private void deleteTodayRecord(final Message message, final String[] arguments) {
-        //TODO think if controlling actions arguments with input() or via explicit arguments check like here. Probably here so we have more control over everything
-        if (arguments == null || arguments.length == 0) {
-            throw new InvalidUserInputException("Please provide a gameInfo name. Example: /delete queens", message.getChatId());
+        if (arguments == null || arguments.length != 1) {
+            throw new InvalidUserInputException(INVALID_ARGUMENTS_MESSAGE, message.getChatId());
         }
 
         String gameName = arguments[0];
