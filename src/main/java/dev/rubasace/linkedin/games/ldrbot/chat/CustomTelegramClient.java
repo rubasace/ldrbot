@@ -19,11 +19,6 @@ public class CustomTelegramClient {
         this.telegramClient = telegramClient;
     }
 
-    //TODO unify with message
-    void html(final String text, final Long chatId) {
-        sendMessage(text, chatId);
-    }
-
     public void message(final String text, final Long chatId) {
         sendMessage(text, chatId);
     }

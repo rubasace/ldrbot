@@ -102,7 +102,7 @@ public class NotificationService {
         }
 
         String htmlSummary = rankingMessageFactory.createRankingMessage(groupDailyScore);
-        customTelegramClient.html(htmlSummary, groupDailyScore.chatInfo().chatId());
+        customTelegramClient.message(htmlSummary, groupDailyScore.chatInfo().chatId());
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)

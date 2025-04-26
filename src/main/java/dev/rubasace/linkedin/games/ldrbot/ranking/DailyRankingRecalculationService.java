@@ -29,7 +29,7 @@ public class DailyRankingRecalculationService {
         this.telegramGroupService = telegramGroupService;
         this.groupRankingService = groupRankingService;
         this.telegramGroupAdapter = telegramGroupAdapter;
-        executorService = BackpressureExecutors.newBackPressureVirtualThreadPerTaskExecutor("ranking-recaulculation", MAX_CONCURRENCY);
+        this.executorService = BackpressureExecutors.newBackPressureVirtualThreadPerTaskExecutor("ranking", MAX_CONCURRENCY);
     }
 
 
