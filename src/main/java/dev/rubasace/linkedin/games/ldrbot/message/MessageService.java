@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-//TODO update bot description on startup
 @HandleBotExceptions
 @Transactional(readOnly = true)
 @Service

@@ -16,6 +16,8 @@ import org.telegram.telegrambots.abilitybots.api.objects.Privacy;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
+import org.telegram.telegrambots.meta.api.methods.description.SetMyDescription;
+import org.telegram.telegrambots.meta.api.methods.description.SetMyShortDescription;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -38,6 +40,10 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageController.class);
     public static final int MAX_CONSUME_CONCURRENCY = 25;
+    private static final String BOT_SHORT_DESCRIPTION = "Tracks and ranks LinkedIn puzzle scores via Telegram. Join the game!";
+    private static final String BOT_LONG_DESCRIPTION = """
+            When you add LDRBot to a Telegram group, that group becomes its own independent leaderboard and competition space. Each day, members of the group can submit their results for LinkedIn’s puzzles (currently: Queens, Tango, and Zip) by simply uploading a screenshot of their completion screen.
+            """;
 
     private final MessageService messageService;
     private final String token;
@@ -89,7 +95,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     }
 
     @PostConstruct
-    void registerCommands() {
+    void configureBot() {
         super.onRegister();
         unregisterUnknownAbilities();
         List<BotCommand> commands = getAbilities().values().stream()
@@ -98,6 +104,8 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
         messageService.registerCommands(commands);
         try {
             telegramClient.execute(new SetMyCommands(commands));
+            telegramClient.execute(new SetMyShortDescription(BOT_SHORT_DESCRIPTION, "en"));
+            telegramClient.execute(new SetMyDescription(BOT_LONG_DESCRIPTION, "en"));
         } catch (TelegramApiException e) {
             LOGGER.error("Failed to register bot commands", e);
         }

@@ -27,7 +27,6 @@ public class RemindersService {
                            .forEach(this::remindMissingUser);
     }
 
-    //TODO validate this still works
     private void remindMissingUser(MissingSessionUserProjection missingSessionUserProjection) {
 
         GroupInfo groupInfo = new GroupInfo(missingSessionUserProjection.getChatId(), missingSessionUserProjection.getGroupName());
