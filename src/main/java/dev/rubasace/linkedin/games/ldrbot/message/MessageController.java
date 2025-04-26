@@ -3,8 +3,11 @@ package dev.rubasace.linkedin.games.ldrbot.message;
 import dev.rubasace.linkedin.games.ldrbot.chat.NotificationService;
 import dev.rubasace.linkedin.games.ldrbot.chat.UserFeedbackException;
 import dev.rubasace.linkedin.games.ldrbot.configuration.TelegramBotProperties;
+import dev.rubasace.linkedin.games.ldrbot.group.GroupNotFoundException;
+import dev.rubasace.linkedin.games.ldrbot.image.GameDurationExtractionException;
+import dev.rubasace.linkedin.games.ldrbot.session.SessionAlreadyRegisteredException;
+import dev.rubasace.linkedin.games.ldrbot.util.BackpressureExecutors;
 import jakarta.annotation.PostConstruct;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -24,8 +27,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 //TODO add /about command
@@ -42,48 +43,35 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     private final List<AbilityImplementation> abilityImplementations;
     private final String token;
     private final ExecutorService controllerExecutor;
-    private final Semaphore semaphore;
 
-    MessageController(final TelegramClient telegramClient,
-                      final MessageService messageService,
-                      final NotificationService notificationService,
-                      final List<AbilityImplementation> abilityImplementations,
-                      final TelegramBotProperties telegramBotProperties) {
+    MessageController(final TelegramClient telegramClient, final MessageService messageService, final NotificationService notificationService, final List<AbilityImplementation> abilityImplementations, final TelegramBotProperties telegramBotProperties) {
         super(telegramClient, telegramBotProperties.getUsername(), MapDBContext.onlineInstance("/tmp/" + telegramBotProperties.getUsername()));
         this.messageService = messageService;
         this.notificationService = notificationService;
         this.abilityImplementations = abilityImplementations;
         this.token = telegramBotProperties.getToken();
-        this.controllerExecutor = Executors.newVirtualThreadPerTaskExecutor();
-        this.semaphore = new Semaphore(MAX_CONSUME_CONCURRENCY);
+        this.controllerExecutor = BackpressureExecutors.newBackPressureVirtualThreadPerTaskExecutor("message-controller", MAX_CONSUME_CONCURRENCY);
     }
 
-    //UserFeedbackException is thrown using @SneakyThrows, need to supress the IDE warnings
-    @SuppressWarnings({"RedundantTypeCheck", "ConstantConditions"})
     @Override
     public void consume(final List<Update> updates) {
-        controllerExecutor.execute(() -> updates.forEach(update -> {
-            try {
-                semaphore.acquire();
-                consume(update);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                LOGGER.error("Update consumption interrupted", e);
-            } catch (Exception e) {
-                if (e instanceof UserFeedbackException) {
-                    notificationService.notifyUserFeedbackException((UserFeedbackException) e);
-                } else {
-                    LOGGER.error("An unexpected error occurred", e);
-                }
-            } finally {
-                semaphore.release();
-            }
-        }));
+        controllerExecutor.execute(() -> updates.forEach(this::consume));
     }
 
-    @SneakyThrows
     @Override
     public void consume(Update update) {
+        try {
+            doConsume(update);
+        } catch (Exception e) {
+            if (e instanceof UserFeedbackException) {
+                notificationService.notifyUserFeedbackException((UserFeedbackException) e);
+            } else {
+                LOGGER.error("An unexpected error occurred", e);
+            }
+        }
+    }
+
+    private void doConsume(final Update update) throws GameDurationExtractionException, SessionAlreadyRegisteredException, UnknownCommandException, GroupNotFoundException {
         if (!update.hasMessage() || update.getMessage().getFrom().getIsBot()) {
             return;
         }
@@ -96,17 +84,14 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
 
     @Override
     public Map<String, Ability> getAbilities() {
-        return abilityImplementations.stream().map(AbilityImplementation::getAbility)
-                                     .collect(Collectors.toMap(Ability::name, ability -> ability));
+        return abilityImplementations.stream().map(AbilityImplementation::getAbility).collect(Collectors.toMap(Ability::name, ability -> ability));
     }
 
     @PostConstruct
     void registerCommands() {
         super.onRegister();
         unregisterUnknownAbilities();
-        List<BotCommand> commands = getAbilities().values().stream()
-                                                  .map(ability -> new BotCommand(ability.name(), ability.info()))
-                                                  .toList();
+        List<BotCommand> commands = getAbilities().values().stream().map(ability -> new BotCommand(ability.name(), ability.info())).toList();
         messageService.registerCommands(commands);
         try {
             telegramClient.execute(new SetMyCommands(commands));

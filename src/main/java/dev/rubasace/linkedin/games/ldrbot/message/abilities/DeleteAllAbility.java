@@ -7,7 +7,6 @@ import dev.rubasace.linkedin.games.ldrbot.message.UserAdapter;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.objects.Locality;
@@ -39,7 +38,6 @@ class DeleteAllAbility implements AbilityImplementation {
                       .build();
     }
 
-    @SneakyThrows
     private void deleteTodayRecords(final Message message) {
         ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
         UserInfo userInfo = userAdapter.adapt(message.getFrom());
