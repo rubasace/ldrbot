@@ -14,9 +14,10 @@ import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 class StartAbility implements AbilityImplementation {
 
     private static final String PRIVATE_START_MESSAGE = """
-            👋 Hello! I'm LDRBot — your daily Linkedin puzzle leaderboard assistant.
+             👋 Hello! I'm LDRBot — your daily LinkedIn puzzle leaderboard assistant.
             
-            To get started, add me to a Telegram group. I’ll track your group’s results for LinkedIn games like Queens, Tango, and Zip, and build a daily ranking automatically.
+            
+            To get started, add me to a Telegram group and start uploading your puzzle completion screenshots!
             
             For the moment I don't support private chat features, but I'm working on it!
             

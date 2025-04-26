@@ -88,6 +88,7 @@ images.
 | `/deleteAll`                          | Removes all of your submitted results for the current day.                                                                                 |
 | `/override @<username> <game> <time>` | Admin only: Override today's user time (`mm:ss`) for a given game.                                                                         |
 | `/ranking`                            | Calculates and displays the current leaderboard for the group. It will be recalculated automatically after all members submit their times. |
+| `/about`                              | Displays information about the bot and its creator.                                                                                        |
 | `/help`                               | Displays a list of available commands and usage instructions.                                                                              |
 
 ## 🚀 Getting Started
