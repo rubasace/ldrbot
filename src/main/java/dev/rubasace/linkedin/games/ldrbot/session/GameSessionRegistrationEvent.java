@@ -13,16 +13,16 @@ public class GameSessionRegistrationEvent extends ApplicationEvent {
 
     private final ChatInfo chatInfo;
     private final UserInfo userInfo;
-    private final GameType game;
+    private final GameInfo gameInfo;
     private final Duration duration;
     private final LocalDate gameDay;
     private final Long chatId;
 
-    public GameSessionRegistrationEvent(final Object source, final ChatInfo chatInfo, final UserInfo userInfo, final GameType game, final Duration duration, final LocalDate gameDay, final Long chatId) {
+    public GameSessionRegistrationEvent(final Object source, final ChatInfo chatInfo, final UserInfo userInfo, final GameInfo gameInfo, final Duration duration, final LocalDate gameDay, final Long chatId) {
         super(source);
         this.chatInfo = chatInfo;
         this.userInfo = userInfo;
-        this.game = game;
+        this.gameInfo = gameInfo;
         this.duration = duration;
         this.gameDay = gameDay;
         this.chatId = chatId;

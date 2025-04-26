@@ -11,13 +11,13 @@ public class SessionAlreadyRegisteredException extends UserFeedbackException {
 
     private final ChatInfo chatInfo;
     private final UserInfo userInfo;
-    private final GameType gameType;
+    private final GameInfo gameInfo;
 
 
-    public SessionAlreadyRegisteredException(final ChatInfo chatInfo, final UserInfo userInfo, final GameType gameType) {
+    public SessionAlreadyRegisteredException(final ChatInfo chatInfo, final UserInfo userInfo, final GameInfo gameInfo) {
         super(chatInfo.chatId());
         this.chatInfo = chatInfo;
         this.userInfo = userInfo;
-        this.gameType = gameType;
+        this.gameInfo = gameInfo;
     }
 }

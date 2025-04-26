@@ -53,7 +53,7 @@ class OverrideAbility implements AbilityImplementation {
     public Ability getAbility() {
         return Ability.builder()
                       .name("override")
-                      .info(UsageFormatUtils.formatUsage("/override @<user> <game> <mm:ss>", "Manually set a user’s time (admin-only)."))
+                      .info(UsageFormatUtils.formatUsage("/override @<user> <gameInfo> <mm:ss>", "Manually set a user’s time (admin-only)."))
                       .input(3)
                       .locality(Locality.GROUP)
                       .privacy(Privacy.GROUP_ADMIN)

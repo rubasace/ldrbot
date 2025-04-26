@@ -10,14 +10,14 @@ public class GameSessionDeletionEvent extends ApplicationEvent {
 
     private final ChatInfo chatInfo;
     private final UserInfo userInfo;
-    private final GameType game;
+    private final GameInfo gameInfo;
     private final boolean allGames;
 
-    public GameSessionDeletionEvent(final Object source, final ChatInfo chatInfo, UserInfo userInfo, final GameType game) {
+    public GameSessionDeletionEvent(final Object source, final ChatInfo chatInfo, UserInfo userInfo, final GameInfo gameInfo) {
         super(source);
         this.chatInfo = chatInfo;
         this.userInfo = userInfo;
-        this.game = game;
+        this.gameInfo = gameInfo;
         this.allGames = false;
     }
 
@@ -25,7 +25,7 @@ public class GameSessionDeletionEvent extends ApplicationEvent {
         super(source);
         this.chatInfo = chatInfo;
         this.userInfo = userInfo;
-        this.game = null;
+        this.gameInfo = null;
         this.allGames = true;
     }
 

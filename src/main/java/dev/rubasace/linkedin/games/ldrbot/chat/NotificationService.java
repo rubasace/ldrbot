@@ -32,7 +32,7 @@ public class NotificationService {
             
             """ + ChatConstants.HELP_SUGGESTION;
     //TODO improve escaping of messages
-    private static final String ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE = "%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall";
+    private static final String ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE = "%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <gameInfo>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall";
     private static final String SUBMISSION_MESSAGE_TEMPLATE = "%s submitted their result for today's %s with a time of %s";
 
     private static final String GAME_SESSION_DELETION_MESSAGE_TEMPLATE = "%s result for today's %s has been deleted";
@@ -66,15 +66,15 @@ public class NotificationService {
             customTelegramClient.errorMessage(UNKNOWN_COMMAND_MESSAGE_TEMPLATE.formatted(unknownCommandException.getCommand()), unknownCommandException.getChatId());
         } else if (userFeedbackException instanceof SessionAlreadyRegisteredException sessionAlreadyRegisteredException) {
             String text = ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(sessionAlreadyRegisteredException.getUserInfo()),
-                                                                                sessionAlreadyRegisteredException.getGameType().name(),
-                                                                                sessionAlreadyRegisteredException.getGameType().name().toLowerCase());
+                                                                                sessionAlreadyRegisteredException.getGameInfo().name(),
+                                                                                sessionAlreadyRegisteredException.getGameInfo().name());
             customTelegramClient.errorMessage(EscapeUtils.escapeText(text), sessionAlreadyRegisteredException.getChatId());
         } else if (userFeedbackException instanceof UserNotFoundException userNotFoundException) {
             customTelegramClient.errorMessage("User %s not found".formatted(FormatUtils.formatUserMention(userNotFoundException.getUserInfo())), userNotFoundException.getChatId());
         } else if (userFeedbackException instanceof GameNameNotFoundException gameNameNotFoundException) {
-            customTelegramClient.errorMessage("'%s' is not a valid game.".formatted(gameNameNotFoundException.getGameName()), gameNameNotFoundException.getChatId());
+            customTelegramClient.errorMessage("'%s' is not a valid gameInfo.".formatted(gameNameNotFoundException.getGameName()), gameNameNotFoundException.getChatId());
         } else if (userFeedbackException instanceof GameDurationExtractionException gameDurationExtractionException) {
-            String text = "%s submitted a screenshot for the game %s, but I couldn’t extract the solving time. This often happens if the image is cropped or covered by overlays like confetti. Try sending a clearer screenshot, or ask an admin to set your time manually using /override %s <time>".formatted(
+            String text = "%s submitted a screenshot for the gameInfo %s, but I couldn’t extract the solving time. This often happens if the image is cropped or covered by overlays like confetti. Try sending a clearer screenshot, or ask an admin to set your time manually using /override %s <time>".formatted(
                     FormatUtils.formatUserMention(gameDurationExtractionException.getUserInfo()), gameDurationExtractionException.getGameType().name(),
                     gameDurationExtractionException.getGameType().name().toLowerCase());
             customTelegramClient.errorMessage(EscapeUtils.escapeText(text), gameDurationExtractionException.getChatId());
@@ -110,7 +110,7 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleSessionRegistration(final GameSessionRegistrationEvent gameSessionRegistrationEvent) {
         customTelegramClient.message(SUBMISSION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(gameSessionRegistrationEvent.getUserInfo()),
-                                                                           gameSessionRegistrationEvent.getGame().name().toLowerCase(),
+                                                                           gameSessionRegistrationEvent.getGameInfo().name(),
                                                                            FormatUtils.formatDuration(gameSessionRegistrationEvent.getDuration())),
                                      gameSessionRegistrationEvent.getChatInfo().chatId());
     }
@@ -125,7 +125,7 @@ public class NotificationService {
         } else {
             customTelegramClient.successMessage(
                     GAME_SESSION_DELETION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(gameSessionDeletionEvent.getUserInfo()),
-                                                                     gameSessionDeletionEvent.getGame().name().toLowerCase()),
+                                                                     gameSessionDeletionEvent.getGameInfo().name().toLowerCase()),
                     gameSessionDeletionEvent.getChatInfo().chatId());
         }
     }

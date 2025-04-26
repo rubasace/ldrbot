@@ -1,6 +1,5 @@
 package dev.rubasace.linkedin.games.ldrbot.util;
 
-import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 
 import java.time.Duration;
@@ -24,14 +23,6 @@ public class FormatUtils {
         long minutes = d.toMinutes();
         long seconds = d.minusMinutes(minutes).getSeconds();
         return String.format("%02d:%02d", minutes, seconds);
-    }
-
-    public static String gameIcon(final GameType gameType) {
-        return switch (gameType) {
-            case ZIP -> "🏁";
-            case TANGO -> "🌙";
-            case QUEENS -> "👑";
-        };
     }
 
     public static String formatDate(final LocalDate localDate) {

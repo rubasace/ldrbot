@@ -1,6 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.summary;
 
-import dev.rubasace.linkedin.games.ldrbot.session.GameType;
+import dev.rubasace.linkedin.games.ldrbot.session.GameInfo;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -11,7 +11,7 @@ import java.util.Map;
 @Component
 class GlobalScoreDataAdapter {
 
-    public List<GlobalScoreData> adapt(Map<GameType, List<GameScoreData>> gameScores) {
+    public List<GlobalScoreData> adapt(Map<GameInfo, List<GameScoreData>> gameScores) {
         Map<Long, GlobalScoreData> aggregated = new HashMap<>();
 
         gameScores.values().stream()

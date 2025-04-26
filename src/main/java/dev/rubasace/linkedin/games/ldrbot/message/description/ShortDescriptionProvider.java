@@ -11,7 +11,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 @Component
 class ShortDescriptionProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShortDescriptionProvider.class);
-    private static final String BOT_SHORT_DESCRIPTION = "Tracks and ranks LinkedIn puzzle scores via Telegram. Join the game!";
+    private static final String BOT_SHORT_DESCRIPTION = "Tracks and ranks LinkedIn puzzle scores via Telegram. Join the gameInfo!";
 
     private final TelegramClient telegramClient;
 

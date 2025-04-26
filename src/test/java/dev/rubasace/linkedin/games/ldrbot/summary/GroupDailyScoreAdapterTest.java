@@ -5,6 +5,7 @@ import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupAdapter;
 import dev.rubasace.linkedin.games.ldrbot.ranking.DailyGameScore;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSession;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
+import dev.rubasace.linkedin.games.ldrbot.session.GameTypeAdapter;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserAdapter;
 import org.junit.jupiter.api.Test;
@@ -20,9 +21,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GroupDailyScoreAdapterTest {
 
-    private final GameScoreDataAdapter gameScoreDataAdapter = new GameScoreDataAdapter(new TelegramGroupAdapter(), new TelegramUserAdapter());
-    private final GroupDailyScoreAdapter groupDailyScoreAdapter = new GroupDailyScoreAdapter(gameScoreDataAdapter,
-                                                                                             new GlobalScoreDataAdapter(), new TelegramGroupAdapter());
+    private final TelegramGroupAdapter telegramGroupAdapter = new TelegramGroupAdapter();
+    private final GameTypeAdapter gameTypeAdapter = new GameTypeAdapter();
+    private final GameScoreDataAdapter gameScoreDataAdapter = new GameScoreDataAdapter(telegramGroupAdapter, new TelegramUserAdapter(), gameTypeAdapter);
+    private final GroupDailyScoreAdapter groupDailyScoreAdapter = new GroupDailyScoreAdapter(gameScoreDataAdapter, new GlobalScoreDataAdapter(), telegramGroupAdapter,
+                                                                                             gameTypeAdapter);
+
 
     @Test
     void shouldAdapt() {
@@ -51,15 +55,15 @@ class GroupDailyScoreAdapterTest {
         GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(telegramGroup, dailyGameScores, gameDay);
 
         assertAll(
-                () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
-                () -> assertGameScoreData(bobZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).get(1)),
-                () -> assertGameScoreData(jonZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).get(2)),
-                () -> assertGameScoreData(bobTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).getFirst()),
-                () -> assertGameScoreData(aliceTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).get(1)),
-                () -> assertGameScoreData(jonTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).get(2)),
-                () -> assertGameScoreData(aliceQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).getFirst()),
-                () -> assertGameScoreData(jonQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).get(1)),
-                () -> assertGameScoreData(bobQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).get(2)),
+                () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).getFirst()),
+                () -> assertGameScoreData(bobZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).get(1)),
+                () -> assertGameScoreData(jonZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).get(2)),
+                () -> assertGameScoreData(bobTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).getFirst()),
+                () -> assertGameScoreData(aliceTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).get(1)),
+                () -> assertGameScoreData(jonTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).get(2)),
+                () -> assertGameScoreData(aliceQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).getFirst()),
+                () -> assertGameScoreData(jonQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).get(1)),
+                () -> assertGameScoreData(bobQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).get(2)),
                 () -> assertGlobalScore("alice", Duration.ofSeconds(6), 1, 8, groupDailyScore.globalScore().getFirst()),
                 () -> assertGlobalScore("bob", Duration.ofSeconds(9), 2, 6, groupDailyScore.globalScore().get(1)),
                 () -> assertGlobalScore("jon", Duration.ofSeconds(11), 3, 4, groupDailyScore.globalScore().get(2))
@@ -94,15 +98,15 @@ class GroupDailyScoreAdapterTest {
         GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(telegramGroup, dailyGameScores, gameDay);
 
         assertAll(
-                () -> assertGameScoreData(bobZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
-                () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).get(1)),
-                () -> assertGameScoreData(jonZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).get(2)),
-                () -> assertGameScoreData(bobTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).getFirst()),
-                () -> assertGameScoreData(jonTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).get(1)),
-                () -> assertGameScoreData(aliceTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).get(2)),
-                () -> assertGameScoreData(aliceQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).getFirst()),
-                () -> assertGameScoreData(jonQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).get(1)),
-                () -> assertGameScoreData(bobQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).get(2)),
+                () -> assertGameScoreData(bobZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).getFirst()),
+                () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).get(1)),
+                () -> assertGameScoreData(jonZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).get(2)),
+                () -> assertGameScoreData(bobTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).getFirst()),
+                () -> assertGameScoreData(jonTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).get(1)),
+                () -> assertGameScoreData(aliceTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).get(2)),
+                () -> assertGameScoreData(aliceQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).getFirst()),
+                () -> assertGameScoreData(jonQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).get(1)),
+                () -> assertGameScoreData(bobQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).get(2)),
                 () -> assertGlobalScore("alice", Duration.ofSeconds(6), 1, 8, groupDailyScore.globalScore().getFirst()),
                 () -> assertGlobalScore("bob", Duration.ofSeconds(7), 2, 7, groupDailyScore.globalScore().get(1)),
                 () -> assertGlobalScore("jon", Duration.ofSeconds(10), 3, 5, groupDailyScore.globalScore().get(2))
@@ -137,15 +141,15 @@ class GroupDailyScoreAdapterTest {
         GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(telegramGroup, dailyGameScores, gameDay);
 
         assertAll(
-                () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
-                () -> assertGameScoreData(bobZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).get(1)),
-                () -> assertGameScoreData(jonZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).get(2)),
-                () -> assertGameScoreData(bobTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).getFirst()),
-                () -> assertGameScoreData(aliceTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).get(1)),
-                () -> assertGameScoreData(jonTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).get(2)),
-                () -> assertGameScoreData(aliceQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).getFirst()),
-                () -> assertGameScoreData(bobQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).get(1)),
-                () -> assertGameScoreData(jonQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).get(2)),
+                () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).getFirst()),
+                () -> assertGameScoreData(bobZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).get(1)),
+                () -> assertGameScoreData(jonZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).get(2)),
+                () -> assertGameScoreData(bobTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).getFirst()),
+                () -> assertGameScoreData(aliceTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).get(1)),
+                () -> assertGameScoreData(jonTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).get(2)),
+                () -> assertGameScoreData(aliceQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).getFirst()),
+                () -> assertGameScoreData(bobQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).get(1)),
+                () -> assertGameScoreData(jonQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).get(2)),
                 () -> assertGlobalScore("alice", Duration.ofSeconds(6), 1, 8, groupDailyScore.globalScore().getFirst()),
                 () -> assertGlobalScore("bob", Duration.ofSeconds(7), 2, 8, groupDailyScore.globalScore().get(1)),
                 () -> assertGlobalScore("jon", Duration.ofSeconds(11), 3, 4, groupDailyScore.globalScore().get(2))
@@ -180,15 +184,15 @@ class GroupDailyScoreAdapterTest {
         GroupDailyScore groupDailyScore = groupDailyScoreAdapter.adapt(telegramGroup, dailyGameScores, gameDay);
 
         assertAll(
-                () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).getFirst()),
-                () -> assertGameScoreData(bobZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).get(1)),
-                () -> assertGameScoreData(jonZipGameScore, groupDailyScore.gameScores().get(GameType.ZIP).get(2)),
-                () -> assertGameScoreData(bobTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).getFirst()),
-                () -> assertGameScoreData(aliceTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).get(1)),
-                () -> assertGameScoreData(jonTangoGameScore, groupDailyScore.gameScores().get(GameType.TANGO).get(2)),
-                () -> assertGameScoreData(aliceQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).getFirst()),
-                () -> assertGameScoreData(bobQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).get(1)),
-                () -> assertGameScoreData(jonQueensGameScore, groupDailyScore.gameScores().get(GameType.QUEENS).get(2)),
+                () -> assertGameScoreData(aliceZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).getFirst()),
+                () -> assertGameScoreData(bobZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).get(1)),
+                () -> assertGameScoreData(jonZipGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.ZIP)).get(2)),
+                () -> assertGameScoreData(bobTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).getFirst()),
+                () -> assertGameScoreData(aliceTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).get(1)),
+                () -> assertGameScoreData(jonTangoGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.TANGO)).get(2)),
+                () -> assertGameScoreData(aliceQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).getFirst()),
+                () -> assertGameScoreData(bobQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).get(1)),
+                () -> assertGameScoreData(jonQueensGameScore, groupDailyScore.gameScores().get(gameTypeAdapter.adapt(GameType.QUEENS)).get(2)),
                 () -> assertGlobalScore("bob", Duration.ofSeconds(7), 1, 8, groupDailyScore.globalScore().getFirst()),
                 () -> assertGlobalScore("alice", Duration.ofSeconds(7), 1, 8, groupDailyScore.globalScore().get(1)),
                 () -> assertGlobalScore("jon", Duration.ofSeconds(11), 3, 4, groupDailyScore.globalScore().get(2))
@@ -208,7 +212,7 @@ class GroupDailyScoreAdapterTest {
     private void assertGameScoreData(final DailyGameScore dailyGameScore, final GameScoreData gameScoreData) {
         assertAll(
                 () -> assertEquals(dailyGameScore.getUser().getUserName(), gameScoreData.userInfo().userName()),
-                () -> assertEquals(dailyGameScore.getGame(), gameScoreData.game()),
+                () -> assertEquals(gameTypeAdapter.adapt(dailyGameScore.getGame()), gameScoreData.gameInfo()),
                 () -> assertEquals(dailyGameScore.getGameSession().getDuration(), gameScoreData.duration()),
                 () -> assertEquals(dailyGameScore.getPosition(), gameScoreData.position()),
                 () -> assertEquals(dailyGameScore.getPoints(), gameScoreData.points())

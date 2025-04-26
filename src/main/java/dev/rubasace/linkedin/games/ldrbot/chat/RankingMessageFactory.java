@@ -1,6 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.chat;
 
-import dev.rubasace.linkedin.games.ldrbot.session.GameType;
+import dev.rubasace.linkedin.games.ldrbot.session.GameInfo;
 import dev.rubasace.linkedin.games.ldrbot.summary.GameScoreData;
 import dev.rubasace.linkedin.games.ldrbot.summary.GlobalScoreData;
 import dev.rubasace.linkedin.games.ldrbot.summary.GroupDailyScore;
@@ -19,10 +19,9 @@ class RankingMessageFactory {
         StringBuilder sb = new StringBuilder();
         sb.append("<b>📊 Daily Ranking for %s</b>\n".formatted(FormatUtils.formatDate(groupScore.gameDay())));
 
-        java.util.stream.Stream.of(GameType.values())
-                               .sorted(Comparator.comparing(GameType::name))
-                               .filter(groupScore.gameScores()::containsKey)
-                               .forEach(gameType -> toHtmlGameRanking(gameType, groupScore.gameScores().get(gameType), sb));
+        groupScore.gameScores().entrySet().stream()
+                  .sorted(Comparator.comparing(e -> e.getKey().name()))
+                  .forEach(e -> toHtmlGameRanking(e.getKey(), e.getValue(), sb));
 
         List<GlobalScoreData> global = groupScore.globalScore();
 
@@ -33,8 +32,8 @@ class RankingMessageFactory {
         return sb.toString();
     }
 
-    private void toHtmlGameRanking(final GameType gameType, final List<GameScoreData> scores, final StringBuilder sb) {
-        sb.append(toTile(FormatUtils.gameIcon(gameType), gameType.name()));
+    private void toHtmlGameRanking(final GameInfo gameInfo, final List<GameScoreData> scores, final StringBuilder sb) {
+        sb.append(toTile(gameInfo.icon(), gameInfo.name()));
 
         for (GameScoreData score : scores) {
             sb.append(formatRankingLine(score.position(), FormatUtils.formatUserMention(score.userInfo()), score.duration(), score.points()));
@@ -42,7 +41,7 @@ class RankingMessageFactory {
     }
 
     private String toTile(final String icon, final String title) {
-        return "\n<b><u>%s</u> </b>\n".formatted(title);
+        return "\n<b><u>%s</u></b>\n".formatted(title);
     }
 
     private void toHtmlGlobalRanking(final StringBuilder sb, final List<GlobalScoreData> global) {

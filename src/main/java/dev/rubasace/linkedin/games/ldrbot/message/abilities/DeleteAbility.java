@@ -37,7 +37,7 @@ class DeleteAbility implements AbilityImplementation {
     public Ability getAbility() {
         return Ability.builder()
                       .name("delete")
-                      .info(UsageFormatUtils.formatUsage("/delete <game>", "Remove your submitted time for a game."))
+                      .info(UsageFormatUtils.formatUsage("/delete <gameInfo>", "Remove your submitted time for a gameInfo."))
                       .input(1)
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
@@ -49,7 +49,7 @@ class DeleteAbility implements AbilityImplementation {
     private void deleteTodayRecord(final Message message, final String[] arguments) {
         //TODO think if controlling actions arguments with input() or via explicit arguments check like here. Probably here so we have more control over everything
         if (arguments == null || arguments.length == 0) {
-            throw new InvalidUserInputException("Please provide a game name. Example: /delete queens", message.getChatId());
+            throw new InvalidUserInputException("Please provide a gameInfo name. Example: /delete queens", message.getChatId());
         }
 
         String gameName = arguments[0];

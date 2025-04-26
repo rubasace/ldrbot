@@ -1,6 +1,8 @@
 package dev.rubasace.linkedin.games.ldrbot.group;
 
+import dev.rubasace.linkedin.games.ldrbot.session.GameInfo;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
+import dev.rubasace.linkedin.games.ldrbot.session.GameTypeAdapter;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserService;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
@@ -14,6 +16,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Transactional(readOnly = true)
@@ -23,11 +26,13 @@ public class TelegramGroupService {
     private final TelegramGroupRepository telegramGroupRepository;
     private final TelegramUserService telegramUserService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final GameTypeAdapter gameTypeAdapter;
 
-    TelegramGroupService(final TelegramGroupRepository telegramGroupRepository, final TelegramUserService telegramUserService, final ApplicationEventPublisher applicationEventPublisher) {
+    TelegramGroupService(final TelegramGroupRepository telegramGroupRepository, final TelegramUserService telegramUserService, final ApplicationEventPublisher applicationEventPublisher, final GameTypeAdapter gameTypeAdapter) {
         this.telegramGroupRepository = telegramGroupRepository;
         this.telegramUserService = telegramUserService;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.gameTypeAdapter = gameTypeAdapter;
     }
 
     public Optional<TelegramGroup> findGroup(final Long chatId) {
@@ -95,9 +100,11 @@ public class TelegramGroupService {
         return createdTelegramGroup;
     }
 
-    public Set<GameType> listTrackedGames(final ChatInfo chatInfo) throws GroupNotFoundException {
+    public Set<GameInfo> listTrackedGames(final ChatInfo chatInfo) throws GroupNotFoundException {
         TelegramGroup telegramGroup = findGroupOrThrow(chatInfo);
-        return telegramGroup.getTrackedGames();
+        return telegramGroup.getTrackedGames().stream()
+                            .map(gameTypeAdapter::adapt)
+                            .collect(Collectors.toSet());
     }
 
     @Transactional

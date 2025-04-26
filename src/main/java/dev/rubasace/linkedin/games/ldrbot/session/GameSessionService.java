@@ -25,12 +25,14 @@ public class GameSessionService {
     private final TelegramUserService telegramUserService;
     private final TelegramGroupService telegramGroupService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final GameTypeAdapter gameTypeAdapter;
 
-    public GameSessionService(final GameSessionRepository gameSessionRepository, final TelegramUserService telegramUserService, final TelegramGroupService telegramGroupService, final ApplicationEventPublisher applicationEventPublisher) {
+    public GameSessionService(final GameSessionRepository gameSessionRepository, final TelegramUserService telegramUserService, final TelegramGroupService telegramGroupService, final ApplicationEventPublisher applicationEventPublisher, final GameTypeAdapter gameTypeAdapter) {
         this.gameSessionRepository = gameSessionRepository;
         this.telegramUserService = telegramUserService;
         this.telegramGroupService = telegramGroupService;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.gameTypeAdapter = gameTypeAdapter;
     }
 
     @Transactional
@@ -41,8 +43,10 @@ public class GameSessionService {
             return Optional.empty();
         }
         LocalDate gameDay = LinkedinTimeUtils.todayGameDay();
+        GameInfo gameInfo = gameTypeAdapter.adapt(gameDuration.type());
         if (gameSessionRepository.existsByUserIdAndGroupChatIdAndGameAndGameDay(telegramUser.getId(), telegramGroup.getChatId(), gameDuration.type(), gameDay)) {
-            throw new SessionAlreadyRegisteredException(chatInfo, userInfo, gameDuration.type());
+
+            throw new SessionAlreadyRegisteredException(chatInfo, userInfo, gameInfo);
         }
         GameSession gameSession = new GameSession();
         gameSession.setGame(gameDuration.type());
@@ -51,17 +55,17 @@ public class GameSessionService {
         gameSession.setGameDay(gameDay);
         gameSession.setDuration(gameDuration.duration());
         GameSession savedSession = gameSessionRepository.saveAndFlush(gameSession);
-        applicationEventPublisher.publishEvent(
-                new GameSessionRegistrationEvent(this, chatInfo, userInfo, gameSession.getGame(), gameSession.getDuration(), gameDay,
+        applicationEventPublisher.publishEvent(new GameSessionRegistrationEvent(this, chatInfo, userInfo, gameInfo, gameSession.getDuration(), gameDay,
                                                  telegramGroup.getChatId()));
         return Optional.of(savedSession);
     }
 
     @Transactional
-    public void deleteTodaySession(final ChatInfo chatInfo, final UserInfo userInfo, final GameType game) {
-        gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameAndGameDay(userInfo.id(), chatInfo.chatId(), game, LinkedinTimeUtils.todayGameDay());
+    public void deleteTodaySession(final ChatInfo chatInfo, final UserInfo userInfo, final GameType gameType) {
+        gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameAndGameDay(userInfo.id(), chatInfo.chatId(), gameType, LinkedinTimeUtils.todayGameDay());
+        GameInfo gameInfo = gameTypeAdapter.adapt(gameType);
         telegramUserService.find(userInfo).ifPresent(
-                user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, chatInfo, userInfo, game)));
+                user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, chatInfo, userInfo, gameInfo)));
     }
 
     public Stream<GameSession> getDaySessions(final ChatInfo chatInfo, final UserInfo userInfo, final LocalDate gameDay) {

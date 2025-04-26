@@ -6,8 +6,7 @@ import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import dev.rubasace.linkedin.games.ldrbot.message.ChatAdapter;
 import dev.rubasace.linkedin.games.ldrbot.message.InvalidUserInputException;
-import dev.rubasace.linkedin.games.ldrbot.session.GameType;
-import dev.rubasace.linkedin.games.ldrbot.util.FormatUtils;
+import dev.rubasace.linkedin.games.ldrbot.session.GameInfo;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -47,13 +46,13 @@ class GamesAbility implements AbilityImplementation {
     @SneakyThrows
     private void listTrackedGames(final Message message) {
         ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
-        Set<GameType> trackedGames = telegramGroupService.listTrackedGames(chatInfo);
+        Set<GameInfo> trackedGames = telegramGroupService.listTrackedGames(chatInfo);
         if (CollectionUtils.isEmpty(trackedGames)) {
             throw new InvalidUserInputException("This group is not tracking any games.", chatInfo.chatId());
         } else {
             String text = trackedGames.stream()
                                       .sorted()
-                                      .map(game -> "%s %s".formatted(FormatUtils.gameIcon(game), game.name()))
+                                      .map(gameInfo -> "%s %s".formatted(gameInfo.icon(), gameInfo.name()))
                                       .collect(Collectors.joining("\n"));
 
             customTelegramClient.message("This group is currently tracking:\n" + text, chatInfo.chatId());
