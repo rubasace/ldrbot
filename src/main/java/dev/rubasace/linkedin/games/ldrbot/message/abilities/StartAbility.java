@@ -2,7 +2,6 @@ package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 
 import dev.rubasace.linkedin.games.ldrbot.chat.ChatConstants;
 import dev.rubasace.linkedin.games.ldrbot.chat.CustomTelegramClient;
-import dev.rubasace.linkedin.games.ldrbot.exception.HandleBotExceptions;
 import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
@@ -11,7 +10,6 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
-@HandleBotExceptions
 @Component
 class StartAbility implements AbilityImplementation {
 

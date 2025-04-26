@@ -14,6 +14,7 @@ import dev.rubasace.linkedin.games.ldrbot.session.GameSessionRegistrationEvent;
 import dev.rubasace.linkedin.games.ldrbot.session.SessionAlreadyRegisteredException;
 import dev.rubasace.linkedin.games.ldrbot.summary.GroupDailyScore;
 import dev.rubasace.linkedin.games.ldrbot.user.UserNotFoundException;
+import dev.rubasace.linkedin.games.ldrbot.util.EscapeUtils;
 import dev.rubasace.linkedin.games.ldrbot.util.FormatUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -73,10 +74,10 @@ public class NotificationService {
         } else if (userFeedbackException instanceof GameNameNotFoundException gameNameNotFoundException) {
             customTelegramClient.errorMessage("'%s' is not a valid game.".formatted(gameNameNotFoundException.getGameName()), gameNameNotFoundException.getChatId());
         } else if (userFeedbackException instanceof GameDurationExtractionException gameDurationExtractionException) {
-            customTelegramClient.errorMessage(
-                    "%s submitted a screenshot for the game %s, but I couldn’t extract the solving time. This often happens if the image is cropped or covered by overlays like confetti. Try sending a clearer screenshot, or ask an admin to set your time manually using /override %s <time>".formatted(
-                            FormatUtils.formatUserMention(gameDurationExtractionException.getUserInfo()), gameDurationExtractionException.getGameType().name(),
-                            gameDurationExtractionException.getGameType().name().toLowerCase()), gameDurationExtractionException.getChatId());
+            String text = "%s submitted a screenshot for the game %s, but I couldn’t extract the solving time. This often happens if the image is cropped or covered by overlays like confetti. Try sending a clearer screenshot, or ask an admin to set your time manually using /override %s <time>".formatted(
+                    FormatUtils.formatUserMention(gameDurationExtractionException.getUserInfo()), gameDurationExtractionException.getGameType().name(),
+                    gameDurationExtractionException.getGameType().name().toLowerCase());
+            customTelegramClient.errorMessage(EscapeUtils.escapeText(text), gameDurationExtractionException.getChatId());
         } else if (userFeedbackException instanceof InvalidUserInputException invalidUserInputException) {
             customTelegramClient.errorMessage(invalidUserInputException.getMessage(), invalidUserInputException.getChatId());
         }

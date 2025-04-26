@@ -1,6 +1,5 @@
 package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 
-import dev.rubasace.linkedin.games.ldrbot.exception.HandleBotExceptions;
 import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
 import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import dev.rubasace.linkedin.games.ldrbot.message.ChatAdapter;
@@ -30,7 +29,6 @@ import java.time.Duration;
 import java.util.Optional;
 
 
-@HandleBotExceptions
 @Component
 class OverrideAbility implements AbilityImplementation {
 

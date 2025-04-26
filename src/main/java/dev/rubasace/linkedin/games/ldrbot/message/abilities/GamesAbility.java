@@ -1,7 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 
 import dev.rubasace.linkedin.games.ldrbot.chat.CustomTelegramClient;
-import dev.rubasace.linkedin.games.ldrbot.exception.HandleBotExceptions;
 import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
 
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
-@HandleBotExceptions
 @Component
 class GamesAbility implements AbilityImplementation {
 

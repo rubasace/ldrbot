@@ -2,7 +2,6 @@ package dev.rubasace.linkedin.games.ldrbot.message;
 
 import dev.rubasace.linkedin.games.ldrbot.assets.AssetsDownloader;
 import dev.rubasace.linkedin.games.ldrbot.configuration.TelegramBotProperties;
-import dev.rubasace.linkedin.games.ldrbot.exception.HandleBotExceptions;
 import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroup;
@@ -13,7 +12,6 @@ import dev.rubasace.linkedin.games.ldrbot.session.GameDuration;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
 import dev.rubasace.linkedin.games.ldrbot.session.SessionAlreadyRegisteredException;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -28,7 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@HandleBotExceptions
 @Transactional(readOnly = true)
 @Service
 class MessageService {
@@ -65,17 +62,15 @@ class MessageService {
         return telegramGroupService.registerOrUpdateGroup(chatInfo);
     }
 
-    @SneakyThrows
     @Transactional
-    void addUserToGroup(final Message message) {
+    void addUserToGroup(final Message message) throws GroupNotFoundException {
         ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
         UserInfo userInfo = userAdapter.adapt(message.getFrom());
         telegramGroupService.addUserToGroup(chatInfo, userInfo);
     }
 
-    @SneakyThrows
     @Transactional
-    void processMessage(final Message message) {
+    void processMessage(final Message message) throws UnknownCommandException, GameDurationExtractionException, SessionAlreadyRegisteredException, GroupNotFoundException {
 
         String receivedCommand = message.getText() != null ? message.getText().split("[\\s@]")[0] : "";
         if (message.isCommand() && !knownCommands.containsKey(receivedCommand)) {

@@ -1,8 +1,10 @@
 package dev.rubasace.linkedin.games.ldrbot.message;
 
+import dev.rubasace.linkedin.games.ldrbot.chat.NotificationService;
+import dev.rubasace.linkedin.games.ldrbot.chat.UserFeedbackException;
 import dev.rubasace.linkedin.games.ldrbot.configuration.TelegramBotProperties;
-import dev.rubasace.linkedin.games.ldrbot.exception.HandleBotExceptions;
 import jakarta.annotation.PostConstruct;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -29,7 +31,6 @@ import java.util.stream.Collectors;
 //TODO add /about command
 //TODO add metrics
 //TODO allow to submit and delete/deleteall on private chat, affecting all joined groups
-@HandleBotExceptions
 @Component
 public class MessageController extends AbilityBot implements SpringLongPollingBot {
 
@@ -37,22 +38,28 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     public static final int MAX_CONSUME_CONCURRENCY = 25;
 
     private final MessageService messageService;
+    private final NotificationService notificationService;
     private final List<AbilityImplementation> abilityImplementations;
     private final String token;
     private final ExecutorService controllerExecutor;
     private final Semaphore semaphore;
 
     MessageController(final TelegramClient telegramClient,
-                      final MessageService messageService, final List<AbilityImplementation> abilityImplementations,
+                      final MessageService messageService,
+                      final NotificationService notificationService,
+                      final List<AbilityImplementation> abilityImplementations,
                       final TelegramBotProperties telegramBotProperties) {
         super(telegramClient, telegramBotProperties.getUsername(), MapDBContext.onlineInstance("/tmp/" + telegramBotProperties.getUsername()));
         this.messageService = messageService;
+        this.notificationService = notificationService;
         this.abilityImplementations = abilityImplementations;
         this.token = telegramBotProperties.getToken();
         this.controllerExecutor = Executors.newVirtualThreadPerTaskExecutor();
         this.semaphore = new Semaphore(MAX_CONSUME_CONCURRENCY);
     }
 
+    //UserFeedbackException is thrown using @SneakyThrows, need to supress the IDE warnings
+    @SuppressWarnings({"RedundantTypeCheck", "ConstantConditions"})
     @Override
     public void consume(final List<Update> updates) {
         controllerExecutor.execute(() -> updates.forEach(update -> {
@@ -62,12 +69,19 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 LOGGER.error("Update consumption interrupted", e);
+            } catch (Exception e) {
+                if (e instanceof UserFeedbackException) {
+                    notificationService.notifyUserFeedbackException((UserFeedbackException) e);
+                } else {
+                    LOGGER.error("An unexpected error occurred", e);
+                }
             } finally {
                 semaphore.release();
             }
         }));
     }
 
+    @SneakyThrows
     @Override
     public void consume(Update update) {
         if (!update.hasMessage() || update.getMessage().getFrom().getIsBot()) {

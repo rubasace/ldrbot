@@ -24,7 +24,7 @@ public class RemindersService {
                 Don’t leave your group hanging — submit your screenshots and climb the leaderboard! 💪
             """;
 
-    private static final int MAX_PARALLEL_REMINDERS = 50;
+    private static final int MAX_CONCURRENCY = 50;
 
     private final TelegramUserService telegramUserService;
     private final CustomTelegramClient customTelegramClient;
@@ -37,7 +37,7 @@ public class RemindersService {
         this.customTelegramClient = customTelegramClient;
         this.missingSessionUserProjectionUserInfoAdapter = missingSessionUserProjectionUserInfoAdapter;
         this.missingSessionUserProjectionChatInfoAdapter = missingSessionUserProjectionChatInfoAdapter;
-        this.reminderExecutor = BackpressureExecutors.newBackPressureVirtualThreadPerTaskExecutor("reminders", MAX_PARALLEL_REMINDERS);
+        this.reminderExecutor = BackpressureExecutors.newBackPressureVirtualThreadPerTaskExecutor("reminders", MAX_CONCURRENCY);
     }
 
     public void remindMissingUsers() {
