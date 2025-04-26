@@ -4,17 +4,10 @@ import dev.rubasace.linkedin.games.ldrbot.configuration.ExecutorsConfiguration;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupCreatedEvent;
 import dev.rubasace.linkedin.games.ldrbot.group.UserJoinedGroupEvent;
 import dev.rubasace.linkedin.games.ldrbot.group.UserLeftGroupEvent;
-import dev.rubasace.linkedin.games.ldrbot.image.GameDurationExtractionException;
-import dev.rubasace.linkedin.games.ldrbot.message.InvalidUserInputException;
-import dev.rubasace.linkedin.games.ldrbot.message.UnknownCommandException;
 import dev.rubasace.linkedin.games.ldrbot.ranking.GroupDailyScoreCreatedEvent;
-import dev.rubasace.linkedin.games.ldrbot.session.GameNameNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionDeletionEvent;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionRegistrationEvent;
-import dev.rubasace.linkedin.games.ldrbot.session.SessionAlreadyRegisteredException;
 import dev.rubasace.linkedin.games.ldrbot.summary.GroupDailyScore;
-import dev.rubasace.linkedin.games.ldrbot.user.UserNotFoundException;
-import dev.rubasace.linkedin.games.ldrbot.util.EscapeUtils;
 import dev.rubasace.linkedin.games.ldrbot.util.FormatUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -26,13 +19,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 public class NotificationService {
 
-    private static final String UNKNOWN_COMMAND_MESSAGE_TEMPLATE = """
-            🤖 Sorry, I don’t recognize the command %s.
-            
-            
-            """ + ChatConstants.HELP_SUGGESTION;
     //TODO improve escaping of messages
-    private static final String ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE = "%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <gameInfo>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall";
     private static final String SUBMISSION_MESSAGE_TEMPLATE = "%s submitted their result for today's %s with a time of %s";
 
     private static final String GAME_SESSION_DELETION_MESSAGE_TEMPLATE = "%s result for today's %s has been deleted";
@@ -61,27 +48,6 @@ public class NotificationService {
         this.rankingMessageFactory = rankingMessageFactory;
     }
 
-    public void notifyUserFeedbackException(final UserFeedbackException userFeedbackException) {
-        if (userFeedbackException instanceof UnknownCommandException unknownCommandException) {
-            customTelegramClient.errorMessage(UNKNOWN_COMMAND_MESSAGE_TEMPLATE.formatted(unknownCommandException.getCommand()), unknownCommandException.getChatId());
-        } else if (userFeedbackException instanceof SessionAlreadyRegisteredException sessionAlreadyRegisteredException) {
-            String text = ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(sessionAlreadyRegisteredException.getUserInfo()),
-                                                                                sessionAlreadyRegisteredException.getGameInfo().name(),
-                                                                                sessionAlreadyRegisteredException.getGameInfo().name());
-            customTelegramClient.errorMessage(EscapeUtils.escapeText(text), sessionAlreadyRegisteredException.getChatId());
-        } else if (userFeedbackException instanceof UserNotFoundException userNotFoundException) {
-            customTelegramClient.errorMessage("User %s not found".formatted(FormatUtils.formatUserMention(userNotFoundException.getUserInfo())), userNotFoundException.getChatId());
-        } else if (userFeedbackException instanceof GameNameNotFoundException gameNameNotFoundException) {
-            customTelegramClient.errorMessage("'%s' is not a valid gameInfo.".formatted(gameNameNotFoundException.getGameName()), gameNameNotFoundException.getChatId());
-        } else if (userFeedbackException instanceof GameDurationExtractionException gameDurationExtractionException) {
-            String text = "%s submitted a screenshot for the gameInfo %s, but I couldn’t extract the solving time. This often happens if the image is cropped or covered by overlays like confetti. Try sending a clearer screenshot, or ask an admin to set your time manually using /override %s <time>".formatted(
-                    FormatUtils.formatUserMention(gameDurationExtractionException.getUserInfo()), gameDurationExtractionException.getGameType().name(),
-                    gameDurationExtractionException.getGameType().name().toLowerCase());
-            customTelegramClient.errorMessage(EscapeUtils.escapeText(text), gameDurationExtractionException.getChatId());
-        } else if (userFeedbackException instanceof InvalidUserInputException invalidUserInputException) {
-            customTelegramClient.errorMessage(invalidUserInputException.getMessage(), invalidUserInputException.getChatId());
-        }
-    }
 
     @Order(GREETING_NOTIFICATION_ORDER)
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)

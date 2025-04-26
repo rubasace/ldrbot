@@ -15,7 +15,7 @@ public class FormatUtils {
             if (userInfo.lastName() != null) {
                 fullName += " " + userInfo.lastName();
             }
-            return "<a href=\"tg://user?id=" + userInfo.id() + "\">" + EscapeUtils.escapeText(fullName) + "</a>";
+            return "<a href=\"tg://user?id=" + userInfo.id() + "\">" + fullName + "</a>";
         }
     }
 

@@ -1,6 +1,5 @@
 package dev.rubasace.linkedin.games.ldrbot.message;
 
-import dev.rubasace.linkedin.games.ldrbot.chat.NotificationService;
 import dev.rubasace.linkedin.games.ldrbot.chat.UserFeedbackException;
 import dev.rubasace.linkedin.games.ldrbot.configuration.TelegramBotProperties;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupNotFoundException;
@@ -38,15 +37,19 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     public static final int MAX_CONSUME_CONCURRENCY = 25;
 
     private final MessageService messageService;
-    private final NotificationService notificationService;
+    private final ExceptionHandler exceptionHandler;
     private final List<AbilityImplementation> abilityImplementations;
     private final String token;
     private final ExecutorService controllerExecutor;
 
-    MessageController(final TelegramClient telegramClient, final MessageService messageService, final NotificationService notificationService, final List<AbilityImplementation> abilityImplementations, final TelegramBotProperties telegramBotProperties) {
+    MessageController(final TelegramClient telegramClient,
+                      final MessageService messageService,
+                      final ExceptionHandler exceptionHandler,
+                      final List<AbilityImplementation> abilityImplementations,
+                      final TelegramBotProperties telegramBotProperties) {
         super(telegramClient, telegramBotProperties.getUsername(), MapDBContext.onlineInstance("/tmp/" + telegramBotProperties.getUsername()));
         this.messageService = messageService;
-        this.notificationService = notificationService;
+        this.exceptionHandler = exceptionHandler;
         this.abilityImplementations = abilityImplementations;
         this.token = telegramBotProperties.getToken();
         this.controllerExecutor = BackpressureExecutors.newBackPressureVirtualThreadPerTaskExecutor("message-controller", MAX_CONSUME_CONCURRENCY);
@@ -63,7 +66,7 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
             doConsume(update);
         } catch (Exception e) {
             if (e instanceof UserFeedbackException) {
-                notificationService.notifyUserFeedbackException((UserFeedbackException) e);
+                exceptionHandler.notifyUserFeedbackException((UserFeedbackException) e);
             } else {
                 LOGGER.error("An unexpected error occurred", e);
             }

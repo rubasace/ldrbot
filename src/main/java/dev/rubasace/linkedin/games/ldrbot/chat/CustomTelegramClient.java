@@ -14,9 +14,11 @@ public class CustomTelegramClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomTelegramClient.class);
 
     private final TelegramClient telegramClient;
+    private final MessageEscapeHelper messageEscapeHelper;
 
-    CustomTelegramClient(final TelegramClient telegramClient) {
+    CustomTelegramClient(final TelegramClient telegramClient, final MessageEscapeHelper messageEscapeHelper) {
         this.telegramClient = telegramClient;
+        this.messageEscapeHelper = messageEscapeHelper;
     }
 
     public void message(final String text, final Long chatId) {
@@ -34,7 +36,7 @@ public class CustomTelegramClient {
     private void sendMessage(final String text, final Long chatId) {
         SendMessage message = SendMessage.builder()
                                          .chatId(chatId)
-                                         .text(text)
+                                         .text(messageEscapeHelper.escapeMessage(text))
                                          .parseMode(ParseMode.HTML)
                                          .build();
         try {
@@ -43,5 +45,6 @@ public class CustomTelegramClient {
             LOGGER.error("Error sending message", e);
         }
     }
+
 
 }

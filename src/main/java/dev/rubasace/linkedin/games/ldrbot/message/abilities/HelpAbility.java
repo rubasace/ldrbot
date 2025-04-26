@@ -2,7 +2,6 @@ package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 
 import dev.rubasace.linkedin.games.ldrbot.chat.CustomTelegramClient;
 import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
-import dev.rubasace.linkedin.games.ldrbot.util.EscapeUtils;
 import dev.rubasace.linkedin.games.ldrbot.util.UsageFormatUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.ObjectProvider;
@@ -95,8 +94,7 @@ class HelpAbility implements AbilityImplementation, ApplicationListener<Applicat
         Optional<String> usage = UsageFormatUtils.extractUsage(description);
 
         return usage
-                .map(u -> (COMMAND_HELP_FORMAT + "\n    usage:  <code>%s</code>").formatted(commandName, EscapeUtils.escapeText(UsageFormatUtils.extractDescription(description)),
-                                                                                            EscapeUtils.escapeText((u))))
-                .orElse(COMMAND_HELP_FORMAT.formatted(commandName, EscapeUtils.escapeText(description)));
+                .map(u -> (COMMAND_HELP_FORMAT + "\n    usage:  <code>%s</code>").formatted(commandName, UsageFormatUtils.extractDescription(description), u))
+                .orElse(COMMAND_HELP_FORMAT.formatted(commandName, description));
     }
 }
