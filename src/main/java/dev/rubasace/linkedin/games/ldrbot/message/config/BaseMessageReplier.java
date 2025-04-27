@@ -17,6 +17,7 @@ public abstract class BaseMessageReplier {
         return update.hasCallbackQuery() && update.getCallbackQuery().getData().startsWith(getPrefix());
     }
 
+
     protected String getAction(final Update update) {
         return update.getCallbackQuery().getData().substring(getPrefix().length());
     }

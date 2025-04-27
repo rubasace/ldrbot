@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -134,5 +135,14 @@ public class TelegramGroupService {
                                                   .map(gameTypeAdapter::adapt)
                                                   .collect(Collectors.toSet());
         applicationEventPublisher.publishEvent(new TrackedGamesChangedEvent(this, chatId, trackedGames));
+    }
+
+    @Transactional
+    public void setTimezone(final Long chatId, final String timeZone) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatId);
+        ZoneId timezone = ZoneId.of(timeZone);
+        telegramGroup.setTimezone(timezone);
+        telegramGroupRepository.save(telegramGroup);
+        applicationEventPublisher.publishEvent(new TimezoneChangedEvent(this, chatId, timezone));
     }
 }

@@ -90,6 +90,7 @@ images.
 | `/override @<username> <game> <time>` | Admin only: Override today's user time (`mm:ss`) for a given game.                                                                         |
 | `/ranking`                            | Calculates and displays the current leaderboard for the group. It will be recalculated automatically after all members submit their times. |
 | `/configure`                          | Configure bot settings such as the tracked games or the group timezone.                                                                    |
+| `/cancel`                             | Aborts the current configuration operation.                                                                                                |
 | `/about`                              | Displays information about the bot and its creator.                                                                                        |
 | `/help`                               | Displays a list of available commands and usage instructions.                                                                              |
 
@@ -112,10 +113,10 @@ images.
    LDRBot will extract your time and game, and track it for the day.
 
 4**Manage your score (optional)**  
-   Use `/delete`, `/deleteall`, or `/override` (admin-only) to modify the results if needed. Useful for correcting misprocessed or mistaken submissions.
+Use `/delete`, `/deleteall`, or `/override` (admin-only) to modify the results if needed. Useful for correcting misprocessed or mistaken submissions.
 
 5**Watch the leaderboard evolve**  
-   Once everyone submits (or at day’s end), LDRBot will post the updated rankings.
+Once everyone submits (or at day’s end), LDRBot will post the updated rankings.
 
 ## 💻 Tech Stack
 

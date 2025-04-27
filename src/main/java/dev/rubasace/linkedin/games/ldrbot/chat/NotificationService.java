@@ -2,6 +2,7 @@ package dev.rubasace.linkedin.games.ldrbot.chat;
 
 import dev.rubasace.linkedin.games.ldrbot.configuration.ExecutorsConfiguration;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupCreatedEvent;
+import dev.rubasace.linkedin.games.ldrbot.group.TimezoneChangedEvent;
 import dev.rubasace.linkedin.games.ldrbot.group.TrackedGamesChangedEvent;
 import dev.rubasace.linkedin.games.ldrbot.group.UserJoinedGroupEvent;
 import dev.rubasace.linkedin.games.ldrbot.group.UserLeftGroupEvent;
@@ -20,7 +21,10 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.CollectionUtils;
 
+import java.time.ZoneId;
+import java.time.format.TextStyle;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -136,6 +140,16 @@ public class NotificationService {
 
             customTelegramClient.message("This group is currently tracking:\n" + text, trackedGamesChangedEvent.getChatId());
         }
+    }
+
+    @Order(USER_INTERACTION_NOTIFICATION_ORDER)
+    @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void handleTimezoneChanged(final TimezoneChangedEvent timezoneChangedEvent) {
+        ZoneId timezone = timezoneChangedEvent.getTimezone();
+        String displayName = timezone.getDisplayName(TextStyle.SHORT, Locale.ENGLISH);
+        String fullTimezoneName = displayName + " (" + timezone.getId() + ")";
+        customTelegramClient.message("Timezone updated! This group will now use <b>" + fullTimezoneName + "</b> for all daily events. 🗓️", timezoneChangedEvent.getChatId());
     }
 
 }

@@ -18,17 +18,26 @@ import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.abilitybots.api.util.AbilityUtils;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.MaybeInaccessibleMessage;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-@Component
-public class ConfigAbility extends BaseMessageReplier implements AbilityExtension {
+import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
+import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.GROUP_ADMIN;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigAbility.class);
+@Component
+public class ConfigureAbility extends BaseMessageReplier implements AbilityExtension {
+
+    private final Map<Long, Consumer<Update>> pendingActions;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigureAbility.class);
 
     private static final ConfigAction EXIT_ACTION = ConfigAction.of("exit", "Exit Configuration");
 
@@ -36,8 +45,9 @@ public class ConfigAbility extends BaseMessageReplier implements AbilityExtensio
     private final TelegramGroupService telegramGroupService;
     private final GameNameAdapter gameNameAdapter;
 
-    public ConfigAbility(final CustomTelegramClient customTelegramClient, final TelegramGroupService telegramGroupService, final GameNameAdapter gameNameAdapter) {
+    public ConfigureAbility(final CustomTelegramClient customTelegramClient, final TelegramGroupService telegramGroupService, final GameNameAdapter gameNameAdapter) {
         super("configure");
+        this.pendingActions = new ConcurrentHashMap<>();
         this.customTelegramClient = customTelegramClient;
         this.telegramGroupService = telegramGroupService;
         this.gameNameAdapter = gameNameAdapter;
@@ -55,14 +65,46 @@ public class ConfigAbility extends BaseMessageReplier implements AbilityExtensio
                       .build();
     }
 
+    public Ability cancel() {
+        return Ability.builder()
+                      .name("cancel")
+                      .info("Cancel current configuration action.")
+                      .locality(ALL)
+                      .privacy(GROUP_ADMIN)
+                      .action(ctx -> cancel(ctx.update().getMessage()))
+                      .build();
+    }
+
+    private void cancel(final Message message) {
+        pendingActions.remove(message.getChatId());
+        customTelegramClient.message("Configuration cancelled", message.getChatId());
+    }
+
+    protected boolean shouldHandleReply(final Update update) {
+        return !isCommand(update) && (pendingActions.containsKey(AbilityUtils.getChatId(update)) || super.shouldHandleReply(update));
+    }
+
+    private boolean isCommand(final Update update) {
+        return update.hasMessage() && update.getMessage().isCommand();
+    }
+
+
     private void configure(BaseAbilityBot baseAbilityBot, Update update) {
-        MaybeInaccessibleMessage message = update.getCallbackQuery().getMessage();
         Long chatId = AbilityUtils.getChatId(update);
+        if (pendingActions.containsKey(chatId)) {
+            pendingActions.get(chatId).accept(update);
+            return;
+        }
+
+        MaybeInaccessibleMessage message = update.getCallbackQuery().getMessage();
         Integer messageId = message.getMessageId();
         String action = getAction(update);
         switch (action) {
             case "tracked-games":
                 showTrackedGamesConfig(chatId, messageId);
+                return;
+            case "timezone":
+                showTimezoneConfig(chatId, messageId);
                 return;
             case "back":
                 showMainConfig(chatId, messageId);
@@ -95,7 +137,7 @@ public class ConfigAbility extends BaseMessageReplier implements AbilityExtensio
     private void showMainConfig(final Long chatId, final Integer messageId) {
         InlineKeyboardMarkup buttons = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(),
                                                                                  ConfigAction.of("tracked-games", "Tracked Games"),
-                                                                                 //ConfigAction.of("timezone", "Timezone"),
+                                                                                 ConfigAction.of("timezone", "Timezone"),
                                                                                  //ConfigAction.of("reminders", "Reminders"),
                                                                                  EXIT_ACTION);
 
@@ -120,9 +162,27 @@ public class ConfigAbility extends BaseMessageReplier implements AbilityExtensio
         }
     }
 
+    private void showTimezoneConfig(final Long chatId, final Integer messageId) {
+        this.pendingActions.put(chatId, this::setTimezone);
+        customTelegramClient.message("Please send me your timezone (for example: <code>Europe/London</code> or <code>America/New_York</code>):", chatId);
+    }
+
     private ConfigAction gameTypeToAction(final GameType gameType, final Set<GameType> trackedGames) {
         String icon = trackedGames.contains(gameType) ? "✅ " : "❌";
         return ConfigAction.of(gameType.name(), icon + StringUtils.capitalize(gameType.name().toLowerCase()));
+    }
+
+    private void setTimezone(final Update update) {
+        Long chatId = AbilityUtils.getChatId(update);
+        try {
+            String timeZone = update.getMessage().getText().trim();
+            telegramGroupService.setTimezone(chatId, timeZone);
+            this.pendingActions.remove(chatId);
+        } catch (Exception e) {
+            customTelegramClient.errorMessage(
+                    "Failed to set timezone, please make sure you send a valid one (e.g. <code>Europe/London</code> or <code>America/New_York</code>).\n" +
+                            "Alternatively, You can /cancel to exit", chatId);
+        }
     }
 
 }
