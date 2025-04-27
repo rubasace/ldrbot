@@ -20,8 +20,9 @@
 ## 💡 Overview
 
 **LDRBot** stands for **LinkedIn Daily (games) Ranking Bot** — a Telegram bot that automates score tracking and leaderboard generation
-for [LinkedIn’s daily puzzle games](https://www.linkedin.com/games) (currently, [Queens](https://www.linkedin.com/games/queens), [Tango](https://www.linkedin.com/games/tango),
-and [Zip](https://www.linkedin.com/games/zip)).
+for [LinkedIn’s daily puzzle games](https://www.linkedin.com/games) (
+currently, [Queens](https://www.linkedin.com/games/queens), [Tango](https://www.linkedin.com/games/tango), [Zip](https://www.linkedin.com/games/zip),
+and [Crossclimb](https://www.linkedin.com/games/crossclimb)).
 
 Each Telegram group becomes its own independent competition; Members submit their puzzle results by uploading screenshots, and LDRBot uses OCR to extract solving times and build a
 daily ranking automatically.
@@ -35,7 +36,7 @@ Each group is treated as a standalone competition — just invite the bot to you
 ## ⚙️ How It Works
 
 When you add LDRBot to a Telegram group, that group becomes its own independent leaderboard and competition space. Each day, members of the group can submit their results for
-LinkedIn’s puzzles (currently: Queens, Tango, and Zip) by simply uploading a screenshot of their completion screen.
+LinkedIn’s puzzles (currently: Queens, Tango, Zip and Crossclimb) by simply uploading a screenshot of their completion screen.
 
 LDRBot automatically scans these screenshots using OCR (powered by OpenCV and Tesseract) and extracts the relevant information: the game type and the time it took to solve it. Once
 processed, your time is recorded for the current day and associated with your Telegram user ID.
@@ -56,7 +57,7 @@ every new day is a fresh challenge for members to compete, improve, and (hopeful
 ## 🖼️ Screenshots
 
 LDRBot uses OCR to read your submitted screenshots and extract the game and solving time.  
-For best results, try to capture the colored square that shows the game result (e.g., ZIP, TANGO, or QUEENS) **as clearly as possible**, and avoid overlays like confetti or cropped
+For best results, try to capture the colored square that shows the game result **as clearly as possible**, and avoid overlays like confetti or cropped
 images.
 
 ### Mobile Layout Examples

@@ -11,7 +11,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 @Component
 class LongDescriptionProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(LongDescriptionProvider.class);
-    private static final String BOT_LONG_DESCRIPTION = "When you add LDRBot to a Telegram group, that group becomes its own independent leaderboard and competition space. Each day, members of the group can submit their results for LinkedIn’s puzzles (currently: Queens, Tango, and Zip) by simply uploading a screenshot of their completion screen.";
+    private static final String BOT_LONG_DESCRIPTION = "When you add LDRBot to a Telegram group, that group becomes its own independent leaderboard and competition space. Each day, members of the group can submit their results for LinkedIn’s puzzles (currently: Queens, Tango, Zip, and Crossclimb) by simply uploading a screenshot of their completion screen.";
 
     private final TelegramClient telegramClient;
 
