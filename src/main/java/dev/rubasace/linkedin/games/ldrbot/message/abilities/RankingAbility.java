@@ -5,7 +5,6 @@ import dev.rubasace.linkedin.games.ldrbot.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroup;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupAdapter;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
-import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import dev.rubasace.linkedin.games.ldrbot.ranking.GroupRankingService;
 import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
 import lombok.SneakyThrows;
@@ -13,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.objects.Locality;
+import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.util.Optional;
@@ -20,7 +20,7 @@ import java.util.Optional;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Component
-class RankingAbility implements AbilityImplementation {
+public class RankingAbility implements AbilityExtension {
 
     private final TelegramGroupService telegramGroupService;
     private final GroupRankingService groupRankingService;
@@ -33,8 +33,7 @@ class RankingAbility implements AbilityImplementation {
     }
 
 
-    @Override
-    public Ability getAbility() {
+    public Ability ranking() {
         return Ability.builder()
                       .name("ranking")
                       .info("Calculate and show today’s group leaderboard.")

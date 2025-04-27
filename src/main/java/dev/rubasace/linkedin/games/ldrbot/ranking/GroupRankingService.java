@@ -64,6 +64,9 @@ public class GroupRankingService {
         Map<GameType, List<DailyGameScore>> gameScores = new HashMap<>();
         for (Map.Entry<GameType, List<GameSession>> entry : groupSessions.entrySet()) {
             GameType gameType = entry.getKey();
+            if (!telegramGroup.getTrackedGames().contains(gameType)) {
+                continue;
+            }
             List<GameSession> sessions = entry.getValue();
             List<DailyGameScore> dailyGameScores = dailyGameScoreCalculator.calculateScores(sessions, telegramGroup);
             gameScores.put(gameType, dailyScoreService.updateDailyScores(dailyGameScores, telegramGroup.getChatId(), gameType));

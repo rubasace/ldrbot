@@ -41,7 +41,6 @@ public class TelegramGroup {
     @Column(nullable = false)
     private ZoneId timezone;
 
-    //TODO when we allow to change them, we will delete the associated gameScores to the non-tracked games for the given day, so the leaderboard check at the end of the day is correct
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @Column(name = "tracked_game")

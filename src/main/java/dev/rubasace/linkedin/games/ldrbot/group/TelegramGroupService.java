@@ -43,6 +43,11 @@ public class TelegramGroupService {
         return this.findGroup(chatInfo.chatId()).orElseThrow(() -> new GroupNotFoundException(chatInfo));
     }
 
+    private TelegramGroup findGroupOrThrow(final Long chatId) throws GroupNotFoundException {
+        return findGroupOrThrow(new ChatInfo(chatId, null, true));
+    }
+
+
 
     @Transactional
     public TelegramGroup registerOrUpdateGroup(final ChatInfo chatInfo) {
@@ -105,11 +110,13 @@ public class TelegramGroupService {
         return createdTelegramGroup;
     }
 
-    public Set<GameInfo> listTrackedGames(final ChatInfo chatInfo) throws GroupNotFoundException {
+    public Set<GameType> listTrackedGames(final ChatInfo chatInfo) throws GroupNotFoundException {
         TelegramGroup telegramGroup = findGroupOrThrow(chatInfo);
-        return telegramGroup.getTrackedGames().stream()
-                            .map(gameTypeAdapter::adapt)
-                            .collect(Collectors.toSet());
+        return telegramGroup.getTrackedGames();
+    }
+
+    public Set<GameType> listTrackedGames(final Long chatId) throws GroupNotFoundException {
+        return listTrackedGames(new ChatInfo(chatId, null, true));
     }
 
     @Transactional
@@ -119,4 +126,18 @@ public class TelegramGroupService {
         telegramGroupRepository.save(telegramGroup);
     }
 
+    @Transactional
+    public void toggleGameTracking(final Long chatId, final GameType gameType) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatId);
+        if (telegramGroup.getTrackedGames().contains(gameType)) {
+            telegramGroup.getTrackedGames().remove(gameType);
+        } else {
+            telegramGroup.getTrackedGames().add(gameType);
+        }
+        telegramGroupRepository.save(telegramGroup);
+        Set<GameInfo> trackedGames = telegramGroup.getTrackedGames().stream()
+                                                  .map(gameTypeAdapter::adapt)
+                                                  .collect(Collectors.toSet());
+        applicationEventPublisher.publishEvent(new TrackedGamesChangedEvent(this, chatId, trackedGames));
+    }
 }

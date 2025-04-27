@@ -1,7 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 
 import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
-import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import dev.rubasace.linkedin.games.ldrbot.message.ChatAdapter;
 import dev.rubasace.linkedin.games.ldrbot.message.GameNameAdapter;
 import dev.rubasace.linkedin.games.ldrbot.message.InvalidUserInputException;
@@ -15,12 +14,13 @@ import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.objects.Locality;
+import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Component
-class DeleteAbility implements AbilityImplementation {
+public class DeleteAbility implements AbilityExtension {
 
     public static final String INVALID_ARGUMENTS_MESSAGE = """
             Please provide a gameInfo name.
@@ -39,8 +39,7 @@ class DeleteAbility implements AbilityImplementation {
         this.gameNameAdapter = gameNameAdapter;
     }
 
-    @Override
-    public Ability getAbility() {
+    public Ability delete() {
         return Ability.builder()
                       .name("delete")
                       .info(UsageFormatUtils.formatUsage("/delete <gameInfo>", "Remove your submitted time for a gameInfo."))

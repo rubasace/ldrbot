@@ -2,16 +2,16 @@ package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 
 import dev.rubasace.linkedin.games.ldrbot.chat.ChatConstants;
 import dev.rubasace.linkedin.games.ldrbot.chat.CustomTelegramClient;
-import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
+import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Component
-class StartAbility implements AbilityImplementation {
+public class StartAbility implements AbilityExtension {
 
     private static final String PRIVATE_START_MESSAGE = """
              👋 Hello! I'm LDRBot — your daily LinkedIn puzzle leaderboard assistant.
@@ -38,8 +38,7 @@ class StartAbility implements AbilityImplementation {
     }
 
 
-    @Override
-    public Ability getAbility() {
+    public Ability start() {
         return Ability.builder()
                       .name("start")
                       .info("Start interacting with LDRBot. Required for private messages.")

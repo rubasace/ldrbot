@@ -1,7 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 
 import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
-import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import dev.rubasace.linkedin.games.ldrbot.message.ChatAdapter;
 import dev.rubasace.linkedin.games.ldrbot.message.UserAdapter;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
@@ -10,12 +9,13 @@ import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.objects.Locality;
+import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Component
-class DeleteAllAbility implements AbilityImplementation {
+public class DeleteAllAbility implements AbilityExtension {
 
     private final GameSessionService gameSessionService;
     private final ChatAdapter chatAdapter;
@@ -27,8 +27,7 @@ class DeleteAllAbility implements AbilityImplementation {
         this.userAdapter = userAdapter;
     }
 
-    @Override
-    public Ability getAbility() {
+    public Ability deleteall() {
         return Ability.builder()
                       .name("deleteall")
                       .info("Remove all your submitted results for today.")

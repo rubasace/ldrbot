@@ -2,16 +2,16 @@ package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 
 import dev.rubasace.linkedin.games.ldrbot.chat.ChatConstants;
 import dev.rubasace.linkedin.games.ldrbot.chat.CustomTelegramClient;
-import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
+import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Component
-class AboutAbility implements AbilityImplementation {
+public class AboutAbility implements AbilityExtension {
 
     private static final String ABOUT_MESSAGE = """
             🤖 About LDRBot
@@ -41,8 +41,7 @@ class AboutAbility implements AbilityImplementation {
                 : "dev";
     }
 
-    @Override
-    public Ability getAbility() {
+    public Ability about() {
         return Ability.builder()
                       .name("about")
                       .info("Learn about LDRBot and its development.")

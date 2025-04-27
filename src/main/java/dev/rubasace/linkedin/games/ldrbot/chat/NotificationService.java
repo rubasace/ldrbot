@@ -2,19 +2,27 @@ package dev.rubasace.linkedin.games.ldrbot.chat;
 
 import dev.rubasace.linkedin.games.ldrbot.configuration.ExecutorsConfiguration;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupCreatedEvent;
+import dev.rubasace.linkedin.games.ldrbot.group.TrackedGamesChangedEvent;
 import dev.rubasace.linkedin.games.ldrbot.group.UserJoinedGroupEvent;
 import dev.rubasace.linkedin.games.ldrbot.group.UserLeftGroupEvent;
 import dev.rubasace.linkedin.games.ldrbot.ranking.GroupDailyScoreCreatedEvent;
+import dev.rubasace.linkedin.games.ldrbot.session.GameInfo;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionDeletionEvent;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionRegistrationEvent;
 import dev.rubasace.linkedin.games.ldrbot.summary.GroupDailyScore;
 import dev.rubasace.linkedin.games.ldrbot.util.FormatUtils;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.util.CollectionUtils;
+
+import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class NotificationService {
@@ -108,6 +116,24 @@ public class NotificationService {
     void handleUserLeave(final UserLeftGroupEvent userLeftGroupEvent) {
         customTelegramClient.message(USER_LEAVE_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(userLeftGroupEvent.getUserInfo())),
                                      userLeftGroupEvent.getChatInfo().chatId());
+    }
+
+    @Order(USER_INTERACTION_NOTIFICATION_ORDER)
+    @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void handleTrackedGamesChanged(final TrackedGamesChangedEvent trackedGamesChangedEvent) {
+        Set<GameInfo> trackedGames = trackedGamesChangedEvent.getTrackedGames();
+        if (CollectionUtils.isEmpty(trackedGames)) {
+            customTelegramClient.errorMessage("This group is not tracking any games.", trackedGamesChangedEvent.getChatId());
+        } else {
+            String text = trackedGames.stream()
+                                      .sorted(Comparator.comparing(GameInfo::name))
+                                      .map(gameInfo -> "%s %s".formatted(gameInfo.icon(), gameInfo.name()))
+                                      .collect(Collectors.joining("\n"));
+
+            customTelegramClient.message("This group is currently tracking:\n" + text, trackedGamesChangedEvent.getChatId());
+        }
     }
 
 }

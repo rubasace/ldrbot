@@ -1,7 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 
 import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
-import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import dev.rubasace.linkedin.games.ldrbot.message.ChatAdapter;
 import dev.rubasace.linkedin.games.ldrbot.message.GameNameAdapter;
 import dev.rubasace.linkedin.games.ldrbot.message.InvalidUserInputException;
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.objects.Locality;
 import org.telegram.telegrambots.abilitybots.api.objects.Privacy;
+import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
@@ -30,7 +30,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 @Component
-class OverrideAbility implements AbilityImplementation {
+public class OverrideAbility implements AbilityExtension {
 
     public static final String INVALID_ARGUMENT_MESSAGE_TEMPLATE = """
             Please provide a user mention, a game name and a time in the format <code>mm:ss</code>.
@@ -61,8 +61,7 @@ class OverrideAbility implements AbilityImplementation {
     }
 
 
-    @Override
-    public Ability getAbility() {
+    public Ability override() {
         return Ability.builder()
                       .name("override")
                       .info(UsageFormatUtils.formatUsage("/override @<user> <game> <mm:ss>", "Manually set a user’s time (admin-only)."))

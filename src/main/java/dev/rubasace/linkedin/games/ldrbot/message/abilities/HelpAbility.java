@@ -9,6 +9,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
+import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 
 import java.util.Comparator;
@@ -20,7 +21,7 @@ import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Component
-class HelpAbility implements AbilityImplementation, ApplicationListener<ApplicationReadyEvent> {
+public class HelpAbility implements AbilityExtension, ApplicationListener<ApplicationReadyEvent> {
 
     private static final String HELP_MESSAGE = """
             🤖 <b>LDRBot Help</b>
@@ -54,8 +55,7 @@ class HelpAbility implements AbilityImplementation, ApplicationListener<Applicat
         this.helpMessage = "Loading...";
     }
 
-    @Override
-    public Ability getAbility() {
+    public Ability help() {
         return Ability.builder()
                       .name("help")
                       .info("Show available commands and how to use the bot.")

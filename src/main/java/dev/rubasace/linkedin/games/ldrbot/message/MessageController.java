@@ -10,10 +10,10 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ReflectionUtils;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
 import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
-import org.telegram.telegrambots.abilitybots.api.objects.Ability;
+import org.telegram.telegrambots.abilitybots.api.toggle.BareboneToggle;
+import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -22,11 +22,8 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
 
 //TODO add metrics
 //TODO allow to submit and delete/deleteall on private chat, affecting all joined groups
@@ -38,21 +35,20 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
 
     private final MessageService messageService;
     private final ExceptionHandler exceptionHandler;
-    private final List<AbilityImplementation> abilityImplementations;
     private final String token;
     private final ExecutorService controllerExecutor;
 
     MessageController(final TelegramClient telegramClient,
                       final MessageService messageService,
                       final ExceptionHandler exceptionHandler,
-                      final List<AbilityImplementation> abilityImplementations,
+                      final List<AbilityExtension> abilityExtensions,
                       final TelegramBotProperties telegramBotProperties) {
-        super(telegramClient, telegramBotProperties.getUsername(), MapDBContext.onlineInstance("/tmp/" + telegramBotProperties.getUsername()));
+        super(telegramClient, telegramBotProperties.getUsername(), MapDBContext.onlineInstance("/tmp/" + telegramBotProperties.getUsername()), new BareboneToggle());
         this.messageService = messageService;
         this.exceptionHandler = exceptionHandler;
-        this.abilityImplementations = abilityImplementations;
         this.token = telegramBotProperties.getToken();
         this.controllerExecutor = BackpressureExecutors.newBackPressureVirtualThreadPerTaskExecutor("message-controller", MAX_CONSUME_CONCURRENCY);
+        this.addExtensions(abilityExtensions);
     }
 
     @Override
@@ -74,25 +70,19 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     }
 
     private void doConsume(final Update update) throws GameDurationExtractionException, SessionAlreadyRegisteredException, UnknownCommandException, GroupNotFoundException {
-        if (!update.hasMessage() || update.getMessage().getFrom().getIsBot()) {
-            return;
-        }
-        if (update.getMessage().getChat().isGroupChat()) {
+        if (update.hasMessage() && update.getMessage().getChat().isGroupChat()) {
             messageService.registerOrUpdateGroup(update.getMessage());
         }
         super.consume(update);
+        if (!update.hasMessage() || update.getMessage().getFrom().getIsBot()) {
+            return;
+        }
         messageService.processMessage(update.getMessage());
-    }
-
-    @Override
-    public Map<String, Ability> getAbilities() {
-        return abilityImplementations.stream().map(AbilityImplementation::getAbility).collect(Collectors.toMap(Ability::name, ability -> ability));
     }
 
     @PostConstruct
     void registerCommands() {
         super.onRegister();
-        unregisterUnknownAbilities();
         List<BotCommand> commands = getAbilities().values().stream().map(ability -> new BotCommand(ability.name(), ability.info())).toList();
         messageService.registerCommands(commands);
         try {
@@ -100,12 +90,6 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
         } catch (TelegramApiException e) {
             LOGGER.error("Failed to register bot commands", e);
         }
-    }
-
-    private void unregisterUnknownAbilities() {
-        Field abilities = ReflectionUtils.findField(this.getClass(), "abilities");
-        abilities.setAccessible(true);
-        ReflectionUtils.setField(abilities, this, getAbilities());
     }
 
     @Override
