@@ -129,7 +129,7 @@ Once everyone submits (or at day’s end), LDRBot will post the updated rankings
 
 - [ ] Allow to opt-in/out of reminders and configure time
 - [x] Auto-finalize scores at end-of-day, even if some users didn’t submit
-- [ ] Allow to opt-in/out from games on each group
+- [x] Allow to opt-in/out from games on each group
 - [ ] Support for private chat submissions (auto-publish to all groups the user is in)
 - [ ] Web dashboard showing historical and aggregated performance across groups and users
 
