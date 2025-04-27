@@ -53,7 +53,7 @@ class MessageService {
 
     void registerCommands(final List<BotCommand> abilities) {
         knownCommands.putAll(abilities.stream()
-                                      .collect(Collectors.toMap(command1 -> "/" + command1.getCommand(), command -> command)));
+                                      .collect(Collectors.toMap(command -> "/" + command.getCommand(), command -> command)));
     }
 
     @Transactional

@@ -1,8 +1,8 @@
 package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 
 import dev.rubasace.linkedin.games.ldrbot.chat.CustomTelegramClient;
-import dev.rubasace.linkedin.games.ldrbot.message.AbilityImplementation;
 import dev.rubasace.linkedin.games.ldrbot.util.UsageFormatUtils;
+import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -12,10 +12,13 @@ import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
@@ -45,13 +48,13 @@ public class HelpAbility implements AbilityExtension, ApplicationListener<Applic
 
     public static final String COMMAND_HELP_FORMAT = "<b>%s</b> – %s";
 
-    private final ObjectProvider<AbilityImplementation> abilityImplementations;
+    private final ObjectProvider<AbilityExtension> abilityExtensions;
     private final CustomTelegramClient customTelegramClient;
     private String helpMessage;
 
-    HelpAbility(final ObjectProvider<AbilityImplementation> abilityImplementations, final CustomTelegramClient customTelegramClient) {
+    HelpAbility(final ObjectProvider<AbilityExtension> abilityExtensions, final CustomTelegramClient customTelegramClient) {
         this.customTelegramClient = customTelegramClient;
-        this.abilityImplementations = abilityImplementations;
+        this.abilityExtensions = abilityExtensions;
         this.helpMessage = "Loading...";
     }
 
@@ -73,11 +76,22 @@ public class HelpAbility implements AbilityExtension, ApplicationListener<Applic
 
     @Override
     public void onApplicationEvent(final ApplicationReadyEvent event) {
-        Map<String, BotCommand> botCommands = abilityImplementations.stream()
-                                                                    .map(AbilityImplementation::getAbility)
-                                                                    .collect(Collectors.toMap(Ability::name, ability -> new BotCommand(ability.name(), ability.info())));
+        Map<String, BotCommand> botCommands = abilityExtensions.stream()
+                                                               .flatMap(this::getAbilities)
+                                                               .collect(Collectors.toMap(Ability::name, ability -> new BotCommand(ability.name(), ability.info())));
         String commandsSection = this.formatCommands(botCommands);
         this.helpMessage = HELP_MESSAGE.formatted(commandsSection);
+    }
+
+    private Stream<Ability> getAbilities(AbilityExtension abilityExtension) {
+        return Arrays.stream(abilityExtension.getClass().getMethods())
+                     .filter(method -> Ability.class.isAssignableFrom(method.getReturnType()))
+                     .map(method -> getInvoke(abilityExtension, method));
+    }
+
+    @SneakyThrows
+    private static Ability getInvoke(final AbilityExtension abilityExtension, final Method method) {
+        return (Ability) method.invoke(abilityExtension);
     }
 
     private String formatCommands(final Map<String, BotCommand> botCommands) {
