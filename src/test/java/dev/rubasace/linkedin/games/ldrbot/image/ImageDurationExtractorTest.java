@@ -30,6 +30,7 @@ class ImageDurationExtractorTest {
     @Autowired
     private ImageGameDurationExtractor imageGameDurationExtractor;
 
+    //TODO add tests to cover potential false positives
     @CsvSource({
             "1.jpeg,QUEENS,28s",
             "2.jpeg,TANGO,47s",
@@ -38,6 +39,9 @@ class ImageDurationExtractorTest {
             "5.jpeg,TANGO,1m20s",
             "6.jpeg,ZIP,27s",
             "7.jpeg,ZIP,15s",
+            "8.jpeg,TANGO,46s",
+            "9.jpeg,QUEENS,46s",
+            "10.jpeg,CROSSCLIMB,2m34s",
     })
     @ParameterizedTest
     void shouldExtractDuration(final String imageName, final GameType game, @ConvertWith(

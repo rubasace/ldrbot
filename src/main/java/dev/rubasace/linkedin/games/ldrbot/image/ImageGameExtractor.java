@@ -11,6 +11,7 @@ import java.util.Optional;
 class ImageGameExtractor {
 
     static final double COLOR_PERCENTAGE_THRESHOLD = 0.10;
+    static final double COLOR_MIN_PIXELS = 100_000;
 
     private final ImageHelper imageHelper;
 
@@ -20,7 +21,7 @@ class ImageGameExtractor {
 
     Optional<GameType> extractGame(final Mat image) {
         return Arrays.stream(GameType.values())
-                     .filter(gameType -> imageHelper.isColorPresent(image, gameType.getColor(), COLOR_PERCENTAGE_THRESHOLD))
+                     .filter(gameType -> imageHelper.isColorPresent(image, gameType.getColor(), COLOR_PERCENTAGE_THRESHOLD, COLOR_MIN_PIXELS))
                      .findFirst();
     }
 }

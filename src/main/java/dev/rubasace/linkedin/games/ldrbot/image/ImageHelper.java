@@ -24,14 +24,14 @@ class ImageHelper {
         Loader.load(opencv_core.class);
     }
 
-    boolean isColorPresent(Mat image, String color, double percentage) {
+    boolean isColorPresent(Mat image, String color, double percentage, double minPixels) {
         Mat mask = getColorMask(image, color);
 
         double count = opencv_core.countNonZero(mask);
         double totalPixels = image.rows() * image.cols();
 
         double colorRatio = (count / totalPixels);
-        return colorRatio >= percentage;
+        return count > minPixels || colorRatio >= percentage;
     }
 
     @NotNull
