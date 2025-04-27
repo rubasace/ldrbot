@@ -89,6 +89,7 @@ images.
 | `/deleteAll`                          | Removes all of your submitted results for the current day.                                                                                 |
 | `/override @<username> <game> <time>` | Admin only: Override today's user time (`mm:ss`) for a given game.                                                                         |
 | `/ranking`                            | Calculates and displays the current leaderboard for the group. It will be recalculated automatically after all members submit their times. |
+| `/configure`                          | Configure bot settings such as the tracked games or the group timezone.                                                                    |
 | `/about`                              | Displays information about the bot and its creator.                                                                                        |
 | `/help`                               | Displays a list of available commands and usage instructions.                                                                              |
 
@@ -104,13 +105,16 @@ images.
 1. **Add the bot to your group**  
    LDRBot will start tracking scores and players from the moment it's added.
 
-2. **Submit your LinkedIn score screenshot**  
+3. **Configure the bot (optional)**  
+   By default the bot will track all games supported. Admins can use `/configure` to choose what to track as well as configure other bot settings.
+
+3. **Submit your LinkedIn score screenshot**  
    LDRBot will extract your time and game, and track it for the day.
 
-3. **Manage your score (optional)**  
+4**Manage your score (optional)**  
    Use `/delete`, `/deleteall`, or `/override` (admin-only) to modify the results if needed. Useful for correcting misprocessed or mistaken submissions.
 
-4. **Watch the leaderboard evolve**  
+5**Watch the leaderboard evolve**  
    Once everyone submits (or at day’s end), LDRBot will post the updated rankings.
 
 ## 💻 Tech Stack

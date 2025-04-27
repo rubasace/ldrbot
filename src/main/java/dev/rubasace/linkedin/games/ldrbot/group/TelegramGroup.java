@@ -15,7 +15,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,12 +25,13 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
 @Entity
 public class TelegramGroup {
+
+    private static final String DEFAULT_ZONE = "Europe/Madrid";
 
     @Id
     private Long chatId;
@@ -39,7 +39,7 @@ public class TelegramGroup {
     private String groupName;
 
     @Column(nullable = false)
-    private ZoneId timezone;
+    private ZoneId timezone = ZoneId.of(DEFAULT_ZONE);
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
@@ -52,7 +52,7 @@ public class TelegramGroup {
 
     @JsonIgnoreProperties({"group", "gameSession"})
     @OneToMany(mappedBy = "group")
-    private Set<DailyGameScore> scores;
+    private Set<DailyGameScore> scores = new HashSet<>();
 
     @JsonIgnoreProperties({"groups", "sessions"})
     @ManyToMany
@@ -60,6 +60,11 @@ public class TelegramGroup {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    public TelegramGroup(final Long chatId, final String groupName) {
+        this.chatId = chatId;
+        this.groupName = groupName;
+    }
 
     @Override
     public boolean equals(final Object o) {

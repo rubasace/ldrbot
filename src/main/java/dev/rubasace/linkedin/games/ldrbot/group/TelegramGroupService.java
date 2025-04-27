@@ -11,9 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -102,9 +99,7 @@ public class TelegramGroupService {
 
 
     private TelegramGroup createGroup(final ChatInfo chatInfo) {
-        //TODO stop hardcoding the timezone and request it as part of the command interaction
-        TelegramGroup telegramGroup = new TelegramGroup(chatInfo.chatId(), chatInfo.title(), ZoneId.of("Europe/Madrid"), EnumSet.allOf(GameType.class), new HashSet<>(), Set.of(),
-                                                        true);
+        TelegramGroup telegramGroup = new TelegramGroup(chatInfo.chatId(), chatInfo.title());
         TelegramGroup createdTelegramGroup = telegramGroupRepository.save(telegramGroup);
         applicationEventPublisher.publishEvent(new GroupCreatedEvent(this, chatInfo));
         return createdTelegramGroup;

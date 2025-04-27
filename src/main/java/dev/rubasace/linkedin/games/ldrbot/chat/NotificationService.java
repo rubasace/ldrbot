@@ -34,14 +34,16 @@ public class NotificationService {
     private static final String USER_LEAVE_MESSAGE_TEMPLATE = "User %s left this group";
 
     private static final String GROUP_GREETING_MESSAGE = """
-            👋 Hey everyone, I'm LDRBot 🤖!
+            👋 Hello everyone, I’m LDRBot 🤖!
             
-            This group is now officially being tracked 🏁. From now on, you can submit your LinkedIn puzzle screenshots, and I’ll keep score for the day.
+            This group is now officially being tracked 🏁. From now on, you can submit your LinkedIn puzzle screenshots, and I’ll keep score throughout the day.
             
-            Every day is a new competition — submit your time, climb the leaderboard, and don’t get left behind! 🦾
+            Every day brings a new competition — submit your time, climb the leaderboard, and make sure you’re not left behind! 🏆
             
+            Admins can use /configure to select which games I should track and customize other settings like the group’s timezone.
             
             """ + ChatConstants.HELP_SUGGESTION;
+
     private static final int GREETING_NOTIFICATION_ORDER = Ordered.HIGHEST_PRECEDENCE;
     private static final int USER_INTERACTION_NOTIFICATION_ORDER = GREETING_NOTIFICATION_ORDER + 1000;
     private static final int DAILY_RANKING_NOTIFICATION_ORDER = 0;
