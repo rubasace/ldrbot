@@ -1,8 +1,12 @@
 package dev.rubasace.linkedin.games.ldrbot.session;
 
+import lombok.Getter;
+
+@Getter
 public enum GameType {
     QUEENS("#7C569F"),
     TANGO("#38495B"),
+    CROSSCLIMB("#057B8B"),
     ZIP("#EE5C14");
 
     private final String color;
@@ -11,7 +15,4 @@ public enum GameType {
         this.color = color;
     }
 
-    public String getColor() {
-        return color;
-    }
 }

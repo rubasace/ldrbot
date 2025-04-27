@@ -15,6 +15,7 @@ public class GameTypeAdapter {
             case ZIP -> "🏁";
             case TANGO -> "🌙";
             case QUEENS -> "👑";
+            case CROSSCLIMB -> "🪜";
         };
     }
 }
