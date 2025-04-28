@@ -1,5 +1,7 @@
 package dev.rubasace.linkedin.games.ldrbot.user;
 
+import java.time.ZoneId;
+
 public interface MissingSessionUserProjection {
     Long getChatId();
 
@@ -11,4 +13,6 @@ public interface MissingSessionUserProjection {
     String getFirstName();
 
     String getLastName();
+
+    ZoneId getTimeZone();
 }
