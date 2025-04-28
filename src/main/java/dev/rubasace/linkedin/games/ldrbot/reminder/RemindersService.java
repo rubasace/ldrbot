@@ -8,7 +8,6 @@ import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import dev.rubasace.linkedin.games.ldrbot.util.BackpressureExecutors;
 import dev.rubasace.linkedin.games.ldrbot.util.FormatUtils;
 import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,14 +42,7 @@ public class RemindersService {
         this.reminderExecutor = BackpressureExecutors.newBackPressureVirtualThreadPerTaskExecutor("reminders", MAX_CONCURRENCY);
     }
 
-    //TODO only remind users at the specified time zone
-    @Async
     public void remindMissingUsers() {
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         telegramUserService.findUsersWithMissingSessions(LinkedinTimeUtils.todayGameDay())
                            .filter(this::shouldRemindNow)
                            .forEach(missingSessionUserProjection -> reminderExecutor.execute(() -> remindMissingUser(missingSessionUserProjection)));
