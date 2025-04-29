@@ -8,6 +8,7 @@ import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserService;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -80,6 +81,7 @@ public class TelegramGroupService {
         applicationEventPublisher.publishEvent(new UserLeftGroupEvent(this, chatInfo, userInfo));
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.SERIALIZABLE)
     public Stream<TelegramGroup> findGroupsWithMissingScores(final LocalDate gameDay) {
         return telegramGroupRepository.findGroupsWithMissingScores(gameDay);
     }

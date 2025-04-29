@@ -1,6 +1,7 @@
 package dev.rubasace.linkedin.games.ldrbot.user;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -31,6 +32,7 @@ public class TelegramUserService {
                                      .orElseGet(() -> this.createUser(userInfo));
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.SERIALIZABLE)
     public Stream<MissingSessionUserProjection> findUsersWithMissingSessions(final LocalDate gameDay) {
         return telegramUserRepository.findUsersWithMissingSessions(gameDay);
     }
