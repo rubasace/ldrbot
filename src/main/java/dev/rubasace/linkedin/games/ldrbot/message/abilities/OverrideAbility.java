@@ -142,9 +142,10 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         String warningText = daySession
                 .map(session -> """
                         
+                        ⚠️ <b>Warning: Existing Record</b> ⚠️
                         
-                        ⚠️ <b>Warning:</b> A result already exists for user %s on the indicated date, with a duration of: <b>%s</b>.
-                        Submitting this will <u>replace</u> the existing record.
+                        A result already exists for user %s on the indicated date, with a duration of: <b>%s</b>.
+                        Submitting this will <b>replace</b> the existing record.
                         
                         """.formatted(
                         FormatUtils.formatUserMention(userInfo),
@@ -155,14 +156,14 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         String confirmationText = String.format("""
                                                         You are about to register:
                                                         
-                                                        • User: %s
-                                                        • Game: %s
-                                                        • Date: %s
-                                                        • Time: %s
+                                                        👤 User: %s
+                                                        🧩 Game: %s
+                                                        📅 Date: %s
+                                                        ⏳ Duration: %s
                                                         
                                                         %sDo you want to proceed?
-                                                        """, FormatUtils.formatUserMention(userInfo), gameInfo.name(), FormatUtils.formatDuration(gameDuration.duration()),
-                                                FormatUtils.formatDate(gameDay), warningText);
+                                                        """, FormatUtils.formatUserMention(userInfo), gameInfo.name(), FormatUtils.formatDate(gameDay),
+                                                FormatUtils.formatDuration(gameDuration.duration()), warningText);
 
         InlineKeyboardMarkup replyButtons = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(), KeyboardMarkupUtils.ButtonData.of("confirm-" + message.getMessageId(), "✅ Yes"),
                                                                                       KeyboardMarkupUtils.ButtonData.of("cancel-" + message.getMessageId(), "❌ No"));
@@ -193,7 +194,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         MaybeInaccessibleMessage callbackMessage = update.getCallbackQuery().getMessage();
         Message message = messageCache.getIfPresent(messageId);
         if (message == null || !message.getFrom().getId().equals(AbilityUtils.getUser(update).getId())) {
-            customTelegramClient.editMessage(callbackMessage.getChatId(), callbackMessage.getMessageId(), "Expired message");
+            customTelegramClient.editMessage(callbackMessage.getChatId(), callbackMessage.getMessageId(), "<< expired message >>");
             return;
         }
         switch (action) {

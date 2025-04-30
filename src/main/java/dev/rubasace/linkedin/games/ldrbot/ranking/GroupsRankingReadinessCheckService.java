@@ -11,6 +11,7 @@ import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserAdapter;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
+import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,10 +42,15 @@ class GroupsRankingReadinessCheckService {
     @Transactional
     void process(final GameSessionRegistrationEvent gameSessionRegistrationEvent) {
         Optional<TelegramGroup> telegramGroup = telegramGroupService.findGroup(gameSessionRegistrationEvent.getChatId());
-        if (telegramGroup.isEmpty() || !allMembersDone(telegramGroup.get(), gameSessionRegistrationEvent.getGameDay())) {
+        if (telegramGroup.isEmpty() || !shouldCalculateRanking(gameSessionRegistrationEvent, telegramGroup.get())) {
             return;
         }
         groupRankingService.createDailyRanking(telegramGroup.get(), gameSessionRegistrationEvent.getGameDay());
+
+    }
+
+    private boolean shouldCalculateRanking(final GameSessionRegistrationEvent gameSessionRegistrationEvent, final TelegramGroup telegramGroup) {
+        return !gameSessionRegistrationEvent.getGameDay().equals(LinkedinTimeUtils.todayGameDay()) || allMembersDone(telegramGroup, gameSessionRegistrationEvent.getGameDay());
     }
 
     public boolean allMembersDone(TelegramGroup telegramGroup, final LocalDate gameDay) {
