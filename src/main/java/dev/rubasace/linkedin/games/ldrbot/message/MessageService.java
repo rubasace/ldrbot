@@ -12,6 +12,7 @@ import dev.rubasace.linkedin.games.ldrbot.session.GameDuration;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
 import dev.rubasace.linkedin.games.ldrbot.session.SessionAlreadyRegisteredException;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
+import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -120,7 +121,7 @@ class MessageService {
         if (gameDuration.isEmpty()) {
             return;
         }
-        gameSessionService.recordGameSession(chatInfo, userInfo, gameDuration.get());
+        gameSessionService.recordGameSession(chatInfo, userInfo, gameDuration.get(), LinkedinTimeUtils.todayGameDay());
     }
 
     private boolean isBotRemovedFromGroup(final Message message) {

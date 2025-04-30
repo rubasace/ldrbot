@@ -7,7 +7,6 @@ import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserService;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
-import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,18 +35,26 @@ public class GameSessionService {
     }
 
     @Transactional
-    public Optional<GameSession> recordGameSession(final ChatInfo chatInfo, final UserInfo userInfo, final GameDuration gameDuration) throws SessionAlreadyRegisteredException, GroupNotFoundException {
+    public Optional<GameSession> recordGameSession(final ChatInfo chatInfo, final UserInfo userInfo, final GameDuration gameDuration, final LocalDate gameDay) throws SessionAlreadyRegisteredException, GroupNotFoundException {
+        return recordGameSession(chatInfo, userInfo, gameDuration, gameDay, false);
+    }
+
+    @Transactional
+    public Optional<GameSession> recordGameSession(final ChatInfo chatInfo, final UserInfo userInfo, final GameDuration gameDuration, final LocalDate gameDay, final boolean allowOverride) throws SessionAlreadyRegisteredException, GroupNotFoundException {
         TelegramGroup telegramGroup = telegramGroupService.findGroupOrThrow(chatInfo);
         TelegramUser telegramUser = telegramUserService.findOrCreate(userInfo);
         if (!telegramGroup.getTrackedGames().contains(gameDuration.type())) {
             return Optional.empty();
         }
-        LocalDate gameDay = LinkedinTimeUtils.todayGameDay();
         GameInfo gameInfo = gameTypeAdapter.adapt(gameDuration.type());
         if (gameSessionRepository.existsByUserIdAndGroupChatIdAndGameAndGameDay(telegramUser.getId(), telegramGroup.getChatId(), gameDuration.type(), gameDay)) {
-
-            throw new SessionAlreadyRegisteredException(chatInfo, userInfo, gameInfo);
+            if (allowOverride) {
+                deleteDaySession(chatInfo, userInfo, gameDuration.type(), gameDay);
+            } else {
+                throw new SessionAlreadyRegisteredException(chatInfo, userInfo, gameInfo);
+            }
         }
+
         GameSession gameSession = new GameSession();
         gameSession.setGame(gameDuration.type());
         gameSession.setUser(telegramUser);
@@ -56,13 +63,18 @@ public class GameSessionService {
         gameSession.setDuration(gameDuration.duration());
         GameSession savedSession = gameSessionRepository.saveAndFlush(gameSession);
         applicationEventPublisher.publishEvent(new GameSessionRegistrationEvent(this, chatInfo, userInfo, gameInfo, gameSession.getDuration(), gameDay,
-                                                 telegramGroup.getChatId()));
+                                                                                telegramGroup.getChatId()));
         return Optional.of(savedSession);
     }
 
+    public Optional<GameSession> getDaySession(final ChatInfo chatInfo, final UserInfo userInfo, final GameType gameType, final LocalDate gameDay) {
+        return gameSessionRepository.getByUserIdAndGroupChatIdAndGameAndGameDay(userInfo.id(), chatInfo.chatId(), gameType, gameDay);
+
+    }
+
     @Transactional
-    public void deleteTodaySession(final ChatInfo chatInfo, final UserInfo userInfo, final GameType gameType) {
-        gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameAndGameDay(userInfo.id(), chatInfo.chatId(), gameType, LinkedinTimeUtils.todayGameDay());
+    public void deleteDaySession(final ChatInfo chatInfo, final UserInfo userInfo, final GameType gameType, final LocalDate gameDay) {
+        gameSessionRepository.deleteByUserIdAndGroupChatIdAndGameAndGameDay(userInfo.id(), chatInfo.chatId(), gameType, gameDay);
         GameInfo gameInfo = gameTypeAdapter.adapt(gameType);
         telegramUserService.find(userInfo).ifPresent(
                 user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, chatInfo, userInfo, gameInfo)));

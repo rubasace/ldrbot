@@ -6,6 +6,7 @@ import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.message.GameNameAdapter;
 import dev.rubasace.linkedin.games.ldrbot.session.GameNameNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
+import dev.rubasace.linkedin.games.ldrbot.util.KeyboardMarkupUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -39,7 +40,7 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigureAbility.class);
 
-    private static final ConfigAction EXIT_ACTION = ConfigAction.of("exit", "Exit Configuration");
+    private static final KeyboardMarkupUtils.ButtonData EXIT_ACTION = KeyboardMarkupUtils.ButtonData.of("exit", "Exit Configuration");
 
     private final CustomTelegramClient customTelegramClient;
     private final TelegramGroupService telegramGroupService;
@@ -136,8 +137,8 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
 
     private void showMainConfig(final Long chatId, final Integer messageId) {
         InlineKeyboardMarkup buttons = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(),
-                                                                                 ConfigAction.of("tracked-games", "Tracked Games"),
-                                                                                 ConfigAction.of("timezone", "Timezone"),
+                                                                                 KeyboardMarkupUtils.ButtonData.of("tracked-games", "Tracked Games"),
+                                                                                 KeyboardMarkupUtils.ButtonData.of("timezone", "Timezone"),
                                                                                  //ConfigAction.of("reminders", "Reminders"),
                                                                                  EXIT_ACTION);
 
@@ -149,11 +150,12 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
     private void showTrackedGamesConfig(final Long chatId, final Integer messageId) {
         try {
             Set<GameType> trackedGames = telegramGroupService.listTrackedGames(chatId);
-            List<ConfigAction> gamesActions = Arrays.stream(GameType.values())
-                                                    .map(gameType -> gameTypeToAction(gameType, trackedGames))
-                                                    .toList();
-            ConfigAction[] trackedGamesActions = Stream.concat(gamesActions.stream(), Stream.of(ConfigAction.of("back", "<< Back to Main Configuration")))
-                                                       .toArray(ConfigAction[]::new);
+            List<KeyboardMarkupUtils.ButtonData> gamesActions = Arrays.stream(GameType.values())
+                                                                      .map(gameType -> gameTypeToAction(gameType, trackedGames))
+                                                                      .toList();
+            KeyboardMarkupUtils.ButtonData[] trackedGamesActions = Stream.concat(gamesActions.stream(),
+                                                                                 Stream.of(KeyboardMarkupUtils.ButtonData.of("back", "<< Back to Main Configuration")))
+                                                                         .toArray(KeyboardMarkupUtils.ButtonData[]::new);
             InlineKeyboardMarkup buttons = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(), trackedGamesActions);
 
             customTelegramClient.editMessage(chatId, messageId, "Configuration — Enable or disable the games tracked in this group", buttons);
@@ -167,9 +169,9 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
         customTelegramClient.message("Please send me your timezone (for example: <code>Europe/London</code> or <code>America/New_York</code>):", chatId);
     }
 
-    private ConfigAction gameTypeToAction(final GameType gameType, final Set<GameType> trackedGames) {
-        String icon = trackedGames.contains(gameType) ? "✅ " : "❌";
-        return ConfigAction.of(gameType.name(), icon + StringUtils.capitalize(gameType.name().toLowerCase()));
+    private KeyboardMarkupUtils.ButtonData gameTypeToAction(final GameType gameType, final Set<GameType> trackedGames) {
+        String icon = trackedGames.contains(gameType) ? "✅ " : "❌ ";
+        return KeyboardMarkupUtils.ButtonData.of(gameType.name(), icon + StringUtils.capitalize(gameType.name().toLowerCase()));
     }
 
     private void setTimezone(final Update update) {

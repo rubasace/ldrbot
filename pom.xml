@@ -18,6 +18,7 @@
         <telegrambots.version>8.3.0</telegrambots.version>
         <tess4j.version>5.4.0</tess4j.version>
         <opencv.version>4.10.0-1.5.11</opencv.version>
+        <caffeine.version>3.2.0</caffeine.version>
     </properties>
     <dependencies>
         <dependency>
@@ -60,6 +61,11 @@
             <groupId>net.sourceforge.tess4j</groupId>
             <artifactId>tess4j</artifactId>
             <version>${tess4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>${caffeine.version}</version>
         </dependency>
 
         <dependency>

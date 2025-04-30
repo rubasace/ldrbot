@@ -12,6 +12,7 @@ import dev.rubasace.linkedin.games.ldrbot.session.GameSessionDeletionEvent;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionRegistrationEvent;
 import dev.rubasace.linkedin.games.ldrbot.summary.GroupDailyScore;
 import dev.rubasace.linkedin.games.ldrbot.util.FormatUtils;
+import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
 @Component
 public class NotificationService {
 
-    private static final String SUBMISSION_MESSAGE_TEMPLATE = "%s submitted their result for today's %s with a time of %s";
+    private static final String SUBMISSION_MESSAGE_TEMPLATE = "%s submitted their result for %s %s with a time of %s";
     private static final String GAME_SESSION_DELETION_MESSAGE_TEMPLATE = "%s result for today's %s has been deleted";
     private static final String ALL_SESSION_DELETION_MESSAGE_TEMPLATE = "All %s results for today games have been deleted";
     private static final String USER_JOIN_MESSAGE_TEMPLATE = "%s joined this group";
@@ -87,7 +88,10 @@ public class NotificationService {
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleSessionRegistration(final GameSessionRegistrationEvent gameSessionRegistrationEvent) {
+        String gameDay = LinkedinTimeUtils.todayGameDay().equals(gameSessionRegistrationEvent.getGameDay()) ? "today's" : FormatUtils.formatDate(
+                gameSessionRegistrationEvent.getGameDay());
         customTelegramClient.message(SUBMISSION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(gameSessionRegistrationEvent.getUserInfo()),
+                                                                           gameDay,
                                                                            gameSessionRegistrationEvent.getGameInfo().name(),
                                                                            FormatUtils.formatDuration(gameSessionRegistrationEvent.getDuration())),
                                      gameSessionRegistrationEvent.getChatInfo().chatId());

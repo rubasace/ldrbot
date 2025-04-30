@@ -22,7 +22,7 @@ class ExceptionHandler {
             
             
             """ + ChatConstants.HELP_SUGGESTION;
-    public static final String GAME_NOT_FOUND_EXCEPTION_MESSAGE = "'%s' is not a valid gameInfo.";
+    public static final String GAME_NOT_FOUND_EXCEPTION_MESSAGE = "'%s' is not a valid game name.";
 
     private final CustomTelegramClient customTelegramClient;
 

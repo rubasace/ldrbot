@@ -9,6 +9,7 @@ import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import dev.rubasace.linkedin.games.ldrbot.util.InputSanitizer;
+import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
 import dev.rubasace.linkedin.games.ldrbot.util.UsageFormatUtils;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -59,7 +60,7 @@ public class DeleteAbility implements AbilityExtension {
         ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
         UserInfo userInfo = userAdapter.adapt(message.getFrom());
         GameType gameType = gameNameAdapter.adapt(gameName, message.getChatId());
-        gameSessionService.deleteTodaySession(chatInfo, userInfo, gameType);
+        gameSessionService.deleteDaySession(chatInfo, userInfo, gameType, LinkedinTimeUtils.todayGameDay());
     }
 
 

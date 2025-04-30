@@ -46,7 +46,8 @@ public class CustomTelegramClient {
     public void sendMessage(Long chatId, String text, InlineKeyboardMarkup inlineKeyboardMarkup) {
         SendMessage sendMessage = SendMessage.builder()
                                              .chatId(chatId)
-                                             .text(text)
+                                             .text(messageEscapeHelper.escapeMessage(text))
+                                             .parseMode(ParseMode.HTML)
                                              .replyMarkup(inlineKeyboardMarkup)
                                              .build();
 
@@ -57,11 +58,16 @@ public class CustomTelegramClient {
         }
     }
 
+    public void editMessage(Long chatId, Integer messageId, String text) {
+        editMessage(chatId, messageId, text, null);
+    }
+
     public void editMessage(Long chatId, Integer messageId, String text, InlineKeyboardMarkup inlineKeyboardMarkup) {
         EditMessageText editMessage = EditMessageText.builder()
                                                      .chatId(chatId.toString())
                                                      .messageId(messageId)
-                                                     .text(text)
+                                                     .text(messageEscapeHelper.escapeMessage(text))
+                                                     .parseMode(ParseMode.HTML)
                                                      .replyMarkup(inlineKeyboardMarkup)
                                                      .build();
 
@@ -85,6 +91,7 @@ public class CustomTelegramClient {
         }
     }
 
+    //TODO unify in one method
     private void sendMessage(final String text, final Long chatId) {
         SendMessage message = SendMessage.builder()
                                          .chatId(chatId)

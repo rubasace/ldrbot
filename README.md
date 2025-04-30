@@ -82,17 +82,17 @@ images.
 
 ## 🛠️ Commands
 
-| Command                               | Description                                                                                                                                |
-|---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| `/games`                              | Lists the games being tracked by the bot.                                                                                                  |
-| `/delete <game>`                      | Removes your score for today's selected game.                                                                                              |
-| `/deleteAll`                          | Removes all of your submitted results for the current day.                                                                                 |
-| `/override @<username> <game> <time>` | Admin only: Override today's user time (`mm:ss`) for a given game.                                                                         |
-| `/ranking`                            | Calculates and displays the current leaderboard for the group. It will be recalculated automatically after all members submit their times. |
-| `/configure`                          | Configure bot settings such as the tracked games or the group timezone.                                                                    |
-| `/cancel`                             | Aborts the current configuration operation.                                                                                                |
-| `/about`                              | Displays information about the bot and its creator.                                                                                        |
-| `/help`                               | Displays a list of available commands and usage instructions.                                                                              |
+| Command                                              | Description                                                                                                                                |
+|------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| `/games`                                             | Lists the games being tracked by the bot.                                                                                                  |
+| `/delete <game>`                                     | Removes your score for today's selected game.                                                                                              |
+| `/deleteAll`                                         | Removes all of your submitted results for the current day.                                                                                 |
+| `/override @<username> <game> <time> [<yyyy-MM-dd>]` | Admin only: Override a user’s time (`mm:ss`) for a given game. Optionally specify a date to backfill a past record.                        |                                                                     |
+| `/ranking`                                           | Calculates and displays the current leaderboard for the group. It will be recalculated automatically after all members submit their times. |
+| `/configure`                                         | Configure bot settings such as the tracked games or the group timezone.                                                                    |
+| `/cancel`                                            | Aborts the current configuration operation.                                                                                                |
+| `/about`                                             | Displays information about the bot and its creator.                                                                                        |
+| `/help`                                              | Displays a list of available commands and usage instructions.                                                                              |
 
 ## 🚀 Getting Started
 
