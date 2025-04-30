@@ -8,7 +8,7 @@ public class LinkedinTimeUtils {
 
     //Games are released at midnight pacific time, so we use that ZoneId to set the day
     public static final String LINKEDIN_ZONE = "America/Los_Angeles";
-    private static final ZoneId LINKEDIN_ZONE_ID = ZoneId.of(LINKEDIN_ZONE);
+    public static final ZoneId LINKEDIN_ZONE_ID = ZoneId.of(LINKEDIN_ZONE);
 
     /**
      * Convenience method to return the current gameInfo day, as games last 24h and get published world-wide at midnight, their time zone,

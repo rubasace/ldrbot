@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 @Transactional(readOnly = true)
@@ -49,8 +51,10 @@ public class RemindersService {
     }
 
     private boolean shouldRemindNow(MissingSessionUserProjection missingSessionUserProjection) {
-        LocalTime groupLocalTime = LocalTime.now(missingSessionUserProjection.getTimeZone());
-        return groupLocalTime.getHour() == REMINDERS_HOUR;
+        ZoneId groupZoneId = Optional.ofNullable(missingSessionUserProjection.getTimeZone())
+                                     .orElse(LinkedinTimeUtils.LINKEDIN_ZONE_ID);
+
+        return LocalTime.now(groupZoneId).getHour() == REMINDERS_HOUR;
     }
 
     private void remindMissingUser(MissingSessionUserProjection missingSessionUserProjection) {
