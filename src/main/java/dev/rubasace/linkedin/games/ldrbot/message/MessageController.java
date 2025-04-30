@@ -25,8 +25,6 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-//TODO add metrics
-//TODO allow to submit and delete/deleteall on private chat, affecting all joined groups
 @Component
 public class MessageController extends AbilityBot implements SpringLongPollingBot {
 
