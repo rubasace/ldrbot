@@ -66,7 +66,7 @@ public class NotificationService {
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleGroupCreation(final GroupCreatedEvent groupCreatedEvent) {
-        customTelegramClient.message(GROUP_GREETING_MESSAGE, groupCreatedEvent.getChatInfo().chatId());
+        customTelegramClient.sendMessage(GROUP_GREETING_MESSAGE, groupCreatedEvent.getChatInfo().chatId());
     }
 
     @Order(DAILY_RANKING_NOTIFICATION_ORDER)
@@ -75,13 +75,14 @@ public class NotificationService {
     void notifyDailyRanking(final GroupDailyScoreCreatedEvent groupDailyScoreCreatedEvent) {
         GroupDailyScore groupDailyScore = groupDailyScoreCreatedEvent.getGroupDailyScore();
         if (groupDailyScore.globalScore().isEmpty()) {
-            customTelegramClient.errorMessage("No games have been registered yet for %s, cannot calculate the ranking".formatted(FormatUtils.formatDate(groupDailyScore.gameDay())),
-                                              groupDailyScore.chatInfo().chatId());
+            customTelegramClient.sendErrorMessage(
+                    "No games have been registered yet for %s, cannot calculate the ranking".formatted(FormatUtils.formatDate(groupDailyScore.gameDay())),
+                    groupDailyScore.chatInfo().chatId());
             return;
         }
 
         String htmlSummary = rankingMessageFactory.createRankingMessage(groupDailyScore);
-        customTelegramClient.message(htmlSummary, groupDailyScore.chatInfo().chatId());
+        customTelegramClient.sendMessage(htmlSummary, groupDailyScore.chatInfo().chatId());
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)
@@ -90,11 +91,11 @@ public class NotificationService {
     void handleSessionRegistration(final GameSessionRegistrationEvent gameSessionRegistrationEvent) {
         String gameDay = LinkedinTimeUtils.todayGameDay().equals(gameSessionRegistrationEvent.getGameDay()) ? "today's" : FormatUtils.formatDate(
                 gameSessionRegistrationEvent.getGameDay());
-        customTelegramClient.message(SUBMISSION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(gameSessionRegistrationEvent.getUserInfo()),
-                                                                           gameDay,
-                                                                           gameSessionRegistrationEvent.getGameInfo().name(),
-                                                                           FormatUtils.formatDuration(gameSessionRegistrationEvent.getDuration())),
-                                     gameSessionRegistrationEvent.getChatInfo().chatId());
+        customTelegramClient.sendMessage(SUBMISSION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(gameSessionRegistrationEvent.getUserInfo()),
+                                                                               gameDay,
+                                                                               gameSessionRegistrationEvent.getGameInfo().name(),
+                                                                               FormatUtils.formatDuration(gameSessionRegistrationEvent.getDuration())),
+                                         gameSessionRegistrationEvent.getChatInfo().chatId());
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)
@@ -102,10 +103,10 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleSessionDeletion(final GameSessionDeletionEvent gameSessionDeletionEvent) {
         if (gameSessionDeletionEvent.isAllGames()) {
-            customTelegramClient.successMessage(ALL_SESSION_DELETION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(gameSessionDeletionEvent.getUserInfo())),
-                                                gameSessionDeletionEvent.getChatInfo().chatId());
+            customTelegramClient.sendSuccessMessage(ALL_SESSION_DELETION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(gameSessionDeletionEvent.getUserInfo())),
+                                                    gameSessionDeletionEvent.getChatInfo().chatId());
         } else {
-            customTelegramClient.successMessage(
+            customTelegramClient.sendSuccessMessage(
                     GAME_SESSION_DELETION_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(gameSessionDeletionEvent.getUserInfo()),
                                                                      gameSessionDeletionEvent.getGameInfo().name().toLowerCase()),
                     gameSessionDeletionEvent.getChatInfo().chatId());
@@ -116,16 +117,16 @@ public class NotificationService {
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleUserJoin(final UserJoinedGroupEvent userJoinedGroupEvent) {
-        customTelegramClient.message(USER_JOIN_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(userJoinedGroupEvent.getUserInfo())),
-                                     userJoinedGroupEvent.getChatInfo().chatId());
+        customTelegramClient.sendMessage(USER_JOIN_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(userJoinedGroupEvent.getUserInfo())),
+                                         userJoinedGroupEvent.getChatInfo().chatId());
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)
     @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void handleUserLeave(final UserLeftGroupEvent userLeftGroupEvent) {
-        customTelegramClient.message(USER_LEAVE_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(userLeftGroupEvent.getUserInfo())),
-                                     userLeftGroupEvent.getChatInfo().chatId());
+        customTelegramClient.sendMessage(USER_LEAVE_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(userLeftGroupEvent.getUserInfo())),
+                                         userLeftGroupEvent.getChatInfo().chatId());
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)
@@ -135,14 +136,14 @@ public class NotificationService {
     void handleTrackedGamesChanged(final TrackedGamesChangedEvent trackedGamesChangedEvent) {
         Set<GameInfo> trackedGames = trackedGamesChangedEvent.getTrackedGames();
         if (CollectionUtils.isEmpty(trackedGames)) {
-            customTelegramClient.errorMessage("This group is not tracking any games.", trackedGamesChangedEvent.getChatId());
+            customTelegramClient.sendErrorMessage("This group is not tracking any games.", trackedGamesChangedEvent.getChatId());
         } else {
             String text = trackedGames.stream()
                                       .sorted(Comparator.comparing(GameInfo::name))
                                       .map(gameInfo -> "%s %s".formatted(gameInfo.icon(), gameInfo.name()))
                                       .collect(Collectors.joining("\n"));
 
-            customTelegramClient.message("This group is currently tracking:\n" + text, trackedGamesChangedEvent.getChatId());
+            customTelegramClient.sendMessage("This group is currently tracking:\n" + text, trackedGamesChangedEvent.getChatId());
         }
     }
 
@@ -153,7 +154,7 @@ public class NotificationService {
         ZoneId timezone = timezoneChangedEvent.getTimezone();
         String displayName = timezone.getDisplayName(TextStyle.SHORT, Locale.ENGLISH);
         String fullTimezoneName = displayName + " (" + timezone.getId() + ")";
-        customTelegramClient.message("Timezone updated! This group will now use <b>" + fullTimezoneName + "</b> for all daily events. 🗓️", timezoneChangedEvent.getChatId());
+        customTelegramClient.sendMessage("Timezone updated! This group will now use <b>" + fullTimezoneName + "</b> for all daily events. 🗓️", timezoneChangedEvent.getChatId());
     }
 
 }

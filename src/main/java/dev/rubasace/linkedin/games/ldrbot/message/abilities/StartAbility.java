@@ -50,9 +50,9 @@ public class StartAbility implements AbilityExtension {
 
     private void start(final Message message) {
         if (message.getChat().isGroupChat()) {
-            customTelegramClient.message(GROUP_START_MESSAGE, message.getChatId());
+            customTelegramClient.sendMessage(GROUP_START_MESSAGE, message.getChatId());
         } else {
-            customTelegramClient.message(PRIVATE_START_MESSAGE, message.getChatId());
+            customTelegramClient.sendMessage(PRIVATE_START_MESSAGE, message.getChatId());
         }
     }
 

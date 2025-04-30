@@ -23,24 +23,8 @@ public class CustomTelegramClient {
         this.messageEscapeHelper = messageEscapeHelper;
     }
 
-    public void message(final String text, final Long chatId) {
-        sendMessage(text, chatId);
-    }
-
-    public void successMessage(final String text, final Long chatId) {
-        sendMessage("✅ " + text, chatId);
-    }
-
-    public void errorMessage(final String text, final Long chatId) {
-        sendMessage("❌ " + text, chatId);
-    }
-
-    public void sendOrEditMessage(Long chatId, String text, InlineKeyboardMarkup inlineKeyboardMarkup, Integer messageId) {
-        if (messageId != null) {
-            editMessage(chatId, messageId, text, inlineKeyboardMarkup);
-        } else {
-            sendMessage(chatId, text, inlineKeyboardMarkup);
-        }
+    public void sendMessage(final String text, final Long chatId) {
+        sendMessage(chatId, text, null);
     }
 
     public void sendMessage(Long chatId, String text, InlineKeyboardMarkup inlineKeyboardMarkup) {
@@ -54,8 +38,16 @@ public class CustomTelegramClient {
         try {
             telegramClient.execute(sendMessage);
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Error sending message", e);
         }
+    }
+
+    public void sendSuccessMessage(final String text, final Long chatId) {
+        sendMessage("✅ " + text, chatId);
+    }
+
+    public void sendErrorMessage(final String text, final Long chatId) {
+        sendMessage("❌ " + text, chatId);
     }
 
     public void editMessage(Long chatId, Integer messageId, String text) {
@@ -78,6 +70,14 @@ public class CustomTelegramClient {
         }
     }
 
+    public void sendOrEditMessage(Long chatId, String text, InlineKeyboardMarkup inlineKeyboardMarkup, Integer messageId) {
+        if (messageId != null) {
+            editMessage(chatId, messageId, text, inlineKeyboardMarkup);
+        } else {
+            sendMessage(chatId, text, inlineKeyboardMarkup);
+        }
+    }
+
     public void deleteMessage(Long chatId, Integer messageId) {
         try {
             telegramClient.execute(
@@ -88,20 +88,6 @@ public class CustomTelegramClient {
             );
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    //TODO unify in one method
-    private void sendMessage(final String text, final Long chatId) {
-        SendMessage message = SendMessage.builder()
-                                         .chatId(chatId)
-                                         .text(messageEscapeHelper.escapeMessage(text))
-                                         .parseMode(ParseMode.HTML)
-                                         .build();
-        try {
-            telegramClient.execute(message);
-        } catch (TelegramApiException e) {
-            LOGGER.error("Error sending message", e);
         }
     }
 

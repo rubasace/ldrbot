@@ -52,7 +52,7 @@ public class AboutAbility implements AbilityExtension {
     }
 
     private void about(final Message message) {
-        customTelegramClient.message(ABOUT_MESSAGE.formatted(version), message.getChatId());
+        customTelegramClient.sendMessage(ABOUT_MESSAGE.formatted(version), message.getChatId());
     }
 
 }

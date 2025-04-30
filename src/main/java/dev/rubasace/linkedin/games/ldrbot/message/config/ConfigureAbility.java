@@ -40,7 +40,7 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigureAbility.class);
 
-    private static final KeyboardMarkupUtils.ButtonData EXIT_ACTION = KeyboardMarkupUtils.ButtonData.of("exit", "Exit Configuration");
+    private static final KeyboardMarkupUtils.ButtonData EXIT_BUTTON = KeyboardMarkupUtils.ButtonData.of("exit", "Exit Configuration");
 
     private final CustomTelegramClient customTelegramClient;
     private final TelegramGroupService telegramGroupService;
@@ -78,7 +78,7 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
 
     private void cancel(final Message message) {
         pendingActions.remove(message.getChatId());
-        customTelegramClient.message("Configuration cancelled", message.getChatId());
+        customTelegramClient.sendMessage("Configuration cancelled", message.getChatId());
     }
 
     protected boolean shouldHandleReply(final Update update) {
@@ -139,8 +139,7 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
         InlineKeyboardMarkup buttons = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(),
                                                                                  KeyboardMarkupUtils.ButtonData.of("tracked-games", "Tracked Games"),
                                                                                  KeyboardMarkupUtils.ButtonData.of("timezone", "Timezone"),
-                                                                                 //ConfigAction.of("reminders", "Reminders"),
-                                                                                 EXIT_ACTION);
+                                                                                 EXIT_BUTTON);
 
         customTelegramClient.sendOrEditMessage(chatId, "Configuration - Choose an option:", buttons, messageId);
 
@@ -166,7 +165,7 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
 
     private void showTimezoneConfig(final Long chatId, final Integer messageId) {
         this.pendingActions.put(chatId, this::setTimezone);
-        customTelegramClient.message("Please send me your timezone (for example: <code>Europe/London</code> or <code>America/New_York</code>):", chatId);
+        customTelegramClient.sendMessage("Please send me your timezone (for example: <code>Europe/London</code> or <code>America/New_York</code>):", chatId);
     }
 
     private KeyboardMarkupUtils.ButtonData gameTypeToAction(final GameType gameType, final Set<GameType> trackedGames) {
@@ -181,7 +180,7 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
             telegramGroupService.setTimezone(chatId, timeZone);
             this.pendingActions.remove(chatId);
         } catch (Exception e) {
-            customTelegramClient.errorMessage(
+            customTelegramClient.sendErrorMessage(
                     "Failed to set timezone, please make sure you send a valid one (e.g. <code>Europe/London</code> or <code>America/New_York</code>).\n" +
                             "Alternatively, You can /cancel to exit", chatId);
         }

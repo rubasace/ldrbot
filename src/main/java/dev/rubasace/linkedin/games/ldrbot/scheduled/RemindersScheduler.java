@@ -17,7 +17,6 @@ class RemindersScheduler implements ApplicationListener<ApplicationReadyEvent> {
         this.remindersService = remindersService;
     }
 
-    //TODO check it works
     @Scheduled(cron = "0 0 * * * *", zone = LinkedinTimeUtils.LINKEDIN_ZONE, scheduler = ExecutorsConfiguration.SCHEDULED_TASKS_EXECUTOR_NAME)
     public void remindMissingUsers() {
         remindersService.remindMissingUsers();

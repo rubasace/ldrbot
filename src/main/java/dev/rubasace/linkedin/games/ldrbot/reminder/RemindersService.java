@@ -60,7 +60,7 @@ public class RemindersService {
     private void remindMissingUser(MissingSessionUserProjection missingSessionUserProjection) {
         ChatInfo chatInfo = missingSessionUserProjectionChatInfoAdapter.adapt(missingSessionUserProjection);
         UserInfo userInfo = missingSessionUserProjectionUserInfoAdapter.adapt(missingSessionUserProjection);
-        customTelegramClient.message(USER_MISSING_SESSIONS_REMINDER.formatted(FormatUtils.formatUserMention(userInfo)), chatInfo.chatId());
+        customTelegramClient.sendMessage(USER_MISSING_SESSIONS_REMINDER.formatted(FormatUtils.formatUserMention(userInfo)), chatInfo.chatId());
     }
 
 
