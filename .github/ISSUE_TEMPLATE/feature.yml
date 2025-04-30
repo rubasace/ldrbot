@@ -1,0 +1,20 @@
+name: "\U0001F680 Feature Request"
+description: Suggest a new idea or improvement
+title: "[Feature]: "
+labels: [ "enhancement" ]
+body:
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: What's your idea?
+      description: Describe the feature or improvement you'd like to see.
+      placeholder: "e.g. Add a /ranking command to allow calculating the leaderboard."
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Why is it useful?
+      description: Tell us why this feature would be helpful.
+      placeholder: "This would help users calculate the temporary leaderboard without having to wait for all the players."
