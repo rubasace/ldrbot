@@ -1,0 +1,26 @@
+name: 📚 Documentation
+description: Report missing or unclear documentation
+labels: [ documentation ]
+body:
+  - type: textarea
+    id: area
+    attributes:
+      label: What needs documentation?
+      description: Describe what’s missing, unclear, or outdated. Mention the relevant command, section, or page.
+      placeholder: e.g. The /configure command should have an example for how to select games
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested addition or fix (optional)
+      description: If you have a suggestion for the content, feel free to write it here.
+      placeholder: e.g. Add a bullet in the README under "Commands" showing usage of /configure
+
+  - type: input
+    id: doc-location
+    attributes:
+      label: Where did you expect to find this?
+      description: A file name, section, or part of the UI where you think this should go (optional)
+      placeholder: e.g. README.md, /help output

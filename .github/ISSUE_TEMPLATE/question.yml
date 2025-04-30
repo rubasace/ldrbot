@@ -1,0 +1,13 @@
+name: ❓ Question
+description: Ask a question about how the bot works or something you're unsure about.
+title: "[Question]: "
+labels: [ question ]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: What's your question?
+      description: Keep it short and clear.
+      placeholder: Ask away!
+    validations:
+      required: true

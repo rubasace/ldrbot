@@ -1,0 +1,13 @@
+name: 💡 Idea
+description: Share a cool idea or concept you'd like considered.
+title: "[Idea]: "
+labels: [ idea ]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What's the idea?
+      description: Just a spark? Share it here. No wrong answers.
+      placeholder: Write freely.
+    validations:
+      required: false
