@@ -12,7 +12,7 @@ public interface TelegramUserRepository extends JpaRepository<TelegramUser, Long
     Optional<TelegramUser> findByUserName(String userName);
 
     @Query("""
-                SELECT g.chatId AS chatId, g.groupName AS groupName, g.timezone AS timezone, u.id AS userId, u.userName AS userName, u.firstName AS firstName, u.lastName AS lastName
+                SELECT g.chatId AS chatId, g.groupName AS groupName, g.timezone AS timeZone, u.id AS userId, u.userName AS userName, u.firstName AS firstName, u.lastName AS lastName
                 FROM TelegramUser u
                 LEFT JOIN u.groups g
                 WHERE g.active = true
