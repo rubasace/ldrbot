@@ -63,21 +63,21 @@ images.
 ### Mobile Layout Examples
 
 <p align="center">
-  <img src="src/test/resources/images/1.jpeg" alt="mobile layout Queens example" width="30%"/>
+  <img src="src/test/resources/images/matches/1.jpeg" alt="mobile layout Queens example" width="30%"/>
   &nbsp;
-  <img src="src/test/resources/images/2.jpeg" alt="mobile layout Tango example" width="30%"/>
+  <img src="src/test/resources/images/matches/2.jpeg" alt="mobile layout Tango example" width="30%"/>
   &nbsp;
-  <img src="src/test/resources/images/3.jpeg" alt="mobile layout Zip example" width="30%"/>
+  <img src="src/test/resources/images/matches/3.jpeg" alt="mobile layout Zip example" width="30%"/>
 </p>
 
 ### Desktop Layout Examples
 
 <p align="center">
-  <img src="src/test/resources/images/9.jpeg" alt="desktop layout Queens example" width="30%"/>
+  <img src="src/test/resources/images/matches/9.jpeg" alt="desktop layout Queens example" width="30%"/>
   &nbsp;
-  <img src="src/test/resources/images/8.jpeg" alt="desktop layout Tango example" width="30%"/>
+  <img src="src/test/resources/images/matches/8.jpeg" alt="desktop layout Tango example" width="30%"/>
   &nbsp;
-  <img src="src/test/resources/images/7.jpeg" alt="desktop layout Zip example" width="30%"/>
+  <img src="src/test/resources/images/matches/7.jpeg" alt="desktop layout Zip example" width="30%"/>
 </p>
 
 ## 🛠️ Commands

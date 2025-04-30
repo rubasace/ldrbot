@@ -10,6 +10,7 @@ import org.junit.jupiter.params.converter.ArgumentConversionException;
 import org.junit.jupiter.params.converter.ConvertWith;
 import org.junit.jupiter.params.converter.SimpleArgumentConverter;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -30,7 +31,6 @@ class ImageDurationExtractorTest {
     @Autowired
     private ImageGameDurationExtractor imageGameDurationExtractor;
 
-    //TODO add tests to cover potential false positives
     @CsvSource({
             "1.jpeg,QUEENS,28s",
             "2.jpeg,TANGO,47s",
@@ -47,14 +47,20 @@ class ImageDurationExtractorTest {
     void shouldExtractDuration(final String imageName, final GameType game, @ConvertWith(
             DurationConverter.class) final Duration expectedDuration) throws GameDurationExtractionException {
 
-        File imageFile = new File("src/test/resources/images/" + imageName);
+        File imageFile = new File("src/test/resources/images/matches/" + imageName);
         Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, 1L, new UserInfo(-1L, "", "Test", ""));
         assertAll(
                 () -> assertEquals(Optional.of(expectedDuration), gameDuration.map(GameDuration::duration)),
                 () -> assertEquals(Optional.of(game), gameDuration.map(GameDuration::type))
         );
+    }
 
-
+    @ValueSource(strings = {"a.png", "b.png", "c.png", "d.png", "e.png", "f.png", "g.png", "h.png"})
+    @ParameterizedTest
+    void shouldNotDetectFalsePositives(final String imageName) throws GameDurationExtractionException {
+        File imageFile = new File("src/test/resources/images/notMatches/" + imageName);
+        Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, 1L, new UserInfo(-1L, "", "Test", ""));
+        assertEquals(Optional.empty(), gameDuration.map(GameDuration::duration));
     }
 
     @Test
@@ -67,7 +73,7 @@ class ImageDurationExtractorTest {
         List<CompletableFuture<Void>> futures = IntStream.range(0, taskCount)
                                                          .mapToObj(i -> CompletableFuture.runAsync(() -> {
                                                              try {
-                                                                 File imageFile = new File("src/test/resources/images/1.jpeg");
+                                                                 File imageFile = new File("src/test/resources/images/matches/1.jpeg");
                                                                  Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, 1L,
                                                                                                                                                       new UserInfo(-1L, "", "Test",
                                                                                                                                                                    ""));
