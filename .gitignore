@@ -8,6 +8,8 @@
 !src/**
 !tessdata
 !tessdata/**
+!vue
+!vue/**
 !.drone.yml
 !.gitignore
 !Dockerfile

@@ -6,8 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public interface DailyScoreRepository extends JpaRepository<DailyGameScore, UUID> {
+
+    Stream<DailyGameScore> findAllByGroupChatIdAndGameDayBetween(Long chatId, LocalDate gameDayStart, LocalDate gameDayEnd);
 
     @Transactional
     void deleteAllByGroupChatIdAndGameDayAndGame(Long chatId, LocalDate gameDay, GameType game);

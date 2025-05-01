@@ -5,7 +5,9 @@ import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Transactional(readOnly = true)
 @Service
@@ -16,6 +18,11 @@ public class DailyScoreService {
     DailyScoreService(final DailyScoreRepository dailyScoreRepository) {
         this.dailyScoreRepository = dailyScoreRepository;
     }
+
+    public Stream<DailyGameScore> getGroupScores(Long chatId, LocalDate startDate, LocalDate endDate) {
+        return dailyScoreRepository.findAllByGroupChatIdAndGameDayBetween(chatId, startDate, endDate);
+    }
+
 
     @Transactional
     public List<DailyGameScore> updateDailyScores(final List<DailyGameScore> scores, final Long chatId, final GameType game) {

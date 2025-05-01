@@ -1,0 +1,15 @@
+*
+
+!public
+!public/**
+!src
+!src/**
+
+!.gitignore
+!package.json
+!package-lock.json
+!vite.config.js
+!tsconfig.json
+!jsconfig.json
+!index.html
+
