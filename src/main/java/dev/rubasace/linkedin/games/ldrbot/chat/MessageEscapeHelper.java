@@ -34,16 +34,13 @@ class MessageEscapeHelper {
 
         int lastEnd = 0;
         while (matcher.find()) {
-            // Escape text before the tag
             String before = message.substring(lastEnd, matcher.start());
             escaped.append(escapeHtmlSpecialChars(before));
 
-            // Append the valid tag as-is
             escaped.append(matcher.group());
 
             lastEnd = matcher.end();
         }
-        // Escape anything after the last tag
         String after = message.substring(lastEnd);
         escaped.append(escapeHtmlSpecialChars(after));
 

@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +37,10 @@ public class TelegramGroupService {
 
     public Optional<TelegramGroup> findGroup(final Long chatId) {
         return telegramGroupRepository.findById(chatId);
+    }
+
+    public Optional<TelegramGroup> findGroup(final String uuid) {
+        return telegramGroupRepository.findByUuid(uuid);
     }
 
     public TelegramGroup findGroupOrThrow(final ChatInfo chatInfo) throws GroupNotFoundException {
@@ -88,11 +93,14 @@ public class TelegramGroupService {
 
     private TelegramGroup udpateGroupData(final TelegramGroup telegramGroup, final ChatInfo chatInfo) {
         boolean active = telegramGroup.isActive();
-        if (active && telegramGroup.getGroupName().equals(chatInfo.title())) {
+        if (active && telegramGroup.getUuid() != null && telegramGroup.getGroupName().equals(chatInfo.title())) {
             return telegramGroup;
         }
         telegramGroup.setGroupName(chatInfo.title());
         telegramGroup.setActive(true);
+        if (telegramGroup.getUuid() == null) {
+            telegramGroup.setUuid(UUID.randomUUID().toString().replace("-", ""));
+        }
         TelegramGroup updatedGroup = telegramGroupRepository.save(telegramGroup);
         if (!active) {
             applicationEventPublisher.publishEvent(new GroupCreatedEvent(this, chatInfo));
@@ -115,6 +123,13 @@ public class TelegramGroupService {
 
     public Set<GameType> listTrackedGames(final Long chatId) throws GroupNotFoundException {
         return listTrackedGames(new ChatInfo(chatId, null, true));
+    }
+
+    public Set<GameType> listTrackedGames(final String groupId) throws GroupNotFoundException {
+        return findGroup(groupId)
+                .map(TelegramGroup::getTrackedGames)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+
     }
 
     @Transactional

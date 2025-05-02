@@ -1,5 +1,7 @@
 package dev.rubasace.linkedin.games.ldrbot.chat;
 
+import dev.rubasace.linkedin.games.ldrbot.configuration.TelegramBotProperties;
+import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.session.GameInfo;
 import dev.rubasace.linkedin.games.ldrbot.summary.GameScoreData;
 import dev.rubasace.linkedin.games.ldrbot.summary.GlobalScoreData;
@@ -15,6 +17,20 @@ import java.util.List;
 @Component
 class RankingMessageFactory {
 
+    private static final String RANKING_WEB_MESSAGE_TEMPLATE = """
+            
+            Check the full stats and leaderboard on the web:
+            👉 <a href="%s/groups/%s">Open group page</a>
+            """;
+
+    private final TelegramBotProperties telegramBotProperties;
+    private final TelegramGroupService telegramGroupService;
+
+    RankingMessageFactory(final TelegramBotProperties telegramBotProperties, final TelegramGroupService telegramGroupService) {
+        this.telegramBotProperties = telegramBotProperties;
+        this.telegramGroupService = telegramGroupService;
+    }
+
     String createRankingMessage(GroupDailyScore groupScore) {
         StringBuilder sb = new StringBuilder();
         sb.append("<b>📊 Daily Ranking for %s</b>\n".formatted(FormatUtils.formatDate(groupScore.gameDay())));
@@ -28,6 +44,9 @@ class RankingMessageFactory {
         toHtmlGlobalRanking(sb, global);
 
         toHtmlFinalMessage(sb, global);
+
+        telegramGroupService.findGroup(groupScore.chatInfo().chatId())
+                            .ifPresent(telegramGroup -> sb.append(RANKING_WEB_MESSAGE_TEMPLATE.formatted(telegramBotProperties.getUrl(), telegramGroup.getUuid())));
 
         return sb.toString();
     }

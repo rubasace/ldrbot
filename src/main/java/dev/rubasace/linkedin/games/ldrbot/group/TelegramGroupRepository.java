@@ -1,9 +1,12 @@
 package dev.rubasace.linkedin.games.ldrbot.group;
 
+import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface TelegramGroupRepository extends CrudRepository<TelegramGroup, Long> {
@@ -22,4 +25,6 @@ public interface TelegramGroupRepository extends CrudRepository<TelegramGroup, L
                 )
             """)
     Stream<TelegramGroup> findGroupsWithMissingScores(LocalDate gameDay);
+
+    Optional<TelegramGroup> findByUuid(String uuid);
 }
