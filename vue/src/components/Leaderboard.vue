@@ -52,34 +52,55 @@ function calculatePosition(index) {
   }
 }
 
+function formatDuration(seconds) {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+
+  return [
+    h ? `${h}h` : '',
+    m ? `${m}m` : '',
+    (!h && !m) || s ? `${s}s` : ''
+  ].filter(Boolean).join(' ')
+}
+
 const rows = computed(() =>
     leaderboard.value?.globalLeaderboard.map((entry, index) => ({
       id: entry.userId,
       position: calculatePosition(index),
       name: entry.username ? `@${entry.username}` : entry.firstName,
       points: `${entry.totalPoints} pts`,
-      style: getPositionStyle(index)
+      style: getPositionStyle(index),
+      totalDuration: formatDuration(entry.totalDuration)
     }))
 )
 </script>
 
+<!--TODO show arrows indicating position movement  -->
 <template>
   <section class="group-leaderboard">
     <div v-if="loading">Loading leaderboard...</div>
     <div v-else>
       <div
-          v-for="row in rows"
+          v-for="(row, index) in rows"
           :key="row.id"
           class="leaderboard-row"
           :class="row.style"
       >
+        <span v-if="index < 3" class="medal">
+            {{ ['🥇', '🥈', '🥉'][index] }}
+          </span>
         <div class="user-info">
           <span class="position">{{ row.position }}.</span>
           <img :src="`/api/images/users/${row.id}`" alt="avatar" class="avatar"/>
           <span class="name">{{ row.name }}</span>
         </div>
-        <span class="points">{{ row.points }}</span>
+        <div class="results">
+          <span class="points">{{ row.points }}</span>
+          <span class="time">{{ row.totalDuration }}</span>
+        </div>
       </div>
+
     </div>
   </section>
 </template>
@@ -91,6 +112,7 @@ const rows = computed(() =>
   gap: 10rem
 
 .leaderboard-row
+  position: relative
   display: flex
   justify-content: space-between
   align-items: center
@@ -115,10 +137,30 @@ const rows = computed(() =>
   border: 3px solid rgba(21, 20, 20, 0.8)
 
 .name
-  font-size: 1rem
+  font-size: 1.2em
 
 .points
-  font-size: 1rem
+  font-size: 1.1em
+  font-weight: bold
+
+.results
+  display: flex
+  flex-direction: column
+  align-items: end
+  justify-content: center
+  gap: 10px
+
+.medal
+  position: absolute
+  bottom: -0.4em
+  left: -0.4em
+  font-size: 2.3rem
+  z-index: 2
+
+.time
+  font-size: 0.85em
+  font-style: italic
+  color: #222
 
 .first
   background: linear-gradient(135deg, #ffeb85, #f9c700)
