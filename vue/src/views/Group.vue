@@ -13,9 +13,19 @@ const stats = ref(null)
 const loading = ref(true)
 const fetchFailed = ref(false)
 
-const sortedGames = computed(() =>
-    Object.keys(stats.value?.recordByGame ?? {}).sort((a, b) => a.localeCompare(b))
-)
+const sortedRecords = computed(() => {
+  if (!stats.value?.recordByGame) return []
+  return Object.entries(stats.value.recordByGame)
+      .sort(([, a], [, b]) => a.seconds - b.seconds)
+      .map(([game]) => game)
+})
+
+const sortedAverages = computed(() => {
+  if (!stats.value?.averagePerGame) return []
+  return Object.entries(stats.value.averagePerGame)
+      .sort(([, a], [, b]) => a.average - b.average)
+      .map(([game]) => game)
+})
 
 
 onMounted(async () => {
@@ -54,7 +64,7 @@ onMounted(async () => {
           <div class="card-section">
             <GameRecord
                 class="card"
-                v-for="game in sortedGames"
+                v-for="game in sortedRecords"
                 :key="game"
                 :record="stats.recordByGame[game]"
             />
@@ -65,7 +75,7 @@ onMounted(async () => {
           <div class="card-section">
             <GameInfo
                 class="card"
-                v-for="game in sortedGames"
+                v-for="game in sortedAverages"
                 :key="game"
                 :game="game"
                 :info="stats.averagePerGame[game]"
