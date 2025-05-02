@@ -5,7 +5,7 @@ defineProps({
 </script>
 
 <template>
-  <div class="game-record-card">
+  <div class="card game-record-card">
     <div class="card-header" :class="record.game.toLowerCase()+'-gradient'">
       <div class="header-content">
         <div class="game">{{ record.game }}</div>
@@ -28,8 +28,8 @@ defineProps({
 .game-record-card
   $border-radius: 12px
   flex: 1 1 270px
-  height: 360px
   max-width: 270px
+  height: 437px
   position: relative
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2)
   border-radius: 10px

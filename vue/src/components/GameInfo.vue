@@ -6,7 +6,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="game-info-card">
+  <div class="card game-info-card">
     <div class="card-header" :class="info.game.toLowerCase() + '-gradient'">
       <div class="header-content">
         <div class="game">{{ info.game }}</div>
@@ -31,7 +31,7 @@ const props = defineProps({
   $border-radius: 12px
   flex: 1 1 270px
   max-width: 270px
-  height: 360px
+  height: 437px
   position: relative
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2)
   border-radius: $border-radius
