@@ -93,8 +93,7 @@ onMounted(async () => {
     align-items: center
     justify-content: center
     font-size: 2rem
-    gap: 2rem
-    margin-bottom: 2rem
+    gap: 1rem
 
     img
       $size: 2.5em
@@ -111,7 +110,7 @@ onMounted(async () => {
 .group-stats
   display: flex
   flex-direction: column
-  gap: 2rem
+  gap: 1rem
 
   @media (min-width: 1024px)
     flex-direction: row
@@ -125,14 +124,18 @@ onMounted(async () => {
       flex: 1 1 0
       order: 2
       display: flex
+      gap: 1rem
       flex-direction: column
-      gap: 2rem
+
+      .card-section
+        .card
+          width: 165px
+          font-size: 1em
 
 .section
   display: flex
   flex-direction: column
-  gap: 2rem
-  padding: 2rem 0
+  gap: 1rem
   border-top: 1px solid var(--surface-border)
 
   h2
@@ -148,7 +151,8 @@ onMounted(async () => {
     justify-content: space-around
 
     .card
-      width: 165px
+      width: 155px
+      font-size: 0.9em
 
 
 .card:hover

@@ -37,7 +37,7 @@ public class TelegramGroup {
     @Id
     private Long chatId;
 
-    private final String uuid = UUID.randomUUID().toString().replace("-", "");
+    private String uuid;
 
     private String groupName;
 
