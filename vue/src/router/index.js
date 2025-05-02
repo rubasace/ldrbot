@@ -9,5 +9,6 @@ const routes = [{
     {path: '/group/:groupId', name: 'Group', component: Group}]
 
 export const router = createRouter({
-    history: createWebHistory(), routes
+    history: createWebHistory(),
+    routes
 })
