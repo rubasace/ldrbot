@@ -29,7 +29,6 @@
 </template>
 
 <script setup>
-// No additional logic required for this static landing page
 </script>
 
 <style scoped>

@@ -49,7 +49,7 @@ const {darkMode, toggleDarkMode} = useDarkMode()
 
 <style lang="sass" scoped>
 .app-header
-  background-color: var(--surface-ground)
+  background-color: var(--p-content-background)
   border-bottom: 1px solid var(--surface-border)
   padding: 1rem 0
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05)

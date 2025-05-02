@@ -1,9 +1,13 @@
 <script setup>
-import {computed, defineProps} from 'vue'
+import {computed, defineProps, onMounted, ref} from 'vue'
+
+const leaderboard = ref(null)
+const loading = ref(true)
+const fetchFailed = ref(false)
 
 const props = defineProps({
-  leaderboard: {
-    type: Array,
+  group: {
+    type: Object,
     required: true
   }
 })
@@ -20,12 +24,41 @@ const formatDuration = (seconds) => {
   ].filter(Boolean).join(' ')
 }
 
+function getPosition(index) {
+  switch (index) {
+    case 0:
+      return '🥇'
+    case 1:
+      return '🥈'
+    case 2:
+      return '🥉'
+    default:
+      return index + 1
+  }
+}
+
+onMounted(async () => {
+  const groupId = props.group.chatId
+  try {
+    const response = await fetch(`/api/leaderboard/${groupId}`)
+    if (!response.ok) {
+      return
+    }
+    leaderboard.value = await response.json()
+  } catch (err) {
+    fetchFailed.value = true
+    console.error(err)
+  } finally {
+    loading.value = false
+  }
+})
+
 
 const rows = computed(() =>
-    props.leaderboard.map((entry, index) => ({
+    leaderboard.value?.globalLeaderboard.map((entry, index) => ({
       id: entry.userId,
-      position: index + 1,
-      fullName: entry.firstName + ' ' + entry.lastName + (entry.userName ? ` (@${entry.userName})` : ''),
+      position: getPosition(index),
+      name: entry.username ? ` @${entry.username}` : entry.firstName,
       duration: formatDuration(entry.totalDuration),
       points: entry.totalPoints
     }))
@@ -34,6 +67,7 @@ const rows = computed(() =>
 
 <template>
   <section class="group-leaderboard">
+    <h2>Leaderboard</h2>
     <DataTable :value="rows" responsiveLayout="scroll">
       <Column field="position" header="#" style="width: 60px"/>
       <Column header=" " style="width: 50px">
@@ -45,8 +79,8 @@ const rows = computed(() =>
           />
         </template>
       </Column>
-      <Column field="fullName" header="Name"/>
-      <Column field="duration" header="Time"/>
+      <Column field="name" header="Name"/>
+      <!--      <Column field="duration" header="Time"/>-->
       <Column field="points" header="Points"/>
     </DataTable>
   </section>
@@ -67,4 +101,5 @@ const rows = computed(() =>
     border-radius: 50%
     object-fit: cover
     border: 1px solid var(--surface-border)
+
 </style>

@@ -2,6 +2,7 @@ package dev.rubasace.linkedin.games.ldrbot.web.leaderboard;
 
 import dev.rubasace.linkedin.games.ldrbot.ranking.DailyScoreService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
@@ -12,8 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Transactional(readOnly = true)
 @Service
-public class LeaderboardService {
+class LeaderboardService {
 
     private final DailyScoreService dailyScoreService;
     private final Comparator<LeaderboardEntry> leaderboardComparator;
@@ -26,8 +28,10 @@ public class LeaderboardService {
                 .thenComparingInt(LeaderboardEntry::getTotalGames);
     }
 
-    public Leaderboard getLeaderboard(final Long groupId, final LocalDate from, final LocalDate to) {
-        Map<String, List<GameLeaderboardEntry>> leaderboardByGame = getLeaderboardByGame(groupId, from, to);
+    Leaderboard getLeaderboard(final Long groupId, final LocalDate from, final LocalDate to) {
+        LocalDate fromDate = from == null ? LocalDate.ofYearDay(1991, 1) : from;
+        LocalDate toDate = to == null ? LocalDate.ofYearDay(99999, 365) : to;
+        Map<String, List<GameLeaderboardEntry>> leaderboardByGame = getLeaderboardByGame(groupId, fromDate, toDate);
         List<GlobalLeaderboardEntry> globalLeaderboard = calculateGlobalLeaderboard(leaderboardByGame);
         return new Leaderboard(leaderboardByGame, globalLeaderboard);
     }

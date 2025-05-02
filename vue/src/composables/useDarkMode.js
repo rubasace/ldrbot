@@ -3,7 +3,6 @@ import {ref, watch} from 'vue'
 const MODE_KEY = 'ldrbot-dark-mode-enabled'
 const darkMode = ref(true)
 
-// Init once per app session
 const stored = localStorage.getItem(MODE_KEY)
 if (stored !== null) {
     darkMode.value = stored === 'true'

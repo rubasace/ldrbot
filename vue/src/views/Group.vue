@@ -1,4 +1,5 @@
 <script setup>
+
 import {onMounted, ref} from 'vue'
 import {useRoute} from 'vue-router'
 
@@ -10,7 +11,7 @@ const fetchFailed = ref(false)
 onMounted(async () => {
   const groupId = route.params.groupId
   try {
-    const response = await fetch(`/api/dashboard/${groupId}`)
+    const response = await fetch(`/api/group/${groupId}`)
     if (!response.ok) throw new Error('Group not found')
     group.value = await response.json()
   } catch (err) {
@@ -30,41 +31,39 @@ onMounted(async () => {
       <h1 v-else>{{ group.title }}</h1>
     </div>
 
-    <div v-if="group?.idontexist" class="group-stats">
-      <h2>Stats</h2>
-      <div class="content">
-        <!--        <Card class="stat-card">-->
-        <!--          <template #title>Members</template>-->
-        <!--          <template #content>{{ group.members.length }}</template>-->
-        <!--        </Card>-->
+    <!--    <div v-if="group?.idontexist" class="group-stats">-->
+    <!--      <h2>Stats</h2>-->
+    <!--      <div class="content">-->
+    <!--        &lt;!&ndash;        <Card class="stat-card">&ndash;&gt;-->
+    <!--        &lt;!&ndash;          <template #title>Members</template>&ndash;&gt;-->
+    <!--        &lt;!&ndash;          <template #content>{{ group.members.length }}</template>&ndash;&gt;-->
+    <!--        &lt;!&ndash;        </Card>&ndash;&gt;-->
 
-        <!--        <Card class="stat-card">-->
-        <!--          <template #title>Games Tracked</template>-->
-        <!--          <template #content>ZIP, TANGO, ZIP, TANGO</template>-->
-        <!--        </Card>-->
+    <!--        &lt;!&ndash;        <Card class="stat-card">&ndash;&gt;-->
+    <!--        &lt;!&ndash;          <template #title>Games Tracked</template>&ndash;&gt;-->
+    <!--        &lt;!&ndash;          <template #content>ZIP, TANGO, ZIP, TANGO</template>&ndash;&gt;-->
+    <!--        &lt;!&ndash;        </Card>&ndash;&gt;-->
 
-        <!--        <Card class="stat-card">-->
-        <!--          <template #title>Games Tracked</template>-->
-        <!--          <template #content>ZIP, TANGO, ZIP, TANGO</template>-->
-        <!--        </Card>-->
+    <!--        &lt;!&ndash;        <Card class="stat-card">&ndash;&gt;-->
+    <!--        &lt;!&ndash;          <template #title>Games Tracked</template>&ndash;&gt;-->
+    <!--        &lt;!&ndash;          <template #content>ZIP, TANGO, ZIP, TANGO</template>&ndash;&gt;-->
+    <!--        &lt;!&ndash;        </Card>&ndash;&gt;-->
 
-        <!--      <Card class="stat-card">-->
-        <!--        <template #title>Total Scores</template>-->
-        <!--        <template #content>{{ stats.totalScores }}</template>-->
-        <!--      </Card>-->
+    <!--        &lt;!&ndash;      <Card class="stat-card">&ndash;&gt;-->
+    <!--        &lt;!&ndash;        <template #title>Total Scores</template>&ndash;&gt;-->
+    <!--        &lt;!&ndash;        <template #content>{{ stats.totalScores }}</template>&ndash;&gt;-->
+    <!--        &lt;!&ndash;      </Card>&ndash;&gt;-->
 
-        <!--      <Card class="stat-card">-->
-        <!--        <template #title>Days Active</template>-->
-        <!--        <template #content>{{ stats.daysTracked }}</template>-->
-        <!--      </Card>-->
-      </div>
+    <!--        &lt;!&ndash;      <Card class="stat-card">&ndash;&gt;-->
+    <!--        &lt;!&ndash;        <template #title>Days Active</template>&ndash;&gt;-->
+    <!--        &lt;!&ndash;        <template #content>{{ stats.daysTracked }}</template>&ndash;&gt;-->
+    <!--        &lt;!&ndash;      </Card>&ndash;&gt;-->
+    <!--      </div>-->
+    <!--    </div>-->
+    <div v-if="group" class="group-stats">
+      <GroupStats :group="group"/>
+      <Leaderboard class="leaderboard" :group="group"/>
     </div>
-    <Card v-if="group" class="leaderboard-card">
-      <template #title>Leaderboard</template>
-      <template #content>
-        <Leaderboard :leaderboard="group?.leaderboard?.globalLeaderboard"/>
-      </template>
-    </Card>
 
   </div>
 </template>
@@ -110,6 +109,7 @@ onMounted(async () => {
       gap: 1rem
       margin-top: 2rem
 
+
       .stat-card
         text-align: center
         max-width: 300px
@@ -122,4 +122,6 @@ onMounted(async () => {
           font-size: 1.6rem
           font-weight: bold
           color: var(--text-color)
+
+
 </style>

@@ -1,22 +1,22 @@
-package dev.rubasace.linkedin.games.ldrbot.web.dashboard;
+package dev.rubasace.linkedin.games.ldrbot.web.group;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("/api/dashboard")
+@RequestMapping("/api/group")
 @RestController()
-class DashboardController {
+class GroupController {
 
-    private final DashboardService dashboardService;
+    private final GroupService groupService;
 
-    DashboardController(final DashboardService dashboardService) {
-        this.dashboardService = dashboardService;
+    GroupController(final GroupService groupService) {
+        this.groupService = groupService;
     }
 
     @GetMapping("/{groupId}")
     GroupData getDashboard(@PathVariable Long groupId) {
-        return dashboardService.getGroupData(groupId);
+        return groupService.getGroupData(groupId);
     }
 }
