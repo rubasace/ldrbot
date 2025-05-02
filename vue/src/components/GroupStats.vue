@@ -1,6 +1,9 @@
 <script setup>
 import {computed, defineProps, onMounted, ref} from 'vue'
 
+import GameInfo from './GameInfo.vue'
+import GameRecord from './GameRecord.vue'
+
 
 const stats = ref(null)
 const loading = ref(true)

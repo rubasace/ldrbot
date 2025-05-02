@@ -1,5 +1,7 @@
 <script setup>
 
+import Leaderboard from "../components/Leaderboard.vue";
+import GroupStats from "../components/GroupStats.vue";
 import {onMounted, ref} from 'vue'
 import {useRoute} from 'vue-router'
 
