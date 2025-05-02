@@ -17,7 +17,7 @@ class LeaderboardController {
 
 
     @GetMapping("/{groupId}")
-    Leaderboard getDashboard(@PathVariable Long groupId) {
+    Leaderboard getDashboard(@PathVariable String groupId) {
         return leaderboardService.getLeaderboard(groupId, null, null);
     }
 }

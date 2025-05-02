@@ -21,9 +21,9 @@ public interface StatsRepository extends Repository<GameSession, Long> {
                 FROM DailyGameScore s
                 JOIN s.user u
                 JOIN s.gameSession gs
-                WHERE s.group.chatId = :groupId
+                WHERE s.group.uuid = :groupId
                   AND s.game IN :trackedGames
                 ORDER BY s.game, s.gameDay ASC
             """)
-    Stream<GameSessionProjection> findSessionsPerGame(@Param("groupId") Long groupId, @Param("trackedGames") Set<GameType> trackedGames);
+    Stream<GameSessionProjection> findSessionsPerGame(@Param("groupId") String groupId, @Param("trackedGames") Set<GameType> trackedGames);
 }

@@ -17,7 +17,7 @@ class GroupService {
     }
 
 
-    GroupData getGroupData(final Long groupId) {
+    GroupData getGroupData(final String groupId) {
         return telegramGroupService.findGroup(groupId).map(groupDataMapper::map).orElseThrow();
     }
 }

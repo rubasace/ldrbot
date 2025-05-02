@@ -7,6 +7,6 @@ import org.springframework.stereotype.Component;
 class GroupDataMapper {
 
     GroupData map(final TelegramGroup telegramGroup) {
-        return new GroupData(telegramGroup.getChatId(), telegramGroup.getGroupName());
+        return new GroupData(telegramGroup.getUuid(), telegramGroup.getGroupName());
     }
 }

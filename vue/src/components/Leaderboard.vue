@@ -26,7 +26,7 @@ const getPositionStyle = (index) => {
 }
 
 onMounted(async () => {
-  const groupId = props.group.chatId
+  const groupId = props.group.groupId
   try {
     const response = await fetch(`/api/leaderboard/${groupId}`)
     if (!response.ok) return

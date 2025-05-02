@@ -5,6 +5,7 @@ import {computed, onMounted, ref} from 'vue'
 import {useRoute} from 'vue-router'
 import GameInfo from "../components/GameInfo.vue";
 import GameRecord from "../components/GameRecord.vue";
+import BaseCard from "../components/BaseCard.vue";
 
 const route = useRoute()
 const group = ref(null)
@@ -43,29 +44,33 @@ onMounted(async () => {
       <h1 v-else>{{ group.title }}</h1>
     </div>
     <div v-if="group" class="group-stats">
-      <div class="section">
+      <div class="section leaderboard-section">
         <h2>Leaderboard</h2>
         <Leaderboard class="leaderboard" :group="group"/>
       </div>
-      <div class="section">
-        <h2>Best Times</h2>
-        <div class="card-section">
-          <GameRecord
-              v-for="game in sortedGames"
-              :key="game"
-              :record="stats.recordByGame[game]"
-          />
+      <div class="times-section">
+        <div class="section">
+          <h2>Best Times</h2>
+          <div class="card-section">
+            <GameRecord
+                class="card"
+                v-for="game in sortedGames"
+                :key="game"
+                :record="stats.recordByGame[game]"
+            />
+          </div>
         </div>
-      </div>
-      <div class="section">
-        <h2>Average Times</h2>
-        <div class="card-section">
-          <GameInfo
-              v-for="game in sortedGames"
-              :key="game"
-              :game="game"
-              :info="stats.averagePerGame[game]"
-          />
+        <div class="section">
+          <h2>Average Times</h2>
+          <div class="card-section">
+            <GameInfo
+                class="card"
+                v-for="game in sortedGames"
+                :key="game"
+                :game="game"
+                :info="stats.averagePerGame[game]"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -78,7 +83,7 @@ onMounted(async () => {
   margin: 2rem auto
   padding: 1rem 2rem
   text-align: center
-  max-width: 1200px
+  max-width: 1400px
 
   p
     color: var(--text-color-secondary)
@@ -103,6 +108,25 @@ onMounted(async () => {
       color: var(--text-color)
       margin: 0
 
+.group-stats
+  display: flex
+  flex-direction: column
+  gap: 2rem
+
+  @media (min-width: 1024px)
+    flex-direction: row
+
+    .leaderboard-section
+      flex: 1 1 auto
+      max-width: 600px
+      order: 1
+
+    .times-section
+      flex: 1 1 0
+      order: 2
+      display: flex
+      flex-direction: column
+      gap: 2rem
 
 .section
   display: flex
@@ -119,8 +143,13 @@ onMounted(async () => {
   .card-section
     display: flex
     flex-wrap: wrap
+    flex-direction: row
     gap: 1rem
     justify-content: space-around
+
+    .card
+      width: 165px
+
 
 .card:hover
   transform: scale(1.1) translateY(-4px)

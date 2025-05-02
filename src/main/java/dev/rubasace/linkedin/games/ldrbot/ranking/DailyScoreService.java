@@ -19,8 +19,8 @@ public class DailyScoreService {
         this.dailyScoreRepository = dailyScoreRepository;
     }
 
-    public Stream<DailyGameScore> getGroupScores(Long chatId, LocalDate startDate, LocalDate endDate) {
-        return dailyScoreRepository.findAllByGroupChatIdAndGameDayBetween(chatId, startDate, endDate);
+    public Stream<DailyGameScore> getGroupScores(String uuid, LocalDate startDate, LocalDate endDate) {
+        return dailyScoreRepository.findAllByGroupUuidAndGameDayBetween(uuid, startDate, endDate);
     }
 
 

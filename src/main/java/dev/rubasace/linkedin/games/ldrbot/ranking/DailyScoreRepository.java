@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 public interface DailyScoreRepository extends JpaRepository<DailyGameScore, UUID> {
 
-    Stream<DailyGameScore> findAllByGroupChatIdAndGameDayBetween(Long chatId, LocalDate gameDayStart, LocalDate gameDayEnd);
+    Stream<DailyGameScore> findAllByGroupUuidAndGameDayBetween(String uuid, LocalDate gameDayStart, LocalDate gameDayEnd);
 
     @Transactional
     void deleteAllByGroupChatIdAndGameDayAndGame(Long chatId, LocalDate gameDay, GameType game);

@@ -28,7 +28,7 @@ class LeaderboardService {
                 .thenComparingInt(LeaderboardEntry::getTotalGames);
     }
 
-    Leaderboard getLeaderboard(final Long groupId, final LocalDate from, final LocalDate to) {
+    Leaderboard getLeaderboard(final String groupId, final LocalDate from, final LocalDate to) {
         LocalDate fromDate = from == null ? LocalDate.ofYearDay(1991, 1) : from;
         LocalDate toDate = to == null ? LocalDate.ofYearDay(99999, 365) : to;
         Map<String, List<GameLeaderboardEntry>> leaderboardByGame = getLeaderboardByGame(groupId, fromDate, toDate);
@@ -36,7 +36,7 @@ class LeaderboardService {
         return new Leaderboard(leaderboardByGame, globalLeaderboard);
     }
 
-    private Map<String, List<GameLeaderboardEntry>> getLeaderboardByGame(final Long groupId, final LocalDate from, final LocalDate to) {
+    private Map<String, List<GameLeaderboardEntry>> getLeaderboardByGame(final String groupId, final LocalDate from, final LocalDate to) {
         Map<GameLeaderboardEntry, GameLeaderboardEntry> aggregated = new HashMap<>();
 
         try (var scores = dailyScoreService.getGroupScores(groupId, from, to)) {

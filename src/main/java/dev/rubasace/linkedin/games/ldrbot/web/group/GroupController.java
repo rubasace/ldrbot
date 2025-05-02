@@ -16,7 +16,7 @@ class GroupController {
     }
 
     @GetMapping("/{groupId}")
-    GroupData getDashboard(@PathVariable Long groupId) {
+    GroupData getDashboard(@PathVariable String groupId) {
         return groupService.getGroupData(groupId);
     }
 }

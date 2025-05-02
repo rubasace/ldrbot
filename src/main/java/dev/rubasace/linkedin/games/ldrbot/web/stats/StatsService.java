@@ -28,14 +28,14 @@ class StatsService {
     }
 
     //TODO standardize REST error handling
-    GroupStats getStats(Long groupId) throws GroupNotFoundException {
+    GroupStats getStats(String groupId) throws GroupNotFoundException {
         Set<GameType> trackedGames = telegramGroupService.listTrackedGames(groupId);
         Map<String, GameAverage> averagesByGame = calculateAveragesByGame(groupId, trackedGames);
         Map<String, GameRecord> recordsByGame = calculateRecordsByGame(groupId, trackedGames);
         return new GroupStats(averagesByGame, recordsByGame);
     }
 
-    private Map<String, GameAverage> calculateAveragesByGame(final Long groupId, final Set<GameType> trackedGames) {
+    private Map<String, GameAverage> calculateAveragesByGame(final String groupId, final Set<GameType> trackedGames) {
         Map<String, Long> totalDurations = new HashMap<>();
         Map<String, Integer> countPerGame = new HashMap<>();
 
@@ -63,7 +63,7 @@ class StatsService {
                                                  e -> new GameAverage(StringUtils.capitalize(e.getKey().toLowerCase()), e.getValue(), countPerGame.get(e.getKey()))));
     }
 
-    private Map<String, GameRecord> calculateRecordsByGame(final Long groupId, final Set<GameType> trackedGames) {
+    private Map<String, GameRecord> calculateRecordsByGame(final String groupId, final Set<GameType> trackedGames) {
         Map<String, GameRecord> recordsByGame = new HashMap<>();
         try (Stream<GameSessionProjection> stream = statsRepository.findSessionsPerGame(groupId, trackedGames)) {
             stream.forEach(gameSessionProjection -> {

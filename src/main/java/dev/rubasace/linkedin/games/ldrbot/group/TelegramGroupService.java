@@ -38,6 +38,10 @@ public class TelegramGroupService {
         return telegramGroupRepository.findById(chatId);
     }
 
+    public Optional<TelegramGroup> findGroup(final String uuid) {
+        return telegramGroupRepository.findByUuid(uuid);
+    }
+
     public TelegramGroup findGroupOrThrow(final ChatInfo chatInfo) throws GroupNotFoundException {
         return this.findGroup(chatInfo.chatId()).orElseThrow(() -> new GroupNotFoundException(chatInfo));
     }
@@ -115,6 +119,13 @@ public class TelegramGroupService {
 
     public Set<GameType> listTrackedGames(final Long chatId) throws GroupNotFoundException {
         return listTrackedGames(new ChatInfo(chatId, null, true));
+    }
+
+    public Set<GameType> listTrackedGames(final String groupId) throws GroupNotFoundException {
+        return findGroup(groupId)
+                .map(TelegramGroup::getTrackedGames)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+
     }
 
     @Transactional

@@ -17,7 +17,7 @@ class StatsController {
     }
 
     @GetMapping("/{groupId}")
-    GroupStats getStats(@PathVariable Long groupId) throws GroupNotFoundException {
+    GroupStats getStats(@PathVariable String groupId) throws GroupNotFoundException {
         return statsService.getStats(groupId);
     }
 

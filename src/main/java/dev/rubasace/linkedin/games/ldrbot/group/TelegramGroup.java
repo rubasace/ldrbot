@@ -24,6 +24,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 @NoArgsConstructor
 @Setter
@@ -35,6 +36,8 @@ public class TelegramGroup {
 
     @Id
     private Long chatId;
+
+    private final String uuid = UUID.randomUUID().toString().replace("-", "");
 
     private String groupName;
 
