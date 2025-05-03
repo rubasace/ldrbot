@@ -133,7 +133,6 @@ onMounted(async () => {
   flex-direction: column
   gap: 1rem 2rem
   border-top: 1px solid var(--surface-border)
-  font-size: 0.85em
 
   h2
     font-size: 1.75rem
@@ -160,21 +159,10 @@ onMounted(async () => {
     margin-left: auto
     margin-right: auto
 
-.sessions-section
-  font-size: 0.6em
-
-
-@media (min-width: 600px)
-  .sessions-section
-    font-size: 1em
-
 @media (min-width: 1024px)
   .group-stats
     flex-direction: row
     flex-wrap: wrap
-
-  .section
-    font-size: 1em
 
   .leaderboard-section
     flex: 1 1 auto
@@ -187,10 +175,6 @@ onMounted(async () => {
     display: flex
     gap: 1rem
     flex-direction: column
-
-    .card-section
-      .card
-        font-size: 1em
 
   .sessions-section
     flex: 0 0 100%

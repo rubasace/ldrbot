@@ -83,4 +83,25 @@ onMounted(async () => {
   display: inline-block
   width: 100%
   text-align: right
+
+.session-table
+  overflow-x: auto
+  width: 100%
+
+  :deep(.p-datatable)
+    min-width: 600px
+
+  :deep(.p-paginator)
+    flex-wrap: wrap
+    justify-content: center
+    padding: 0.25rem
+    gap: 0.5rem
+
+    @media (max-width: 500px)
+      font-size: 0.85em
+
+  ::v-deep(.p-datatable-tbody > tr > td)
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
 </style>
