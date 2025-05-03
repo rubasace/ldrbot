@@ -23,9 +23,13 @@ $border-radius: 12px
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2)
   overflow: hidden
   background-color: var(--surface-card)
+  height: 100%
+// allow external control, or use a fixed height if needed
 
 .card-header
+  flex: 1 1 auto
   display: flex
+  flex-direction: column
   align-items: center
   justify-content: center
   padding: 1rem
@@ -34,6 +38,7 @@ $border-radius: 12px
   background: var(--primary-color)
 
 .card-body
+  margin-top: auto
   padding: 1rem
   display: flex
   justify-content: center

@@ -60,7 +60,7 @@ defineProps({
       object-fit: cover
 
   .time-chip
-    margin-top: -1em
+    margin-top: -0.4em
     padding: 0.3em 0.75em
     background-color: #3c3c4b
     color: white

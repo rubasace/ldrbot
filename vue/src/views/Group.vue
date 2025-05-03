@@ -126,12 +126,12 @@ onMounted(async () => {
 .group-stats
   display: flex
   flex-direction: column
-  gap: 1rem
+  gap: 1rem 2rem
 
 .section
   display: flex
   flex-direction: column
-  gap: 1rem
+  gap: 1rem 2rem
   border-top: 1px solid var(--surface-border)
   font-size: 0.85em
 
@@ -140,23 +140,28 @@ onMounted(async () => {
     margin-bottom: 1rem
     color: var(--primary-color)
 
-  .card-section
-    display: flex
-    flex-wrap: wrap
-    flex-direction: row
-    gap: 1rem
-    justify-content: space-around
+.card-section
+  position: relative
+  display: flex
+  gap: 2rem
+  overflow-x: auto
+  padding-bottom: 0.5rem
+  scroll-snap-type: x mandatory
+  scrollbar-width: none
+  -ms-overflow-style: none
 
-    .card
-      width: 145px
-      font-size: 0.9em
+  &::-webkit-scrollbar
+    display: none
+
+  .card
+    flex: 0 0 auto
+    scroll-snap-align: start
+    width: 165px
+    margin-left: auto
+    margin-right: auto
 
 .sessions-section
   font-size: 0.6em
-.card:hover
-  transform: scale(1.1) translateY(-4px)
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2)
-  transition: transform 0.2s ease, box-shadow 0.2s ease
 
 
 @media (min-width: 600px)
@@ -185,7 +190,6 @@ onMounted(async () => {
 
     .card-section
       .card
-        width: 165px
         font-size: 1em
 
   .sessions-section
