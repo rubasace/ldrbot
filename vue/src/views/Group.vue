@@ -172,11 +172,11 @@ onMounted(async () => {
   .leaderboard-section
     flex: 1 1 auto
     max-width: 600px
-    order: 2
+    order: 1
 
   .times-section
     flex: 1 1 0
-    order: 1
+    order: 2
     display: flex
     gap: 1rem
     flex-direction: column

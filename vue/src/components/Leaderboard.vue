@@ -1,5 +1,5 @@
 <script setup>
-import {computed, defineProps, onMounted, ref} from 'vue'
+import {computed, defineProps, onMounted, ref, watch} from 'vue'
 import {usePrimeVue} from 'primevue/config'
 import Select from 'primevue/select'
 
@@ -16,7 +16,14 @@ const props = defineProps({
 
 const viewMode = ref('global')
 const gameNames = computed(() => Object.keys(leaderboard.value?.gamesLeaderboard ?? {}).sort((a, b) => a.localeCompare(b)))
-const selectedGame = ref(gameNames.value[0] || '')
+const selectedGame = ref('')
+
+watch(viewMode, () => {
+  if (viewMode.value === 'game') {
+    selectedGame.value = gameNames.value[0] || ''
+  }
+}, {immediate: true})
+
 
 const getPositionStyle = (index) => {
   switch (index) {
@@ -153,10 +160,8 @@ $chip-radius: 10px
         color: black
         transition: background 0.2s ease
         $internal-padding: 0.3rem
-
         &.global
           padding-right: $internal-padding
-
         &.game
           padding-left: $internal-padding
 
@@ -172,7 +177,6 @@ $chip-radius: 10px
     .game-select
       position: absolute
       right: 0
-
       ::v-deep(.p-select-label)
         padding: 0.5rem 0 0.5rem 0.5rem
 
