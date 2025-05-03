@@ -1,5 +1,7 @@
 <script setup>
 import {computed, defineProps, onMounted, ref} from 'vue'
+import {usePrimeVue} from 'primevue/config'
+import Select from 'primevue/select'
 
 const leaderboard = ref(null)
 const loading = ref(true)
@@ -11,6 +13,10 @@ const props = defineProps({
     required: true
   }
 })
+
+const viewMode = ref('global')
+const gameNames = computed(() => Object.keys(leaderboard.value?.gamesLeaderboard ?? {}).sort((a, b) => a.localeCompare(b)))
+const selectedGame = ref(gameNames.value[0] || '')
 
 const getPositionStyle = (index) => {
   switch (index) {
@@ -25,12 +31,25 @@ const getPositionStyle = (index) => {
   }
 }
 
+const calculatePosition = (index) =>
+    ['1st', '2nd', '3rd'][index] || `${index + 1}th`
+
+const formatDuration = (seconds) => {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  return [h ? `${h}h` : '', m ? `${m}m` : '', (!h && !m) || s ? `${s}s` : '']
+      .filter(Boolean)
+      .join(' ')
+}
+
 onMounted(async () => {
   const groupId = props.group.groupId
   try {
     const response = await fetch(`/api/leaderboard/${groupId}`)
     if (!response.ok) return
     leaderboard.value = await response.json()
+    selectedGame.value = Object.keys(leaderboard.value.gamesLeaderboard || {})[0]
   } catch (err) {
     fetchFailed.value = true
     console.error(err)
@@ -39,46 +58,44 @@ onMounted(async () => {
   }
 })
 
-function calculatePosition(index) {
-  switch (index) {
-    case 0:
-      return '1st'
-    case 1:
-      return '2nd'
-    case 2:
-      return '3rd'
-    default:
-      return index + 1 + 'th'
-  }
-}
 
-function formatDuration(seconds) {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = seconds % 60
+const rows = computed(() => {
+  const source =
+      viewMode.value === 'global'
+          ? leaderboard.value?.globalLeaderboard
+          : leaderboard.value?.gamesLeaderboard[selectedGame.value] || []
 
-  return [
-    h ? `${h}h` : '',
-    m ? `${m}m` : '',
-    (!h && !m) || s ? `${s}s` : ''
-  ].filter(Boolean).join(' ')
-}
-
-const rows = computed(() =>
-    leaderboard.value?.globalLeaderboard.map((entry, index) => ({
-      id: entry.userId,
-      position: calculatePosition(index),
-      name: entry.username ? `@${entry.username}` : entry.firstName,
-      points: `${entry.totalPoints} pts`,
-      style: getPositionStyle(index),
-      totalDuration: formatDuration(entry.totalDuration)
-    }))
-)
+  return source.map((entry, index) => ({
+    id: entry.userId,
+    position: calculatePosition(index),
+    name: entry.username ? `@${entry.username}` : entry.firstName,
+    points: `${entry.totalPoints} pts`,
+    style: getPositionStyle(index),
+    totalDuration: formatDuration(entry.totalDuration)
+  }))
+})
 </script>
 
 <!--TODO show arrows indicating position movement  -->
 <template>
   <section class="group-leaderboard">
+    <div class="controls-float">
+      <div class="toggle-container">
+        <span class="global" :class="{ active: viewMode === 'global' }" @click="viewMode = 'global'">Global</span>
+        <span class="separator">|</span>
+        <span class="game" :class="{ active: viewMode === 'game' }" @click="viewMode = 'game'">Game</span>
+      </div>
+
+      <Select
+          v-if="viewMode === 'game'"
+          class="game-select"
+          v-model="selectedGame"
+          :options="gameNames"
+          :placeholder="'Select game'"
+      />
+    </div>
+
+
     <div v-if="loading">Loading leaderboard...</div>
     <div v-else>
       <div
@@ -87,9 +104,7 @@ const rows = computed(() =>
           class="leaderboard-row"
           :class="row.style"
       >
-        <span v-if="index < 3" class="medal">
-            {{ ['🥇', '🥈', '🥉'][index] }}
-          </span>
+        <span v-if="index < 3" class="medal">{{ ['🥇', '🥈', '🥉'][index] }}</span>
         <div class="user-info">
           <span class="position">{{ row.position }}.</span>
           <img :src="`/api/images/users/${row.id}`" alt="avatar" class="avatar"/>
@@ -100,16 +115,66 @@ const rows = computed(() =>
           <span class="time">{{ row.totalDuration }}</span>
         </div>
       </div>
-
     </div>
   </section>
 </template>
 
 <style scoped lang="sass">
+@use "sass:color"
+$chip-base: #a6b7e3
+$chip-bg: linear-gradient(135deg, $chip-base, lighten($chip-base, 10%))
+$chip-border: 1px solid var(--surface-border)
+$chip-radius: 10px
+
 .group-leaderboard
+  position: relative
   display: flex
   flex-direction: column
-  gap: 10rem
+  gap: 1rem
+
+  .controls-float
+    display: flex
+    justify-content: center
+    align-items: center
+    flex-wrap: wrap
+    font-size: 0.9rem
+
+    .toggle-container
+      display: flex
+      align-items: center
+      background: $chip-bg
+      border: $chip-border
+      border-radius: $chip-radius
+
+
+      span
+        cursor: pointer
+        padding: 0.5rem 0.6rem
+        color: black
+        transition: background 0.2s ease
+        $internal-padding: 0.3rem
+
+        &.global
+          padding-right: $internal-padding
+
+        &.game
+          padding-left: $internal-padding
+
+        &.active
+          //background-color: color.adjust($chip-base, $lightness: -20%)
+          border-radius: $chip-radius
+          font-weight: 800
+
+      .separator
+        opacity: 0.5
+        padding: 0
+
+    .game-select
+      position: absolute
+      right: 0
+
+      ::v-deep(.p-select-label)
+        padding: 0.5rem 0 0.5rem 0.5rem
 
 .leaderboard-row
   position: relative
@@ -188,4 +253,5 @@ const rows = computed(() =>
 
 .name, .points
   color: #2b2b2b
+
 </style>
