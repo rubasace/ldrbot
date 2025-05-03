@@ -38,7 +38,13 @@ onMounted(async () => {
 
 <template>
   <section class="session-table">
-    <DataTable :value="sessions" :loading="loading" responsiveLayout="scroll">
+    <DataTable :value="sessions"
+               :loading="loading"
+               responsiveLayout="scroll"
+               :paginator="true"
+               :rows="10"
+               :rowsPerPageOptions="[5, 10, 20, 50, 100, 500, 1000]"
+    >
       <Column header="User" sortable sortField="username">
         <template #body="{ data }">
           <div class="user-cell">
