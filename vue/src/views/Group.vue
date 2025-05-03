@@ -106,10 +106,12 @@ onMounted(async () => {
 
   .group-header
     display: flex
+    flex-direction: column
     align-items: center
     justify-content: center
     font-size: 2rem
     gap: 1rem
+    margin-bottom: 3rem
 
     img
       $size: 2.5em
@@ -122,6 +124,9 @@ onMounted(async () => {
     h1
       color: var(--text-color)
       margin: 0
+
+    h2
+      font-size: 0.6em
 
 .group-stats
   display: flex
