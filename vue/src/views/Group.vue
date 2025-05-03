@@ -2,17 +2,19 @@
 
 import Leaderboard from "../components/Leaderboard.vue";
 import SessionTable from "../components/SessionTable.vue";
-import {computed, onMounted, ref} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 import {useRoute} from 'vue-router'
 import GameInfo from "../components/GameInfo.vue";
 import GameRecord from "../components/GameRecord.vue";
 import BaseCard from "../components/BaseCard.vue";
+import DatePicker from 'primevue/datepicker'
 
 const route = useRoute()
 const group = ref(null)
 const stats = ref(null)
 const loading = ref(true)
 const fetchFailed = ref(false)
+const selectedDate = ref(new Date())
 
 const sortedRecords = computed(() => {
   if (!stats.value?.recordByGame) return []
@@ -28,6 +30,24 @@ const sortedAverages = computed(() => {
       .map(([game]) => game)
 })
 
+const isToday = computed(() => {
+  const today = new Date()
+  return selectedDate.value?.toDateString() === today.toDateString()
+})
+
+function adjustDate(offset) {
+  const newDate = new Date(selectedDate.value)
+  newDate.setDate(newDate.getDate() + offset)
+  if (newDate <= new Date()) {
+    selectedDate.value = newDate
+  }
+}
+
+watch(selectedDate, (newDate) => {
+  if (!newDate) {
+    selectedDate.value = new Date()
+  }
+})
 
 onMounted(async () => {
   const groupId = route.params.groupId
@@ -84,8 +104,28 @@ onMounted(async () => {
           </div>
         </div>
       </div>
+      <div class="section results-section">
+        <div class="results-header">
+          <h2>Daily Results</h2>
+          <div class="date-nav">
+            <span class="date-arrow" @click="adjustDate(-1)">◀</span>
+            <DatePicker
+                v-model="selectedDate"
+                showIcon
+                showButtonBar
+                dateFormat="yy-mm-dd"
+                :maxDate="new Date()"
+                class="date-picker"
+                :manualInput="false"
+                touchUI
+            />
+            <span :class="isToday ? 'invisible' : ''" class="date-arrow" @click="adjustDate(1)">▶</span>
+          </div>
+        </div>
+        <Leaderboard v-if="selectedDate" :group="group" :date="selectedDate?.toISOString().split('T')[0]"/>
+      </div>
       <div class="section sessions-section">
-        <h2>Sessions</h2>
+        <h2>Sessions History</h2>
         <SessionTable v-if="group" :group="group"/>
       </div>
     </div>
@@ -164,14 +204,43 @@ onMounted(async () => {
     margin-left: auto
     margin-right: auto
 
+.results-header
+  display: flex
+  flex-direction: column
+  align-items: center
+  gap: 1rem
+
+.date-nav
+  display: flex
+  align-items: center
+  gap: 0.5rem
+
+.date-arrow
+  background: var(--surface-card)
+  border: 1px solid var(--surface-border)
+  border-radius: 50%
+  font-size: 1.2rem
+  width: 2rem
+  height: 2rem
+  display: flex
+  align-items: center
+  justify-content: center
+  cursor: pointer
+  transition: background 0.2s ease
+
+  &:hover
+    color: var(--p-primary-color)
+
 @media (min-width: 1024px)
+  $max-leaderboard-width: 600px
+
   .group-stats
     flex-direction: row
     flex-wrap: wrap
 
   .leaderboard-section
     flex: 1 1 auto
-    max-width: 600px
+    max-width: $max-leaderboard-width
     order: 1
 
   .times-section
@@ -181,8 +250,14 @@ onMounted(async () => {
     gap: 1rem
     flex-direction: column
 
-  .sessions-section
-    flex: 0 0 100%
+  .results-section
+    max-width: $max-leaderboard-width
+    flex: 1 1 $max-leaderboard-width
     order: 3
+    margin-left: auto
+    margin-right: auto
+  .sessions-section
+    flex: 1 1 auto
+    order: 4
 
 </style>

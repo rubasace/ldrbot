@@ -11,6 +11,10 @@ const props = defineProps({
   group: {
     type: Object,
     required: true
+  },
+  date: {
+    type: String, // or Date if you're parsing it
+    required: false
   }
 })
 
@@ -50,12 +54,14 @@ const formatDuration = (seconds) => {
       .join(' ')
 }
 
-onMounted(async () => {
-  const groupId = props.group.groupId
+async function loadLeaderboard() {
+  if (!props.group?.groupId) return
+  loading.value = true
+  const query = props.date ? `?date=${props.date}` : ''
   try {
-    const response = await fetch(`/api/leaderboard/${groupId}`)
-    if (!response.ok) return
-    leaderboard.value = await response.json()
+    const res = await fetch(`/api/leaderboard/${props.group.groupId}${query}`)
+    if (!res.ok) throw new Error('Failed to fetch leaderboard')
+    leaderboard.value = await res.json()
     selectedGame.value = Object.keys(leaderboard.value.gamesLeaderboard || {})[0]
   } catch (err) {
     fetchFailed.value = true
@@ -63,8 +69,11 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
 
+onMounted(loadLeaderboard)
+
+watch(() => props.date, loadLeaderboard)
 
 const rows = computed(() => {
   const source =
@@ -102,25 +111,31 @@ const rows = computed(() => {
       />
     </div>
 
-
     <div v-if="loading">Loading leaderboard...</div>
+
     <div v-else>
-      <div
-          v-for="(row, index) in rows"
-          :key="row.id"
-          class="leaderboard-row"
-          :class="row.style"
-      >
-        <span v-if="index < 3" class="medal">{{ ['🥇', '🥈', '🥉'][index] }}</span>
-        <div class="user-info">
-          <span class="position">{{ row.position }}.</span>
-          <img :src="`/api/images/users/${row.id}`" alt="avatar" class="avatar"/>
-          <span class="name">{{ row.name }}</span>
+      <div v-if="rows.length > 0">
+        <div
+            v-for="(row, index) in rows"
+            :key="row.id"
+            class="leaderboard-row"
+            :class="row.style"
+        >
+          <span v-if="index < 3" class="medal">{{ ['🥇', '🥈', '🥉'][index] }}</span>
+          <div class="user-info">
+            <span class="position">{{ row.position }}.</span>
+            <img :src="`/api/images/users/${row.id}`" alt="avatar" class="avatar"/>
+            <span class="name">{{ row.name }}</span>
+          </div>
+          <div class="results">
+            <span class="points">{{ row.points }}</span>
+            <span class="time">{{ row.totalDuration }}</span>
+          </div>
         </div>
-        <div class="results">
-          <span class="points">{{ row.points }}</span>
-          <span class="time">{{ row.totalDuration }}</span>
-        </div>
+      </div>
+
+      <div v-else class="no-data">
+        No data found.
       </div>
     </div>
   </section>
@@ -257,5 +272,11 @@ $chip-radius: 10px
 
 .name, .points
   color: #2b2b2b
+
+.no-data
+  text-align: center
+  color: var(--text-color-secondary)
+  font-style: italic
+  margin-top: 1rem
 
 </style>

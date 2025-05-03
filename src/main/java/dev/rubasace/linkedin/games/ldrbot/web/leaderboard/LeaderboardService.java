@@ -28,9 +28,9 @@ class LeaderboardService {
                 .thenComparingInt(LeaderboardEntry::getTotalGames);
     }
 
-    Leaderboard getLeaderboard(final String groupId, final LocalDate from, final LocalDate to) {
-        LocalDate fromDate = from == null ? LocalDate.ofYearDay(1991, 1) : from;
-        LocalDate toDate = to == null ? LocalDate.ofYearDay(99999, 365) : to;
+    Leaderboard getLeaderboard(final String groupId, final LocalDate date) {
+        LocalDate fromDate = date == null ? LocalDate.ofYearDay(1991, 1) : date;
+        LocalDate toDate = date == null ? LocalDate.ofYearDay(99999, 365) : date;
         Map<String, List<GameLeaderboardEntry>> leaderboardByGame = getLeaderboardByGame(groupId, fromDate, toDate);
         List<GlobalLeaderboardEntry> globalLeaderboard = calculateGlobalLeaderboard(leaderboardByGame);
         return new Leaderboard(leaderboardByGame, globalLeaderboard);
