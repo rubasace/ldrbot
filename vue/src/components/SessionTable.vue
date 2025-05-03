@@ -39,7 +39,7 @@ onMounted(async () => {
 <template>
   <section class="session-table">
     <DataTable :value="sessions" :loading="loading" responsiveLayout="scroll">
-      <Column header="User">
+      <Column header="User" sortable sortField="username">
         <template #body="{ data }">
           <div class="user-cell">
             <img :src="`/api/images/users/${data.userId}`" alt="avatar" class="avatar"/>
@@ -48,10 +48,10 @@ onMounted(async () => {
         </template>
       </Column>
 
-      <Column field="game" header="Game"/>
-      <Column field="date" header="Date"/>
+      <Column field="game" header="Game" sortable/>
+      <Column field="date" header="Date" sortable/>
 
-      <Column header="Time">
+      <Column header="Time" sortable sortField="seconds">
         <template #body="{ data }">
           <span class="time">{{ formatDuration(data.seconds) }}</span>
         </template>
