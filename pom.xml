@@ -10,7 +10,7 @@
     </parent>
     <groupId>dev.rubasace.linkedin</groupId>
     <artifactId>ldrbot</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.7.3</version>
     <name>ldrbot</name>
     <description>Telegram bot that uses OCR to extract scores from LinkedIn puzzle screenshots and build daily leaderboards per group</description>
     <properties>
