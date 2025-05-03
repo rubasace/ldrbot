@@ -1,6 +1,7 @@
 <script setup>
 
 import Leaderboard from "../components/Leaderboard.vue";
+import SessionTable from "../components/SessionTable.vue";
 import {computed, onMounted, ref} from 'vue'
 import {useRoute} from 'vue-router'
 import GameInfo from "../components/GameInfo.vue";
@@ -83,7 +84,12 @@ onMounted(async () => {
           </div>
         </div>
       </div>
+      <div class="section sessions-section">
+        <h2>Sessions</h2>
+        <SessionTable v-if="group" :group="group"/>
+      </div>
     </div>
+
 
   </div>
 </template>
@@ -122,31 +128,12 @@ onMounted(async () => {
   flex-direction: column
   gap: 1rem
 
-  @media (min-width: 1024px)
-    flex-direction: row
-
-    .leaderboard-section
-      flex: 1 1 auto
-      max-width: 600px
-      order: 1
-
-    .times-section
-      flex: 1 1 0
-      order: 2
-      display: flex
-      gap: 1rem
-      flex-direction: column
-
-      .card-section
-        .card
-          width: 165px
-          font-size: 1em
-
 .section
   display: flex
   flex-direction: column
   gap: 1rem
   border-top: 1px solid var(--surface-border)
+  font-size: 0.85em
 
   h2
     font-size: 1.75rem
@@ -161,13 +148,48 @@ onMounted(async () => {
     justify-content: space-around
 
     .card
-      width: 155px
+      width: 145px
       font-size: 0.9em
 
-
+.sessions-section
+  font-size: 0.6em
 .card:hover
   transform: scale(1.1) translateY(-4px)
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2)
   transition: transform 0.2s ease, box-shadow 0.2s ease
+
+
+@media (min-width: 600px)
+  .sessions-section
+    font-size: 1em
+
+@media (min-width: 1024px)
+  .group-stats
+    flex-direction: row
+    flex-wrap: wrap
+
+  .section
+    font-size: 1em
+
+  .leaderboard-section
+    flex: 1 1 auto
+    max-width: 600px
+    order: 1
+
+  .times-section
+    flex: 1 1 0
+    order: 2
+    display: flex
+    gap: 1rem
+    flex-direction: column
+
+    .card-section
+      .card
+        width: 165px
+        font-size: 1em
+
+  .sessions-section
+    flex: 0 0 100%
+    order: 3
 
 </style>

@@ -102,4 +102,8 @@ public class GameSessionService {
                 user -> applicationEventPublisher.publishEvent(new GameSessionDeletionEvent(this, chatInfo, userInfo)));
     }
 
+    public Stream<GameSession> getGameSessions(final String uuid, final Set<Long> userIds) {
+        return gameSessionRepository.getByGroupUuidAndUserIdInOrderByGameDayDesc(uuid, userIds);
+    }
+
 }
