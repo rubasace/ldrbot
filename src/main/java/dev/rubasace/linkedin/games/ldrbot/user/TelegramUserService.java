@@ -32,7 +32,7 @@ public class TelegramUserService {
                                      .orElseGet(() -> this.createUser(userInfo));
     }
 
-    @Transactional(readOnly = true, isolation = Isolation.SERIALIZABLE)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Stream<MissingSessionUserProjection> findUsersWithMissingSessions(final LocalDate gameDay) {
         return telegramUserRepository.findUsersWithMissingSessions(gameDay);
     }

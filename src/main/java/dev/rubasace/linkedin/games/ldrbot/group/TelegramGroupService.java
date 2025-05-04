@@ -86,7 +86,7 @@ public class TelegramGroupService {
         applicationEventPublisher.publishEvent(new UserLeftGroupEvent(this, chatInfo, userInfo));
     }
 
-    @Transactional(readOnly = true, isolation = Isolation.SERIALIZABLE)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Stream<TelegramGroup> findGroupsWithMissingScores(final LocalDate gameDay) {
         return telegramGroupRepository.findGroupsWithMissingScores(gameDay);
     }
