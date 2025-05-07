@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 public interface TelegramUserRepository extends JpaRepository<TelegramUser, Long> {
 
-    Optional<TelegramUser> findByUserName(String userName);
+    Optional<TelegramUser> findByUserNameIgnoreCase(String userName);
 
     @Query("""
                 SELECT g.chatId AS chatId, g.groupName AS groupName, g.timezone AS timeZone, u.id AS userId, u.userName AS userName, u.firstName AS firstName, u.lastName AS lastName

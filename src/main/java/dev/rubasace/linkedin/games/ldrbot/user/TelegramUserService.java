@@ -38,7 +38,7 @@ public class TelegramUserService {
     }
 
     public Optional<TelegramUser> findByUserName(final String userName) {
-        return telegramUserRepository.findByUserName(userName);
+        return telegramUserRepository.findByUserNameIgnoreCase(userName);
     }
 
     private TelegramUser updateUserData(TelegramUser telegramUser, final UserInfo userInfo) {
