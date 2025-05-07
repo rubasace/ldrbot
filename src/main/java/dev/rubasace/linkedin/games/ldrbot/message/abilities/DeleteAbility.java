@@ -43,7 +43,7 @@ public class DeleteAbility implements AbilityExtension {
     public Ability delete() {
         return Ability.builder()
                       .name("delete")
-                      .info(UsageFormatUtils.formatUsage("/delete <gameInfo>", "Remove your submitted time for a gameInfo."))
+                      .info(UsageFormatUtils.formatUsage("/delete <game>", "Remove your submitted time for a gameInfo."))
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
                       .action(ctx -> deleteTodayRecord(ctx.update().getMessage(), InputSanitizer.sanitizeArguments(ctx.arguments())))
