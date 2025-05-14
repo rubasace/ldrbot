@@ -22,7 +22,11 @@ public class TelegramUserService {
     }
 
     public Optional<TelegramUser> find(final UserInfo userInfo) {
-        return telegramUserRepository.findById(userInfo.id());
+        return find(userInfo.id());
+    }
+
+    public Optional<TelegramUser> find(final Long id) {
+        return telegramUserRepository.findById(id);
     }
 
     @Transactional

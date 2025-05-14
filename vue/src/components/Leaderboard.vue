@@ -212,6 +212,9 @@ $chip-radius: 10px
   align-items: center
   gap: 10px
 
+.position
+  width: 2em
+
 .avatar
   $size: 44px
   width: $size
