@@ -105,7 +105,7 @@ public class GameSessionService {
     }
 
     public Stream<GameSession> getGameSessions(final String uuid, final Set<Long> userIds) {
-        return gameSessionRepository.getByGroupUuidAndUserIdInOrderByGameDayDesc(uuid, userIds);
+        return gameSessionRepository.getByGroupUuidAndUserIdInOrderByGameDayDescRegisteredAtDesc(uuid, userIds);
     }
 
 }

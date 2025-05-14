@@ -13,7 +13,7 @@ public interface GameSessionRepository extends JpaRepository<GameSession, UUID> 
 
     boolean existsByUserIdAndGroupChatIdAndGameAndGameDay(Long UserId, Long chatId, GameType game, LocalDate gameDay);
 
-    Stream<GameSession> getByGroupUuidAndUserIdInOrderByGameDayDesc(String uuid, Set<Long> userIds);
+    Stream<GameSession> getByGroupUuidAndUserIdInOrderByGameDayDescRegisteredAtDesc(String uuid, Set<Long> userIds);
 
     Optional<GameSession> getByUserIdAndGroupChatIdAndGameAndGameDay(Long UserId, Long chatId, GameType game, LocalDate gameDay);
     @Transactional
