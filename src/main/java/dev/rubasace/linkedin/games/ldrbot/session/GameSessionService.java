@@ -26,7 +26,7 @@ public class GameSessionService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final GameTypeAdapter gameTypeAdapter;
 
-    public GameSessionService(final GameSessionRepository gameSessionRepository, final TelegramUserService telegramUserService, final TelegramGroupService telegramGroupService, final ApplicationEventPublisher applicationEventPublisher, final GameTypeAdapter gameTypeAdapter) {
+    GameSessionService(final GameSessionRepository gameSessionRepository, final TelegramUserService telegramUserService, final TelegramGroupService telegramGroupService, final ApplicationEventPublisher applicationEventPublisher, final GameTypeAdapter gameTypeAdapter) {
         this.gameSessionRepository = gameSessionRepository;
         this.telegramUserService = telegramUserService;
         this.telegramGroupService = telegramGroupService;
