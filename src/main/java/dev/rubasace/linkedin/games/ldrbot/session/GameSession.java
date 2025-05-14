@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
@@ -49,6 +50,8 @@ public class GameSession {
 
     @Column(nullable = false)
     private LocalDate gameDay;
+
+    private Instant registeredAt;
 
     @JsonIgnoreProperties("gameSession")
     @OneToOne(mappedBy = "gameSession", cascade = CascadeType.REMOVE, orphanRemoval = true)

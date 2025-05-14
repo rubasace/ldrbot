@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
@@ -64,6 +65,7 @@ public class GameSessionService {
             gameSession.setGroup(telegramGroup);
             gameSession.setGameDay(gameDay);
             gameSession.setDuration(gameDuration.duration());
+            gameSession.setRegisteredAt(Instant.now());
         }
 
         saveSession(chatInfo, userInfo, gameDay, gameSession, gameInfo, telegramGroup);
