@@ -58,7 +58,7 @@ public class TelegramImageService {
 
     private ImageData getFallBackAvatar(final Long userId) {
         TelegramUser telegramUser = telegramUserService.find(userId).orElseThrow();
-        String name = StringUtils.hasText(telegramUser.getUserName()) ? telegramUser.getUserName() : telegramUser.getFirstName();
+        String name = StringUtils.hasText(telegramUser.getUserName()) ? telegramUser.getUserName() + telegramUser.getFirstName() : telegramUser.getFirstName();
 
         byte[] bytes = restClient.get()
                                  .uri(uriBuilder -> uriBuilder
