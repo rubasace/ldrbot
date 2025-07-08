@@ -33,7 +33,7 @@ public class ImageGameDurationExtractor {
                 return Optional.empty();
             }
             try {
-                Duration duration = imageDurationExtractor.extractDuration(image);
+                Duration duration = imageDurationExtractor.extractDuration(image, gameType.get().getColor());
                 return Optional.of(new GameDuration(gameType.get(), duration));
             } catch (DurationOCRException e) {
                 if (e.getCause() != null) {

@@ -8,9 +8,13 @@ import java.util.regex.Pattern;
 public class ParseUtils {
 
     private static final Pattern TIMER_PATTERN = Pattern.compile("\\b(\\d{1,2}):?(\\d{2})\\b");
+    private static final Pattern ALTERNATIVE_TIMER_PATTERN = Pattern.compile("[a-zA-Z\\s]*"+TIMER_PATTERN);
 
     public static Optional<Duration> parseDuration(final String durationText) {
         Matcher matcher = TIMER_PATTERN.matcher(durationText);
+        if (!matcher.matches()) {
+            matcher = ALTERNATIVE_TIMER_PATTERN.matcher(durationText);
+        }
         if (!matcher.matches()) {
             return Optional.empty();
         }

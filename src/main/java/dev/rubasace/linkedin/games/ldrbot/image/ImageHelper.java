@@ -68,7 +68,7 @@ class ImageHelper {
         return new Scalar[]{lower, upper};
     }
 
-    Optional<Rect> findLargestRegionOfColor(Mat image, String color) {
+    Optional<Rect> findLargestRegionOfColor(Mat image, String color, int minSize) {
         Mat mask = getColorMask(image, color);
 
         MatVector contours = new MatVector();
@@ -89,7 +89,8 @@ class ImageHelper {
             }
         }
 
-        return Optional.ofNullable(maxRect);
+        return Optional.ofNullable(maxRect)
+                .filter(e -> e.size().width() >= minSize && e.size().height() >= minSize);
     }
 
 }

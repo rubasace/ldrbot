@@ -16,6 +16,7 @@ import java.util.Optional;
 class ImageDurationExtractor {
 
     private static final String RESULTS_COLOR = "#FDE4A5";
+    private static final int MIN_RESULTS_SIZE = 100;
 
     private final ImageHelper imageHelper;
     private final ImageTextExtractor imageTextExtractor;
@@ -25,8 +26,10 @@ class ImageDurationExtractor {
         this.imageTextExtractor = imageTextExtractor;
     }
 
-    Duration extractDuration(final Mat image) throws DurationOCRException {
-        Optional<Rect> resultsBox = imageHelper.findLargestRegionOfColor(image, RESULTS_COLOR);
+    //TODO make sure only looks inside the game color section
+    Duration extractDuration(final Mat image, String gameColor) throws DurationOCRException {
+        Optional<Rect> resultsBox = imageHelper.findLargestRegionOfColor(image, RESULTS_COLOR, MIN_RESULTS_SIZE)
+                .or(() -> imageHelper.findLargestRegionOfColor(image, gameColor, MIN_RESULTS_SIZE));
         if (resultsBox.isEmpty()) {
             throw new DurationOCRException("Couldn't find the results area on the image");
         }
@@ -36,11 +39,11 @@ class ImageDurationExtractor {
             opencv_imgcodecs.imwrite(temp.getAbsolutePath(), cropped);
             String text = imageTextExtractor.extractText(temp);
             return Arrays.stream(text.split("\n"))
-                                                .map(durationText -> ParseUtils.parseDuration(durationText.trim()))
-                                                .filter(Optional::isPresent)
-                                                .map(Optional::get)
-                         .findFirst()
-                         .orElseThrow(() -> new DurationOCRException("No timer found in OCR result. Found the following text:\n" + text));
+                    .map(durationText -> ParseUtils.parseDuration(durationText.trim()))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .findFirst()
+                    .orElseThrow(() -> new DurationOCRException("No timer found in OCR result. Found the following text:\n" + text));
 
         } catch (IOException e) {
             throw new DurationOCRException(e);
