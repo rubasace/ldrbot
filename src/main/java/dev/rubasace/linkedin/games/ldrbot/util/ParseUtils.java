@@ -10,11 +10,17 @@ public class ParseUtils {
     private static final Pattern TIMER_PATTERN = Pattern.compile("\\b(\\d{1,2}):?(\\d{2})\\b");
     private static final Pattern ALTERNATIVE_TIMER_PATTERN = Pattern.compile("[a-zA-Z\\s]*"+TIMER_PATTERN);
 
-    public static Optional<Duration> parseDuration(final String durationText) {
-        Matcher matcher = TIMER_PATTERN.matcher(durationText);
-        if (!matcher.matches()) {
-            matcher = ALTERNATIVE_TIMER_PATTERN.matcher(durationText);
-        }
+    public static Optional<Duration> parseIsolatedDuration(final String durationText) {
+        return getDuration(durationText, TIMER_PATTERN);
+    }
+
+    public static Optional<Duration> parseDurationFromMessage(final String durationText) {
+        return getDuration(durationText, ALTERNATIVE_TIMER_PATTERN);
+    }
+
+    private static Optional<Duration> getDuration(final String durationText, Pattern pattern) {
+        Matcher matcher = pattern.matcher(durationText);
+
         if (!matcher.matches()) {
             return Optional.empty();
         }

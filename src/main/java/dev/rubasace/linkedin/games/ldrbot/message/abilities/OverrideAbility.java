@@ -9,23 +9,9 @@ import dev.rubasace.linkedin.games.ldrbot.message.GameNameAdapter;
 import dev.rubasace.linkedin.games.ldrbot.message.InvalidUserInputException;
 import dev.rubasace.linkedin.games.ldrbot.message.UserAdapter;
 import dev.rubasace.linkedin.games.ldrbot.message.config.BaseMessageReplier;
-import dev.rubasace.linkedin.games.ldrbot.session.GameDuration;
-import dev.rubasace.linkedin.games.ldrbot.session.GameInfo;
-import dev.rubasace.linkedin.games.ldrbot.session.GameSession;
-import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
-import dev.rubasace.linkedin.games.ldrbot.session.GameType;
-import dev.rubasace.linkedin.games.ldrbot.session.GameTypeAdapter;
-import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
-import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserAdapter;
-import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserService;
-import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
-import dev.rubasace.linkedin.games.ldrbot.user.UserNotFoundException;
-import dev.rubasace.linkedin.games.ldrbot.util.FormatUtils;
-import dev.rubasace.linkedin.games.ldrbot.util.InputSanitizer;
-import dev.rubasace.linkedin.games.ldrbot.util.KeyboardMarkupUtils;
-import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
-import dev.rubasace.linkedin.games.ldrbot.util.ParseUtils;
-import dev.rubasace.linkedin.games.ldrbot.util.UsageFormatUtils;
+import dev.rubasace.linkedin.games.ldrbot.session.*;
+import dev.rubasace.linkedin.games.ldrbot.user.*;
+import dev.rubasace.linkedin.games.ldrbot.util.*;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.bot.BaseAbilityBot;
@@ -112,7 +98,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
             throw new InvalidUserInputException(INVALID_ARGUMENT_MESSAGE_TEMPLATE.formatted(message.getFrom().getUserName(), message.getFrom().getUserName()), message.getChatId());
         }
         GameType gameType = gameNameAdapter.adapt(arguments[1].trim(), message.getChatId());
-        Optional<Duration> duration = ParseUtils.parseDuration(arguments[2].trim());
+        Optional<Duration> duration = ParseUtils.parseIsolatedDuration(arguments[2].trim());
         if (duration.isEmpty()) {
             throw new InvalidUserInputException(INVALID_TIME_FORMAT_MESSAGE, message.getChatId());
         }

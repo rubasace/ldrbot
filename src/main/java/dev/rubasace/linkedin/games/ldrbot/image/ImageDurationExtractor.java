@@ -38,11 +38,19 @@ class ImageDurationExtractor {
             File temp = File.createTempFile("time-results-section", ".png");
             opencv_imgcodecs.imwrite(temp.getAbsolutePath(), cropped);
             String text = imageTextExtractor.extractText(temp);
-            return Arrays.stream(text.split("\n"))
-                    .map(durationText -> ParseUtils.parseDuration(durationText.trim()))
+            Optional<Duration> duration = Arrays.stream(text.split("\n"))
+                    .map(durationText -> ParseUtils.parseIsolatedDuration(durationText.trim()))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
-                    .findFirst()
+                    .findFirst();
+            if (duration.isEmpty()) {
+                duration = Arrays.stream(text.split("\n"))
+                        .map(durationText -> ParseUtils.parseDurationFromMessage(durationText.trim()))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .findFirst();
+            }
+            return duration
                     .orElseThrow(() -> new DurationOCRException("No timer found in OCR result. Found the following text:\n" + text));
 
         } catch (IOException e) {
