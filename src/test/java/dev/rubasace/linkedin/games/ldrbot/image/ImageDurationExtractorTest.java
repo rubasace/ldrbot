@@ -47,6 +47,7 @@ class ImageDurationExtractorTest {
             "13.jpeg,QUEENS,19s",
             "14.jpeg,SUDOKU,1m3s",
             "15.jpeg,SUDOKU,1m32s",
+            "16.jpeg,SUDOKU,2m9s",
     })
     @ParameterizedTest
     void shouldExtractDuration(final String imageName, final GameType game, @ConvertWith(

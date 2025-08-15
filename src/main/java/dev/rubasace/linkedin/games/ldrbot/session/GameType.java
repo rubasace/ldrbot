@@ -7,13 +7,13 @@ public enum GameType {
     QUEENS("#7C569F"),
     TANGO("#38495B"),
     CROSSCLIMB("#057B8B"),
-    SUDOKU("#44BA6C"),
+    SUDOKU("#399767", "#42B96D"),
     ZIP("#EE5C14");
 
-    private final String color;
+    private final String[] colors;
 
-    GameType(final String color) {
-        this.color = color;
+    GameType(final String... colors) {
+        this.colors = colors;
     }
 
 }

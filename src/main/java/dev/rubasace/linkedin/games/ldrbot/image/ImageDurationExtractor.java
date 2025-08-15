@@ -27,9 +27,12 @@ class ImageDurationExtractor {
     }
 
     //TODO make sure only looks inside the game color section
-    Duration extractDuration(final Mat image, String gameColor) throws DurationOCRException {
+    Duration extractDuration(final Mat image, String[] gameColors) throws DurationOCRException {
         Optional<Rect> resultsBox = imageHelper.findLargestRegionOfColor(image, RESULTS_COLOR, MIN_RESULTS_SIZE)
-                .or(() -> imageHelper.findLargestRegionOfColor(image, gameColor, MIN_RESULTS_SIZE));
+                .or(() -> Arrays.stream(gameColors)
+                        .map(gameColor -> imageHelper.findLargestRegionOfColor(image, gameColor, MIN_RESULTS_SIZE))
+                        .filter(Optional::isPresent)
+                        .findFirst().orElse(Optional.empty()));
         if (resultsBox.isEmpty()) {
             throw new DurationOCRException("Couldn't find the results area on the image");
         }

@@ -21,7 +21,8 @@ class ImageGameExtractor {
 
     Optional<GameType> extractGame(final Mat image) {
         return Arrays.stream(GameType.values())
-                     .filter(gameType -> imageHelper.isColorPresent(image, gameType.getColor(), COLOR_PERCENTAGE_THRESHOLD, COLOR_MIN_PIXELS))
+                .filter(gameType -> Arrays.stream(gameType.getColors())
+                        .anyMatch(color -> imageHelper.isColorPresent(image, color, COLOR_PERCENTAGE_THRESHOLD, COLOR_MIN_PIXELS)))
                      .findFirst();
     }
 }
