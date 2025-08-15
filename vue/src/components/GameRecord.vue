@@ -1,5 +1,4 @@
 <script setup>
-import BaseCard from './BaseCard.vue'
 
 defineProps({
   record: Object
@@ -59,7 +58,7 @@ defineProps({
     padding: 0.3em 0.75em
     background-color: #3c3c4b
     color: white
-    width: 55px
+    min-width: 55px
     font-size: 1.1em
     font-weight: bold
     border-radius: 999px
