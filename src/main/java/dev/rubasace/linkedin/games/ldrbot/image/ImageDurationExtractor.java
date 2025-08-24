@@ -4,6 +4,7 @@ import dev.rubasace.linkedin.games.ldrbot.util.ParseUtils;
 import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.Rect;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -17,6 +18,7 @@ class ImageDurationExtractor {
 
     private static final String RESULTS_COLOR = "#FDE4A5";
     private static final int MIN_RESULTS_SIZE = 100;
+    public static final double TIME_HEIGHT_PERCENTAGE = 0.05;
 
     private final ImageHelper imageHelper;
     private final ImageTextExtractor imageTextExtractor;
@@ -30,9 +32,11 @@ class ImageDurationExtractor {
     Duration extractDuration(final Mat image, String[] gameColors) throws DurationOCRException {
         Optional<Rect> resultsBox = imageHelper.findLargestRegionOfColor(image, RESULTS_COLOR, MIN_RESULTS_SIZE)
                 .or(() -> Arrays.stream(gameColors)
-                        .map(gameColor -> imageHelper.findLargestRegionOfColor(image, gameColor, MIN_RESULTS_SIZE))
+                        .map(gameColor -> imageHelper.findLargestRegionOfColor(image, gameColor, MIN_RESULTS_SIZE)
+                                .map(this::cropPotentialPhoneHeader))
                         .filter(Optional::isPresent)
-                        .findFirst().orElse(Optional.empty()));
+                        .findFirst()
+                        .orElse(Optional.empty()));
         if (resultsBox.isEmpty()) {
             throw new DurationOCRException("Couldn't find the results area on the image");
         }
@@ -59,5 +63,19 @@ class ImageDurationExtractor {
         } catch (IOException e) {
             throw new DurationOCRException(e);
         }
+    }
+
+    /**
+     * Crops the very top section of the image to avoid parsing the phone clock as the duration as it can appear in some
+     * screenshots (i.e. iPhone Linkedin app)
+     */
+    @NotNull
+    private Rect cropPotentialPhoneHeader(Rect e) {
+        return new Rect(
+                e.x(),
+                e.y() + (int) (e.height() * (TIME_HEIGHT_PERCENTAGE)),
+                e.width(),
+                (int) (e.height() * (1 - TIME_HEIGHT_PERCENTAGE))
+        );
     }
 }

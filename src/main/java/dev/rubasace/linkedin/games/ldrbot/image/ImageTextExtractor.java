@@ -77,8 +77,7 @@ class ImageTextExtractor {
             List<Function<Mat, Mat>> transformations = List.of(
                     this::toGrayscale,
                     this::toBinary,
-                    this::applyMorphology,
-                    this::addPadding
+                    this::applyMorphology
             );
 
             Mat preprocessed = applyTransformations(original, transformations);
