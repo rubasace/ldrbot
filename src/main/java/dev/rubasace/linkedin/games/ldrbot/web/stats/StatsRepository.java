@@ -23,6 +23,7 @@ public interface StatsRepository extends Repository<GameSession, Long> {
                 JOIN s.gameSession gs
                 WHERE s.group.uuid = :groupId
                   AND s.game IN :trackedGames
+                  AND gs.registeredAt > s.group.startDate
                 ORDER BY s.game, s.gameDay ASC, gs.registeredAt ASC
             """)
     Stream<GameSessionProjection> findSessionsPerGame(@Param("groupId") String groupId, @Param("trackedGames") Set<GameType> trackedGames);

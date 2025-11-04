@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @Setter
@@ -40,6 +41,8 @@ public class TelegramGroup {
     private String uuid;
 
     private String groupName;
+
+    private LocalDateTime startDate;
 
     @Column(nullable = false)
     private ZoneId timezone = ZoneId.of(DEFAULT_ZONE);
@@ -67,6 +70,7 @@ public class TelegramGroup {
     public TelegramGroup(final Long chatId, final String groupName) {
         this.chatId = chatId;
         this.groupName = groupName;
+        this.startDate = new LocalDateTime();
     }
 
     @Override
