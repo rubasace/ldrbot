@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Set;
@@ -161,5 +162,14 @@ public class TelegramGroupService {
         telegramGroup.setTimezone(timezone);
         telegramGroupRepository.save(telegramGroup);
         applicationEventPublisher.publishEvent(new TimezoneChangedEvent(this, chatId, timezone));
+    }
+
+    @Transactional
+    public void resetStartTime(final Long chatId) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatId);
+        LocalDateTime now = new LocalDateTime();
+        telegramGroup.setStartTime(now);
+        telegramGroupRepository.save(telegramGroup);
+        applicationEventPublisher.publishEvent(new StartTimeResetEvent(this, chatId, now));
     }
 }

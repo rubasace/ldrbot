@@ -107,6 +107,9 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
             case "timezone":
                 showTimezoneConfig(chatId, messageId);
                 return;
+            case "reset-group-stats":
+                showResetGroupStatsConfig(chatId, messageId);
+                return;
             case "back":
                 showMainConfig(chatId, messageId);
                 return;
@@ -139,6 +142,7 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
         InlineKeyboardMarkup buttons = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(),
                                                                                  KeyboardMarkupUtils.ButtonData.of("tracked-games", "Tracked Games"),
                                                                                  KeyboardMarkupUtils.ButtonData.of("timezone", "Timezone"),
+                                                                                 KeyboardMarkupUtils.ButtonData.of("reset-group-stats", "Reset Group Stats"),
                                                                                  EXIT_BUTTON);
 
         customTelegramClient.sendOrEditMessage(chatId, "Configuration - Choose an option:", buttons, messageId);
@@ -166,6 +170,23 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
     private void showTimezoneConfig(final Long chatId, final Integer messageId) {
         this.pendingActions.put(chatId, this::setTimezone);
         customTelegramClient.sendMessage("Please send me your timezone (for example: <code>Europe/London</code> or <code>America/New_York</code>):", chatId);
+    }
+
+    private void showResetGroupStatsConfig(final Long chatId, final Integer messageId) {
+        InlineKeyboardMarkup buttons = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(),
+                                                                                 KeyboardMarkupUtils.ButtonData.of("yes", "Yes"),
+                                                                                 KeyboardMarkupUtils.ButtonData.of("back", "<< Back to Main Configuration"));
+
+        customTelegramClient.sendOrEditMessage(chatId, "Are you sure you want to reset group stats?", buttons, messageId);
+    }
+
+    private void handleResetGroupStats(final Long chatId, final Integer messageId, final String action) {
+        if ("yes".equals(action)) {
+            telegramGroupService.resetStartTime(chatId);
+            showMainConfig(chatId, messageId);
+        } else if ("back".equals(action)) {
+            showMainConfig(chatId, messageId);
+        }
     }
 
     private KeyboardMarkupUtils.ButtonData gameTypeToAction(final GameType gameType, final Set<GameType> trackedGames) {
