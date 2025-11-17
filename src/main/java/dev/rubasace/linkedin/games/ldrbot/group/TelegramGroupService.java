@@ -162,4 +162,11 @@ public class TelegramGroupService {
         telegramGroupRepository.save(telegramGroup);
         applicationEventPublisher.publishEvent(new TimezoneChangedEvent(this, chatId, timezone));
     }
+
+    @Transactional
+    public void setReadFromMessages(final Long chatId, final boolean readFromMessages) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatId);
+        telegramGroup.setReadFromMessages(readFromMessages);
+        telegramGroupRepository.save(telegramGroup);
+    }
 }

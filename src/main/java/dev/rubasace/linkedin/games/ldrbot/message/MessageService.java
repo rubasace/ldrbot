@@ -8,6 +8,7 @@ import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroup;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.image.GameDurationExtractionException;
 import dev.rubasace.linkedin.games.ldrbot.image.ImageGameDurationExtractor;
+import dev.rubasace.linkedin.games.ldrbot.chat.MessageGameDurationExtractor;
 import dev.rubasace.linkedin.games.ldrbot.session.GameDuration;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionService;
 import dev.rubasace.linkedin.games.ldrbot.session.SessionAlreadyRegisteredException;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 class MessageService {
 
     private final ImageGameDurationExtractor imageGameDurationExtractor;
+    private final MessageGameDurationExtractor messageGameDurationExtractor;
     private final AssetsDownloader assetsDownloader;
     private final GameSessionService gameSessionService;
     private final TelegramGroupService telegramGroupService;
@@ -40,8 +42,9 @@ class MessageService {
     private final UserAdapter userAdapter;
     private final ChatAdapter chatAdapter;
 
-    MessageService(final ImageGameDurationExtractor imageGameDurationExtractor, final AssetsDownloader assetsDownloader, final GameSessionService gameSessionService, final TelegramGroupService telegramGroupService, final TelegramBotProperties telegramBotProperties, final Map<String, BotCommand> knownCommands, final UserAdapter userAdapter, final ChatAdapter chatAdapter) {
+    MessageService(final ImageGameDurationExtractor imageGameDurationExtractor, final MessageGameDurationExtractor messageGameDurationExtractor, final AssetsDownloader assetsDownloader, final GameSessionService gameSessionService, final TelegramGroupService telegramGroupService, final TelegramBotProperties telegramBotProperties, final Map<String, BotCommand> knownCommands, final UserAdapter userAdapter, final ChatAdapter chatAdapter) {
         this.imageGameDurationExtractor = imageGameDurationExtractor;
+        this.messageGameDurationExtractor = messageGameDurationExtractor;
         this.assetsDownloader = assetsDownloader;
         this.gameSessionService = gameSessionService;
         this.telegramGroupService = telegramGroupService;
@@ -111,16 +114,20 @@ class MessageService {
         }
 
         List<PhotoSize> photoSizeList = getPhotos(message);
+        Optional<GameDuration> gameDuration;
+        UserInfo userInfo = null;
         if (photoSizeList.isEmpty()) {
-            return;
+            gameDuration = messageGameDurationExtractor.extractGameDuration(message.getText());
+        } else {
+            userInfo = userAdapter.adapt(message.getFrom());
+            File imageFile = assetsDownloader.getImage(photoSizeList);
+            gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, message.getChatId(), userInfo);
         }
 
-        UserInfo userInfo = userAdapter.adapt(message.getFrom());
-        File imageFile = assetsDownloader.getImage(photoSizeList);
-        Optional<GameDuration> gameDuration = imageGameDurationExtractor.extractGameDuration(imageFile, message.getChatId(), userInfo);
         if (gameDuration.isEmpty()) {
             return;
         }
+        if (userInfo == null) userInfo = userAdapter.adapt(message.getFrom());
         gameSessionService.recordGameSession(chatInfo, userInfo, gameDuration.get(), LinkedinTimeUtils.todayGameDay());
     }
 

@@ -64,6 +64,9 @@ public class TelegramGroup {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Column(nullable = false, name = "read_from_messages")
+    private boolean readFromMessages = false;
+
     public TelegramGroup(final Long chatId, final String groupName) {
         this.chatId = chatId;
         this.groupName = groupName;
