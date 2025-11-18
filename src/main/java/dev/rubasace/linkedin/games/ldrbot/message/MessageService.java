@@ -117,6 +117,9 @@ class MessageService {
         Optional<GameDuration> gameDuration;
         UserInfo userInfo = null;
         if (photoSizeList.isEmpty()) {
+            if (!telegramGroupService.isReadFromMessages(chatInfo.chatId())) {
+                return;
+            }
             gameDuration = messageGameDurationExtractor.extractGameDuration(message.getText());
         } else {
             userInfo = userAdapter.adapt(message.getFrom());

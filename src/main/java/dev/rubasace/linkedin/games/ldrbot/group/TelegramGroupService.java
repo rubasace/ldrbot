@@ -132,6 +132,15 @@ public class TelegramGroupService {
 
     }
 
+    public boolean isReadFromMessages(final ChatInfo chatInfo) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatInfo);
+        return telegramGroup.isReadFromMessages();
+    }
+
+    public boolean isReadFromMessages(final Long chatId) throws GroupNotFoundException {
+        return isReadFromMessages(new ChatInfo(chatId, null, true));
+    }
+
     @Transactional
     public void removeGroup(final ChatInfo chatInfo) throws GroupNotFoundException {
         TelegramGroup telegramGroup = findGroupOrThrow(chatInfo);
