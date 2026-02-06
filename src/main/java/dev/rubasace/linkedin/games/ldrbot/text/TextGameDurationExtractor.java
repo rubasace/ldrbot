@@ -20,10 +20,14 @@ public class TextGameDurationExtractor {
      * Also matches Spanish format:
      * <game> n.º <number> | <mm:ss> [text]
      * Example: "Tango n.º 487 | 0:46 y sin fallos"
+     * Also matches multi-line format:
+     * <game> # <number>
+     * <mm:ss> [emoji]
+     * Example: "Queens # 647\n0:31 👑"
      */
-    private static final String RESULT_MESSAGE_FORMAT = "^(.+?)\\s+(?:#|n\\.º)\\s*(\\d+)\\s*\\|\\s*(\\d{1,2}:\\d{2}).*";
+    private static final String RESULT_MESSAGE_FORMAT = "^(.+?)\\s+(?:#|n\\.º)\\s*(\\d+)\\s*(?:\\||\\n)\\s*(\\d{1,2}:\\d{2}).*";
 
-    private static final Pattern MESSAGE_PATTERN = Pattern.compile(RESULT_MESSAGE_FORMAT, Pattern.MULTILINE);
+    private static final Pattern MESSAGE_PATTERN = Pattern.compile(RESULT_MESSAGE_FORMAT, Pattern.MULTILINE | Pattern.DOTALL);
 
 
     public Optional<GameDuration> extractGameDuration(final String message) {
@@ -31,10 +35,9 @@ public class TextGameDurationExtractor {
             return Optional.empty();
         }
 
-        String firstLine = message.split("\\n")[0];
-        Matcher matcher = MESSAGE_PATTERN.matcher(firstLine);
+        Matcher matcher = MESSAGE_PATTERN.matcher(message);
 
-        if (!matcher.matches()) {
+        if (!matcher.find()) {
             return Optional.empty();
         }
 

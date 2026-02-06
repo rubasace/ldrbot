@@ -1,8 +1,7 @@
-package dev.rubasace.linkedin.games.ldrbot.chat;
+package dev.rubasace.linkedin.games.ldrbot.text;
 
 import dev.rubasace.linkedin.games.ldrbot.session.GameDuration;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
-import dev.rubasace.linkedin.games.ldrbot.text.TextGameDurationExtractor;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -81,6 +80,32 @@ class TextGameDurationExtractorTest {
         assertTrue(result.isPresent());
         assertEquals(GameType.TANGO, result.get().type());
         assertEquals(Duration.ofMinutes(0).plusSeconds(46), result.get().duration());
+    }
+
+    @Test
+    void shouldExtractGameNameAndDurationFromMultiLineFormat() {
+        String message = """
+                Queens # 647
+                0:31 👑
+                [lnkd.in/queens](https://lnkd.in/queens).""";
+        Optional<GameDuration> result = extractor.extractGameDuration(message);
+
+        assertTrue(result.isPresent());
+        assertEquals(GameType.QUEENS, result.get().type());
+        assertEquals(Duration.ofMinutes(0).plusSeconds(31), result.get().duration());
+    }
+
+    @Test
+    void shouldExtractGameNameAndDurationFromSpanishMessagesMultiLineFormat() {
+        String message = """
+                Queens n.º 647
+                0:31 👑
+                [lnkd.in/queens](https://lnkd.in/queens).""";
+        Optional<GameDuration> result = extractor.extractGameDuration(message);
+
+        assertTrue(result.isPresent());
+        assertEquals(GameType.QUEENS, result.get().type());
+        assertEquals(Duration.ofMinutes(0).plusSeconds(31), result.get().duration());
     }
 
     @Test
