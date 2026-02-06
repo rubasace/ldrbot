@@ -65,6 +65,25 @@ class TextGameDurationExtractorTest {
     }
 
     @Test
+    void shouldExtractGameNameAndDurationFromSpanishMessages() {
+        String message = """
+                Tango n.º 487 | 0:46 y sin fallos
+                Primeros 5 movimientos:
+                🟨🟨🟨2️⃣🟨🟨
+                🟨🟨1️⃣🟨🟨🟨
+                🟨4️⃣5️⃣🟨🟨🟨
+                🟨🟨🟨🟨🟨🟨
+                🟨🟨🟨3️⃣🟨🟨
+                🟨🟨🟨🟨🟨🟨
+                🏅 ¡Hoy he estado más audaz que el 50 % de los consejeros delegados!""";
+        Optional<GameDuration> result = extractor.extractGameDuration(message);
+
+        assertTrue(result.isPresent());
+        assertEquals(GameType.TANGO, result.get().type());
+        assertEquals(Duration.ofMinutes(0).plusSeconds(46), result.get().duration());
+    }
+
+    @Test
     void shouldReturnEmptyIfNoGameName() {
         String message = "No game here 0:18";
         Optional<GameDuration> result = extractor.extractGameDuration(message);

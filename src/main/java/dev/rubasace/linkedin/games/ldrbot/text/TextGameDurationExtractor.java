@@ -17,8 +17,11 @@ public class TextGameDurationExtractor {
      * Pattern to match LinkedIn game messages in the format:
      * <game> #<number> | <mm:ss> [emoji]
      * Example: "Tango #487 | 0:43 🌗"
+     * Also matches Spanish format:
+     * <game> n.º <number> | <mm:ss> [text]
+     * Example: "Tango n.º 487 | 0:46 y sin fallos"
      */
-    private static final String RESULT_MESSAGE_FORMAT = "^(.+?)\\s+#(\\d+)\\s*\\|\\s*(\\d{1,2}:\\d{2}).*";
+    private static final String RESULT_MESSAGE_FORMAT = "^(.+?)\\s+(?:#|n\\.º)\\s*(\\d+)\\s*\\|\\s*(\\d{1,2}:\\d{2}).*";
 
     private static final Pattern MESSAGE_PATTERN = Pattern.compile(RESULT_MESSAGE_FORMAT, Pattern.MULTILINE);
 
