@@ -2,6 +2,7 @@ package dev.rubasace.linkedin.games.ldrbot.message.config;
 
 import dev.rubasace.linkedin.games.ldrbot.chat.CustomTelegramClient;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupNotFoundException;
+import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroup;
 import dev.rubasace.linkedin.games.ldrbot.group.TelegramGroupService;
 import dev.rubasace.linkedin.games.ldrbot.message.GameNameAdapter;
 import dev.rubasace.linkedin.games.ldrbot.session.GameNameNotFoundException;
@@ -107,6 +108,9 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
             case "timezone":
                 showTimezoneConfig(chatId, messageId);
                 return;
+            case "toggle-read-messages":
+                toggleReadFromMessages(chatId, messageId);
+                return;
             case "back":
                 showMainConfig(chatId, messageId);
                 return;
@@ -186,4 +190,27 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
         }
     }
 
+    private void showReadFromMessagesConfig(final Long chatId, final Integer messageId) {
+        boolean currentSetting = telegramGroupService.findGroup(chatId)
+                .map(TelegramGroup::isReadFromMessages)
+                .orElse(false);
+
+        InlineKeyboardMarkup buttons = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(),
+                KeyboardMarkupUtils.ButtonData.of("toggle-read-messages", currentSetting ? "Disable" : "Enable"),
+                KeyboardMarkupUtils.ButtonData.of("back", "<< Back to Main Configuration"));
+
+        customTelegramClient.sendOrEditMessage(chatId, "Read From Messages: " + (currentSetting ? "Enabled" : "Disabled"), buttons, messageId);
+    }
+
+    private void toggleReadFromMessages(final Long chatId, final Integer messageId) {
+        try {
+            boolean currentSetting = telegramGroupService.findGroup(chatId)
+                                                          .map(TelegramGroup::isReadFromMessages)
+                                                          .orElse(false);
+            telegramGroupService.setReadFromMessages(chatId, !currentSetting);
+            showReadFromMessagesConfig(chatId, messageId);
+        } catch (GroupNotFoundException e) {
+            customTelegramClient.sendErrorMessage("Group not found. Unable to toggle Read From Messages.", chatId);
+        }
+    }
 }

@@ -132,6 +132,15 @@ public class TelegramGroupService {
 
     }
 
+    public boolean isReadFromMessages(final ChatInfo chatInfo) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatInfo);
+        return telegramGroup.isReadFromMessages();
+    }
+
+    public boolean isReadFromMessages(final Long chatId) throws GroupNotFoundException {
+        return isReadFromMessages(new ChatInfo(chatId, null, true));
+    }
+
     @Transactional
     public void removeGroup(final ChatInfo chatInfo) throws GroupNotFoundException {
         TelegramGroup telegramGroup = findGroupOrThrow(chatInfo);
@@ -161,5 +170,12 @@ public class TelegramGroupService {
         telegramGroup.setTimezone(timezone);
         telegramGroupRepository.save(telegramGroup);
         applicationEventPublisher.publishEvent(new TimezoneChangedEvent(this, chatId, timezone));
+    }
+
+    @Transactional
+    public void setReadFromMessages(final Long chatId, final boolean readFromMessages) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatId);
+        telegramGroup.setReadFromMessages(readFromMessages);
+        telegramGroupRepository.save(telegramGroup);
     }
 }
