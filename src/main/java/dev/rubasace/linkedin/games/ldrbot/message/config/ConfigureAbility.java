@@ -143,6 +143,7 @@ public class ConfigureAbility extends BaseMessageReplier implements AbilityExten
         InlineKeyboardMarkup buttons = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(),
                                                                                  KeyboardMarkupUtils.ButtonData.of("tracked-games", "Tracked Games"),
                                                                                  KeyboardMarkupUtils.ButtonData.of("timezone", "Timezone"),
+//                                                                                 KeyboardMarkupUtils.ButtonData.of("toggle-read-messages", "Read Messages"),
                                                                                  EXIT_BUTTON);
 
         customTelegramClient.sendOrEditMessage(chatId, "Configuration - Choose an option:", buttons, messageId);
