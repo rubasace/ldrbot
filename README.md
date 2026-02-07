@@ -20,12 +20,13 @@
 ## 💡 Overview
 
 **LDRBot** stands for **LinkedIn Daily (games) Ranking Bot** — a Telegram bot that automates score tracking and leaderboard generation
-for [LinkedIn’s daily puzzle games](https://www.linkedin.com/games) (
+for [LinkedIn's daily puzzle games](https://www.linkedin.com/games) (
 currently, [Queens](https://www.linkedin.com/games/queens), [Tango](https://www.linkedin.com/games/tango), [Zip](https://www.linkedin.com/games/zip),
-and [Crossclimb](https://www.linkedin.com/games/crossclimb)).
+[Crossclimb](https://www.linkedin.com/games/crossclimb), and [Mini Sudoku](https://www.linkedin.com/games/mini-sudoku)).
 
-Each Telegram group becomes its own independent competition; Members submit their puzzle results by uploading screenshots, and LDRBot uses OCR to extract solving times and build a
-daily ranking automatically.
+Each Telegram group becomes its own independent competition. Members can submit their puzzle results either by uploading
+screenshots or by sharing the result message directly from LinkedIn. LDRBot uses OCR to extract solving times from
+images to build a daily ranking automatically. Alternatively, it can parse the shared text.
 
 ## 🦾 Try It Out
 
@@ -36,10 +37,13 @@ Each group is treated as a standalone competition — just invite the bot to you
 ## ⚙️ How It Works
 
 When you add LDRBot to a Telegram group, that group becomes its own independent leaderboard and competition space. Each day, members of the group can submit their results for
-LinkedIn’s puzzles (currently: Queens, Tango, Zip and Crossclimb) by simply uploading a screenshot of their completion screen.
+LinkedIn's puzzles (currently: Queens, Tango, Zip, Crossclimb, and Mini Sudoku) in two ways:
 
-LDRBot automatically scans these screenshots using OCR (powered by OpenCV and Tesseract) and extracts the relevant information: the game type and the time it took to solve it. Once
-processed, your time is recorded for the current day and associated with your Telegram user ID.
+1. **Upload a screenshot** of the completion screen — LDRBot uses OCR (powered by OpenCV and Tesseract) to automatically
+   scan and extract the game type and solving time.
+2. **Share the result message** directly from LinkedIn — LDRBot parses the text to extract the same information.
+
+Once processed, the time is recorded for the current day and associated with the correspondent Telegram user ID.
 
 As group members submit their scores, LDRBot keeps track of who’s already participated and waits for everyone to submit. Once all registered players have sent their times, it
 automatically recalculates and publishes the daily leaderboard. Alternatively, any member can run the /ranking command to manually trigger a recalculation at any time.
@@ -56,7 +60,7 @@ every new day is a fresh challenge for members to compete, improve, and (hopeful
 
 ## 🖼️ Screenshots
 
-LDRBot uses OCR to read your submitted screenshots and extract the game and solving time.  
+LDRBot uses OCR to read your submitted screenshots and extract the game and solving time.
 For best results, try to capture the colored square that shows the game result **as clearly as possible**, and avoid overlays like confetti or cropped
 images.
 
@@ -109,14 +113,16 @@ images.
 3. **Configure the bot (optional)**  
    By default the bot will track all games supported. Admins can use `/configure` to choose what to track as well as configure other bot settings.
 
-3. **Submit your LinkedIn score screenshot**  
-   LDRBot will extract your time and game, and track it for the day.
+3. **Submit your LinkedIn score**  
+   Upload a screenshot or share the result message from LinkedIn. LDRBot will extract your time and game, and track it
+   for the day.
 
-4**Manage your score (optional)**  
-Use `/delete`, `/deleteall`, or `/override` (admin-only) to modify the results if needed. Useful for correcting misprocessed or mistaken submissions.
+4. **Manage your score (optional)**  
+   Use `/delete`, `/deleteall`, or `/override` (admin-only) to modify the results if needed. Useful for correcting
+   misprocessed or mistaken submissions.
 
-5**Watch the leaderboard evolve**  
-Once everyone submits (or at day’s end), LDRBot will post the updated rankings.
+5. **Watch the leaderboard evolve**  
+   Once everyone submits (or at day's end), LDRBot will post the updated rankings.
 
 ## 💻 Tech Stack
 
