@@ -14,13 +14,13 @@ import org.springframework.stereotype.Component;
 class ExceptionHandler {
 
     private static final String ALREADY_REGISTERED_SESSION_MESSAGE_TEMPLATE = "%s already registered a time for %s. If you need to override the time, please delete the current time through the \"/delete <game>\" command. In this case: /delete %s. Alternatively, you can delete all your submissions for the day using /deleteall";
-    public static final String GAME_DURATION_EXCEPTION_MESSAGE_TEMPLATE = "%s submitted a screenshot for the gameInfo %s, but I couldn’t extract the solving time. This often happens if the image is cropped or covered by overlays like confetti. Try sending a clearer screenshot, or ask an admin to set your time manually using /override %s <time>";
+    public static final String GAME_DURATION_EXCEPTION_MESSAGE_TEMPLATE = "%s submitted a screenshot for the gameInfo %s, but I couldn't extract the solving time. This often happens if the image is cropped or covered by overlays like confetti. Try sending a clearer screenshot, or ask an admin to set your time manually using /override @<username> %s <mm:ss>";
     public static final String USER_NOT_FOUND_EXCEPTION_MESSAGE_TEMPLATE = "User %s not found";
 
     private static final String UNKNOWN_COMMAND_MESSAGE_TEMPLATE = """
-            🤖 Sorry, I don’t recognize the command %s.
-            
-            
+            🤖 Sorry, I don't recognize the command %s.
+
+
             """ + ChatConstants.HELP_SUGGESTION;
     public static final String GAME_NOT_FOUND_EXCEPTION_MESSAGE = "'%s' is not a valid game name.";
 
