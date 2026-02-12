@@ -23,6 +23,7 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -130,7 +131,8 @@ class MessageService {
             return;
         }
         if (userInfo == null) userInfo = userAdapter.adapt(message.getFrom());
-        gameSessionService.recordGameSession(chatInfo, userInfo, gameDuration.get(), LinkedinTimeUtils.todayGameDay());
+        Instant messageTimestamp = Instant.ofEpochSecond(message.getDate());
+        gameSessionService.recordGameSession(chatInfo, userInfo, gameDuration.get(), LinkedinTimeUtils.todayGameDay(), messageTimestamp, false);
     }
 
     private boolean isBotRemovedFromGroup(final Message message) {
