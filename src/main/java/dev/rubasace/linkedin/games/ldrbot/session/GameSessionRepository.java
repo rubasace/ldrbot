@@ -1,8 +1,11 @@
 package dev.rubasace.linkedin.games.ldrbot.session;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
@@ -25,4 +28,12 @@ public interface GameSessionRepository extends JpaRepository<GameSession, UUID> 
 
     @Transactional
     void deleteByUserIdAndGroupChatIdAndGameDay(Long UserId, Long chatId, LocalDate gameDay);
+
+    @Query("SELECT MIN(gs.duration) FROM GameSession gs WHERE gs.group.chatId = :chatId AND gs.game = :game")
+    Optional<Duration> findBestDuration(@Param("chatId") Long chatId, @Param("game") GameType game);
+
+    long countByGroupChatIdAndGame(Long chatId, GameType game);
+
+    @Query("SELECT MIN(gs.duration) FROM GameSession gs WHERE gs.group.chatId = :chatId AND gs.game = :game AND gs.duration > :bestDuration")
+    Optional<Duration> findSecondBestDuration(@Param("chatId") Long chatId, @Param("game") GameType game, @Param("bestDuration") Duration bestDuration);
 }
