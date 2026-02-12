@@ -67,7 +67,7 @@ class RecordNotificationServiceTest {
     void shouldNotifyFirstRecordEver() {
         Duration submitted = Duration.ofSeconds(90);
         when(gameSessionRepository.findBestDuration(CHAT_ID, GAME)).thenReturn(Optional.of(submitted));
-        when(gameSessionRepository.findSecondBestDuration(CHAT_ID, GAME, submitted)).thenReturn(Optional.empty());
+        when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(Stream.of(submitted));
 
         service.handleSessionRegistration(createEvent(submitted));
 
@@ -85,7 +85,7 @@ class RecordNotificationServiceTest {
         Duration submitted = Duration.ofSeconds(45);
         Duration previous = Duration.ofSeconds(90);
         when(gameSessionRepository.findBestDuration(CHAT_ID, GAME)).thenReturn(Optional.of(submitted));
-        when(gameSessionRepository.findSecondBestDuration(CHAT_ID, GAME, submitted)).thenReturn(Optional.of(previous));
+        when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(Stream.of(submitted, previous));
 
         service.handleSessionRegistration(createEvent(submitted));
 
@@ -104,7 +104,7 @@ class RecordNotificationServiceTest {
         Duration submitted = Duration.ofSeconds(30);
         GameSessionRegistrationEvent event = new GameSessionRegistrationEvent(this, CHAT_INFO, noUsername, GAME_INFO, GAME, submitted, LocalDate.now(), CHAT_ID);
         when(gameSessionRepository.findBestDuration(CHAT_ID, GAME)).thenReturn(Optional.of(submitted));
-        when(gameSessionRepository.findSecondBestDuration(CHAT_ID, GAME, submitted)).thenReturn(Optional.empty());
+        when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(Stream.of(submitted));
 
         service.handleSessionRegistration(event);
 

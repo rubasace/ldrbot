@@ -47,8 +47,10 @@ public class RecordNotificationService {
             return;
         }
 
-        // Find the previous best (next best duration strictly greater than current)
-        Optional<Duration> previousBest = gameSessionRepository.findSecondBestDuration(chatId, event.getGameType(), submittedDuration);
+        // Find the previous best (second best duration after the current record)
+        Optional<Duration> previousBest = gameSessionRepository.findDistinctDurationsOrderedAsc(chatId, event.getGameType())
+                .skip(1)  // Skip the first (current best)
+                .findFirst();  // Get the second one (previous best)
 
         String gameName = event.getGameInfo().name();
         String userMention = FormatUtils.formatUserMention(event.getUserInfo());

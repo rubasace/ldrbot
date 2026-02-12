@@ -34,6 +34,6 @@ public interface GameSessionRepository extends JpaRepository<GameSession, UUID> 
 
     long countByGroupChatIdAndGame(Long chatId, GameType game);
 
-    @Query("SELECT MIN(gs.duration) FROM GameSession gs WHERE gs.group.chatId = :chatId AND gs.game = :game AND gs.duration > :bestDuration")
-    Optional<Duration> findSecondBestDuration(@Param("chatId") Long chatId, @Param("game") GameType game, @Param("bestDuration") Duration bestDuration);
+    @Query("SELECT DISTINCT gs.duration FROM GameSession gs WHERE gs.group.chatId = :chatId AND gs.game = :game ORDER BY gs.duration ASC")
+    Stream<Duration> findDistinctDurationsOrderedAsc(@Param("chatId") Long chatId, @Param("game") GameType game);
 }
