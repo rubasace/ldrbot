@@ -41,15 +41,21 @@ public class RecordNotificationService {
         Duration submittedDuration = event.getDuration();
         Long chatId = event.getChatId();
 
-        Optional<Duration> bestDuration = gameSessionRepository.findBestDuration(chatId, event.getGameType());
+        // Get all distinct durations ordered ascending (best first)
+        List<Duration> distinctDurations = gameSessionRepository.findDistinctDurationsOrderedAsc(chatId, event.getGameType());
+        
+        if (distinctDurations.isEmpty()) {
+            return;  // No durations found (should not happen)
+        }
+
+        Duration bestDuration = distinctDurations.get(0);
 
         // If the best duration in the DB is not the submitted one, this is not a record
-        if (bestDuration.isEmpty() || submittedDuration.compareTo(bestDuration.get()) != 0) {
+        if (submittedDuration.compareTo(bestDuration) != 0) {
             return;
         }
 
         // Find the previous best (second best duration after the current record)
-        List<Duration> distinctDurations = gameSessionRepository.findDistinctDurationsOrderedAsc(chatId, event.getGameType());
         Optional<Duration> previousBest = distinctDurations.size() > 1 
                 ? Optional.of(distinctDurations.get(1))  // Get the second one (previous best)
                 : Optional.empty();

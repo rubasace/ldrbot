@@ -30,9 +30,6 @@ public interface GameSessionRepository extends JpaRepository<GameSession, UUID> 
     @Transactional
     void deleteByUserIdAndGroupChatIdAndGameDay(Long UserId, Long chatId, LocalDate gameDay);
 
-    @Query("SELECT MIN(gs.duration) FROM GameSession gs WHERE gs.group.chatId = :chatId AND gs.game = :game")
-    Optional<Duration> findBestDuration(@Param("chatId") Long chatId, @Param("game") GameType game);
-
     long countByGroupChatIdAndGame(Long chatId, GameType game);
 
     @Query("SELECT DISTINCT gs.duration FROM GameSession gs WHERE gs.group.chatId = :chatId AND gs.game = :game ORDER BY gs.duration ASC")
