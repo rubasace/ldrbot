@@ -37,11 +37,16 @@ public class GameSessionService {
 
     @Transactional
     public void recordGameSession(final ChatInfo chatInfo, final UserInfo userInfo, final GameDuration gameDuration, final LocalDate gameDay) throws SessionAlreadyRegisteredException, GroupNotFoundException {
-        recordGameSession(chatInfo, userInfo, gameDuration, gameDay, false);
+        recordGameSession(chatInfo, userInfo, gameDuration, gameDay, Instant.now(), false);
     }
 
     @Transactional
     public void recordGameSession(final ChatInfo chatInfo, final UserInfo userInfo, final GameDuration gameDuration, final LocalDate gameDay, final boolean allowOverride) throws SessionAlreadyRegisteredException, GroupNotFoundException {
+        recordGameSession(chatInfo, userInfo, gameDuration, gameDay, Instant.now(), allowOverride);
+    }
+
+    @Transactional
+    public void recordGameSession(final ChatInfo chatInfo, final UserInfo userInfo, final GameDuration gameDuration, final LocalDate gameDay, final Instant messageTimestamp, final boolean allowOverride) throws SessionAlreadyRegisteredException, GroupNotFoundException {
         TelegramGroup telegramGroup = telegramGroupService.findGroupOrThrow(chatInfo);
         TelegramUser telegramUser = telegramUserService.findOrCreate(userInfo);
         if (!telegramGroup.getTrackedGames().contains(gameDuration.type())) {
@@ -65,7 +70,7 @@ public class GameSessionService {
             gameSession.setGroup(telegramGroup);
             gameSession.setGameDay(gameDay);
             gameSession.setDuration(gameDuration.duration());
-            gameSession.setRegisteredAt(Instant.now());
+            gameSession.setRegisteredAt(messageTimestamp);
         }
 
         saveSession(chatInfo, userInfo, gameDay, gameSession, gameInfo, telegramGroup);
