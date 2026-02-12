@@ -11,6 +11,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -48,9 +49,10 @@ public class RecordNotificationService {
         }
 
         // Find the previous best (second best duration after the current record)
-        Optional<Duration> previousBest = gameSessionRepository.findDistinctDurationsOrderedAsc(chatId, event.getGameType())
-                .skip(1)  // Skip the first (current best)
-                .findFirst();  // Get the second one (previous best)
+        List<Duration> distinctDurations = gameSessionRepository.findDistinctDurationsOrderedAsc(chatId, event.getGameType());
+        Optional<Duration> previousBest = distinctDurations.size() > 1 
+                ? Optional.of(distinctDurations.get(1))  // Get the second one (previous best)
+                : Optional.empty();
 
         String gameName = event.getGameInfo().name();
         String userMention = FormatUtils.formatUserMention(event.getUserInfo());

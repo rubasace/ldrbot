@@ -12,8 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -68,7 +68,7 @@ class RecordNotificationServiceTest {
     void shouldNotifyFirstRecordEver() {
         Duration submitted = Duration.ofSeconds(90);
         when(gameSessionRepository.findBestDuration(CHAT_ID, GAME)).thenReturn(Optional.of(submitted));
-        when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(Stream.of(submitted));
+        when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(List.of(submitted));
 
         service.handleSessionRegistration(createEvent(submitted));
 
@@ -86,7 +86,7 @@ class RecordNotificationServiceTest {
         Duration submitted = Duration.ofSeconds(45);
         Duration previous = Duration.ofSeconds(90);
         when(gameSessionRepository.findBestDuration(CHAT_ID, GAME)).thenReturn(Optional.of(submitted));
-        when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(Stream.of(submitted, previous));
+        when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(List.of(submitted, previous));
 
         service.handleSessionRegistration(createEvent(submitted));
 
@@ -105,7 +105,7 @@ class RecordNotificationServiceTest {
         Duration submitted = Duration.ofSeconds(30);
         GameSessionRegistrationEvent event = new GameSessionRegistrationEvent(this, CHAT_INFO, noUsername, GAME_INFO, GAME, submitted, LocalDate.now(), CHAT_ID);
         when(gameSessionRepository.findBestDuration(CHAT_ID, GAME)).thenReturn(Optional.of(submitted));
-        when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(Stream.of(submitted));
+        when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(List.of(submitted));
 
         service.handleSessionRegistration(event);
 

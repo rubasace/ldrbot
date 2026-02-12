@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -35,5 +36,5 @@ public interface GameSessionRepository extends JpaRepository<GameSession, UUID> 
     long countByGroupChatIdAndGame(Long chatId, GameType game);
 
     @Query("SELECT DISTINCT gs.duration FROM GameSession gs WHERE gs.group.chatId = :chatId AND gs.game = :game ORDER BY gs.duration ASC")
-    Stream<Duration> findDistinctDurationsOrderedAsc(@Param("chatId") Long chatId, @Param("game") GameType game);
+    List<Duration> findDistinctDurationsOrderedAsc(@Param("chatId") Long chatId, @Param("game") GameType game);
 }
