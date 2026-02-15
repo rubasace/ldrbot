@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -25,4 +26,6 @@ public interface GameSessionRepository extends JpaRepository<GameSession, UUID> 
 
     @Transactional
     void deleteByUserIdAndGroupChatIdAndGameDay(Long UserId, Long chatId, LocalDate gameDay);
+
+    List<GameSession> findTop2ByGroupChatIdAndGameOrderByDurationAsc(Long chatId, GameType game);
 }

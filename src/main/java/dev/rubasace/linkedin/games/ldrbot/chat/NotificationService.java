@@ -50,7 +50,7 @@ public class NotificationService {
             """ + ChatConstants.HELP_SUGGESTION;
 
     private static final int GREETING_NOTIFICATION_ORDER = Ordered.HIGHEST_PRECEDENCE;
-    private static final int USER_INTERACTION_NOTIFICATION_ORDER = GREETING_NOTIFICATION_ORDER + 1000;
+    static final int USER_INTERACTION_NOTIFICATION_ORDER = GREETING_NOTIFICATION_ORDER + 1000;
     private static final int DAILY_RANKING_NOTIFICATION_ORDER = 0;
 
     private final CustomTelegramClient customTelegramClient;
