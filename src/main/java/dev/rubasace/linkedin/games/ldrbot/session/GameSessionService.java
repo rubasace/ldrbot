@@ -78,7 +78,7 @@ public class GameSessionService {
 
     private void saveSession(final ChatInfo chatInfo, final UserInfo userInfo, final LocalDate gameDay, final GameSession gameSession, final GameInfo gameInfo, final TelegramGroup telegramGroup) {
         gameSessionRepository.saveAndFlush(gameSession);
-        applicationEventPublisher.publishEvent(new GameSessionRegistrationEvent(this, chatInfo, userInfo, gameInfo, gameSession.getGame(), gameSession.getDuration(), gameDay,
+        applicationEventPublisher.publishEvent(new GameSessionRegistrationEvent(this, chatInfo, userInfo, gameInfo, gameSession.getDuration(), gameDay,
                                                                                 telegramGroup.getChatId()));
     }
 

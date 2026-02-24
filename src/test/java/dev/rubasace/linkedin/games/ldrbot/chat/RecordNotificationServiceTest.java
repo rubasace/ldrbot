@@ -140,13 +140,12 @@ class RecordNotificationServiceTest {
 
     private GameSessionRegistrationEvent createEventWithUser(final Duration duration, final UserInfo userInfo) {
         ChatInfo chatInfo = new ChatInfo(123L, "Test Group", true);
-        GameInfo gameInfo = new GameInfo("Queens", "👑");
+        GameInfo gameInfo = new GameInfo(GameType.QUEENS, "Queens", "👑");
         return new GameSessionRegistrationEvent(
                 this,
                 chatInfo,
                 userInfo,
                 gameInfo,
-                GameType.QUEENS,
                 duration,
                 LocalDate.now(),
                 123L

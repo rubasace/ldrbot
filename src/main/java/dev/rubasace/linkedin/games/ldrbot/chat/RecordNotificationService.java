@@ -34,7 +34,7 @@ public class RecordNotificationService {
     void handleRecordNotification(final GameSessionRegistrationEvent event) {
         List<GameSession> top2Sessions = gameSessionRepository.findTop2ByGroupChatIdAndGameOrderByDurationAsc(
                 event.getChatId(),
-                event.getGameType()
+                event.getGameInfo().type()
         );
 
         if (top2Sessions.isEmpty()) {
