@@ -48,7 +48,7 @@ class RecordNotificationServiceTest {
     void shouldNotNotifyWhenSubmittedDurationIsNotTheBest() {
         Duration submitted = Duration.ofSeconds(120);
         Duration best = Duration.ofSeconds(60);
-        when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(List.of(best, submitted));
+        when(gameSessionRepository.findBestDuration(CHAT_ID, GAME)).thenReturn(Optional.of(best));
 
         service.handleSessionRegistration(createEvent(submitted));
 
@@ -57,7 +57,7 @@ class RecordNotificationServiceTest {
 
     @Test
     void shouldNotNotifyWhenNoBestDurationFound() {
-        when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(List.of());
+        when(gameSessionRepository.findBestDuration(CHAT_ID, GAME)).thenReturn(Optional.empty());
 
         service.handleSessionRegistration(createEvent(Duration.ofSeconds(60)));
 
@@ -67,6 +67,7 @@ class RecordNotificationServiceTest {
     @Test
     void shouldNotifyFirstRecordEver() {
         Duration submitted = Duration.ofSeconds(90);
+        when(gameSessionRepository.findBestDuration(CHAT_ID, GAME)).thenReturn(Optional.of(submitted));
         when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(List.of(submitted));
 
         service.handleSessionRegistration(createEvent(submitted));
@@ -84,6 +85,7 @@ class RecordNotificationServiceTest {
     void shouldNotifyRecordBrokenWithPreviousBest() {
         Duration submitted = Duration.ofSeconds(45);
         Duration previous = Duration.ofSeconds(90);
+        when(gameSessionRepository.findBestDuration(CHAT_ID, GAME)).thenReturn(Optional.of(submitted));
         when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(List.of(submitted, previous));
 
         service.handleSessionRegistration(createEvent(submitted));
@@ -102,6 +104,7 @@ class RecordNotificationServiceTest {
         UserInfo noUsername = new UserInfo(42L, null, "John", "Doe");
         Duration submitted = Duration.ofSeconds(30);
         GameSessionRegistrationEvent event = new GameSessionRegistrationEvent(this, CHAT_INFO, noUsername, GAME_INFO, GAME, submitted, LocalDate.now(), CHAT_ID);
+        when(gameSessionRepository.findBestDuration(CHAT_ID, GAME)).thenReturn(Optional.of(submitted));
         when(gameSessionRepository.findDistinctDurationsOrderedAsc(CHAT_ID, GAME)).thenReturn(List.of(submitted));
 
         service.handleSessionRegistration(event);
