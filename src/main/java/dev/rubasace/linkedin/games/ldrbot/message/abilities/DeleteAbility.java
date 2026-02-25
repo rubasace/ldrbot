@@ -153,7 +153,7 @@ public class DeleteAbility extends BaseMessageReplier implements AbilityExtensio
         Long chatId = AbilityUtils.getChatId(update);
         MaybeInaccessibleMessage message = update.getCallbackQuery().getMessage();
         Integer messageId = message.getMessageId();
-        String callbackQueryId = update.getCallbackQuery().getCallbackQueryId();
+        String callbackQueryId = update.getCallbackQuery().getId();
         Long callbackUserId = update.getCallbackQuery().getFrom().getId();
         
         // Verify user authorization

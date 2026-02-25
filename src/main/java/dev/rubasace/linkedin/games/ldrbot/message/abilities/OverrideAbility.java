@@ -193,8 +193,8 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
             KeyboardMarkupUtils.ButtonData[] userButtons = members.stream()
                     .sorted(Comparator.comparing(TelegramUser::getUserName))
                     .map(user -> KeyboardMarkupUtils.ButtonData.of(
-                            "user-" + user.getTelegramId(),
-                            user.getDisplayName()
+                            "user-" + user.getId(),
+                            user.getUserName()
                     ))
                     .toArray(KeyboardMarkupUtils.ButtonData[]::new);
             
@@ -320,7 +320,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
 
     private void showConfirmation(FlowState state) {
         try {
-            TelegramUser selectedUser = telegramUserService.findById(state.getSelectedUserId())
+            TelegramUser selectedUser = telegramUserService.find(state.getSelectedUserId())
                     .orElseThrow(() -> new UserNotFoundException(state.getChatId(), new UserInfo(null, "Unknown", "", "")));
             UserInfo userInfo = telegramUserAdapter.adapt(selectedUser);
             GameInfo gameInfo = gameTypeAdapter.adapt(state.getSelectedGame());
@@ -381,7 +381,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         Long chatId = AbilityUtils.getChatId(update);
         Long userId = update.getCallbackQuery().getFrom().getId();
         String flowKey = chatId + ":" + userId;
-        String callbackQueryId = update.getCallbackQuery().getCallbackQueryId();
+        String callbackQueryId = update.getCallbackQuery().getId();
         MaybeInaccessibleMessage message = update.getCallbackQuery().getMessage();
         Integer messageId = message.getMessageId();
         
@@ -454,7 +454,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
 
     private void handleConfirmation(FlowState state, String callbackQueryId) {
         try {
-            TelegramUser selectedUser = telegramUserService.findById(state.getSelectedUserId())
+            TelegramUser selectedUser = telegramUserService.find(state.getSelectedUserId())
                     .orElseThrow(() -> new UserNotFoundException(state.getChatId(), new UserInfo(null, "Unknown", "", "")));
             
             ChatInfo chatInfo = new ChatInfo(state.getChatId(), null, true);
@@ -562,7 +562,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         String action = actionParts[0];
         int messageId = Integer.parseInt(actionParts[1]);
         MaybeInaccessibleMessage callbackMessage = update.getCallbackQuery().getMessage();
-        String callbackQueryId = update.getCallbackQuery().getCallbackQueryId();
+        String callbackQueryId = update.getCallbackQuery().getId();
         
         Message message = messageCache.getIfPresent(messageId);
         if (message == null || !message.getFrom().getId().equals(AbilityUtils.getUser(update).getId())) {
