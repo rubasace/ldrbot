@@ -25,4 +25,20 @@ public abstract class BaseMessageReplier {
     protected String getPrefix() {
         return id + ":";
     }
+
+    /**
+     * Verify that the callback query comes from the expected user.
+     * Use this to restrict button interactions to the user who initiated the flow.
+     * 
+     * @param update The update containing the callback query
+     * @param expectedUserId The ID of the user who should be allowed to interact
+     * @return true if the callback query is from the expected user, false otherwise
+     */
+    protected boolean isAuthorizedUser(Update update, Long expectedUserId) {
+        if (!update.hasCallbackQuery()) {
+            return false;
+        }
+        Long callbackUserId = update.getCallbackQuery().getFrom().getId();
+        return expectedUserId.equals(callbackUserId);
+    }
 }
