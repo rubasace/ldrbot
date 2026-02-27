@@ -44,10 +44,9 @@ public class DeleteAbility extends BaseMessageReplier implements AbilityExtensio
     private static final Logger LOGGER = LoggerFactory.getLogger(DeleteAbility.class);
 
     public static final String INVALID_ARGUMENTS_MESSAGE = """
-            Please provide a game name.
+            This command only works with an interactive menu.
             
-            Example: <code>/delete queens</code>
-            Or use <code>/delete</code> without arguments to choose from a menu.
+            Use <code>/delete</code> to choose a game from the menu.
             """;
     
     private final GameSessionService gameSessionService;
@@ -80,7 +79,7 @@ public class DeleteAbility extends BaseMessageReplier implements AbilityExtensio
     public Ability delete() {
         return Ability.builder()
                       .name("delete")
-                      .info(UsageFormatUtils.formatUsage("/delete [game]", "Remove your submitted time for a game. Use without arguments for an interactive menu."))
+                      .info(UsageFormatUtils.formatUsage("/delete", "Remove your submitted time for a game using an interactive menu."))
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
                       .action(ctx -> handleDeleteCommand(ctx.update().getMessage(), InputSanitizer.sanitizeArguments(ctx.arguments())))
@@ -90,22 +89,12 @@ public class DeleteAbility extends BaseMessageReplier implements AbilityExtensio
 
     @SneakyThrows
     private void handleDeleteCommand(final Message message, final String[] arguments) {
-        // Backward compatibility: text argument path
-        if (arguments.length == 1) {
-            String gameName = arguments[0];
-            ChatInfo chatInfo = chatAdapter.adapt(message.getChat());
-            UserInfo userInfo = userAdapter.adapt(message.getFrom());
-            GameType gameType = gameNameAdapter.adapt(gameName, message.getChatId());
-            gameSessionService.deleteDaySession(chatInfo, userInfo, gameType, LinkedinTimeUtils.todayGameDay());
-            return;
-        }
-        
-        // Invalid argument count (not 0, not 1)
-        if (arguments.length > 1) {
+        // Only accept no arguments - guided flow only
+        if (arguments.length > 0) {
             throw new InvalidUserInputException(INVALID_ARGUMENTS_MESSAGE, message.getChatId());
         }
         
-        // No arguments: show guided keyboard flow
+        // Show guided keyboard flow
         showGameSelection(message.getChatId(), message.getFrom().getId(), null);
     }
 

@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import dev.rubasace.linkedin.games.ldrbot.configuration.TelegramBotProperties;
 
 @Component
 public class OverrideAbility extends BaseMessageReplier implements AbilityExtension {
@@ -72,6 +73,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
     private final GameNameAdapter gameNameAdapter;
     private final GameTypeAdapter gameTypeAdapter;
     private final TelegramGroupService telegramGroupService;
+    private final TelegramBotProperties telegramBotProperties;
     private final Cache<Integer, Message> messageCache;
     private final Cache<String, FlowState> flowStates; // key: chatId:userId
 
@@ -83,7 +85,8 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
                    final TelegramUserAdapter telegramUserAdapter, 
                    final GameNameAdapter gameNameAdapter, 
                    final GameTypeAdapter gameTypeAdapter,
-                   final TelegramGroupService telegramGroupService) {
+                   final TelegramGroupService telegramGroupService,
+                   final TelegramBotProperties telegramBotProperties) {
         super("override");
         this.telegramUserService = telegramUserService;
         this.gameSessionService = gameSessionService;
@@ -94,6 +97,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         this.gameNameAdapter = gameNameAdapter;
         this.gameTypeAdapter = gameTypeAdapter;
         this.telegramGroupService = telegramGroupService;
+        this.telegramBotProperties = telegramBotProperties;
         this.messageCache = Caffeine.newBuilder()
                                     .expireAfterWrite(10, TimeUnit.MINUTES)
                                     .maximumSize(10_000)
@@ -144,14 +148,8 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
 
     @SneakyThrows
     private void handleOverrideCommand(final Message message, final String[] arguments) {
-        // Backward compatibility: text argument path
-        if (arguments.length >= 3) {
-            overrideTime(message, arguments, false);
-            return;
-        }
-        
-        // Invalid argument count
-        if (arguments.length > 0 && arguments.length < 3) {
+        // Only accept no arguments - guided flow only
+        if (arguments.length > 0) {
             throw new InvalidUserInputException(
                 INVALID_ARGUMENT_MESSAGE_TEMPLATE.formatted(
                     message.getFrom().getUserName(), 
@@ -161,7 +159,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
             );
         }
         
-        // No arguments: start guided flow
+        // Start guided flow
         startGuidedFlow(message);
     }
 
@@ -191,6 +189,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
             }
             
             KeyboardMarkupUtils.ButtonData[] userButtons = members.stream()
+                    .filter(user -> !user.getUserName().equals(telegramBotProperties.getUsername()))
                     .sorted(Comparator.comparing(TelegramUser::getUserName))
                     .map(user -> KeyboardMarkupUtils.ButtonData.of(
                             "user-" + user.getId(),
@@ -297,7 +296,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         
         // Add last 7 days
         LocalDate today = LocalDate.now();
-        for (int i = 1; i <= 7; i++) {
+        for (int i = 1; i <= 3; i++) {
             LocalDate date = today.minusDays(i);
             dateButtons.add(KeyboardMarkupUtils.ButtonData.of(
                     "date-" + date.toString(),
