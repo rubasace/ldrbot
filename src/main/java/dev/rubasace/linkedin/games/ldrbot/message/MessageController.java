@@ -4,8 +4,12 @@ import dev.rubasace.linkedin.games.ldrbot.chat.UserFeedbackException;
 import dev.rubasace.linkedin.games.ldrbot.configuration.TelegramBotProperties;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.image.GameDurationExtractionException;
+import dev.rubasace.linkedin.games.ldrbot.metrics.MetricsConstants;
 import dev.rubasace.linkedin.games.ldrbot.session.SessionAlreadyRegisteredException;
 import dev.rubasace.linkedin.games.ldrbot.util.BackpressureExecutors;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +28,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class MessageController extends AbilityBot implements SpringLongPollingBot {
@@ -36,17 +41,29 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
     private final String token;
     private final ExecutorService controllerExecutor;
 
+    private final MeterRegistry meterRegistry;
+    private final Counter messagesProcessedCounter;
+    private final Counter unexpectedErrorCounter;
+    private final AtomicInteger inFlightGauge;
+
     MessageController(final TelegramClient telegramClient,
                       final MessageService messageService,
                       final ExceptionHandler exceptionHandler,
                       final List<AbilityExtension> abilityExtensions,
-                      final TelegramBotProperties telegramBotProperties) {
+                      final TelegramBotProperties telegramBotProperties,
+                      final MeterRegistry meterRegistry) {
         super(telegramClient, telegramBotProperties.getUsername(), MapDBContext.onlineInstance("/tmp/" + telegramBotProperties.getUsername()), new BareboneToggle());
         this.messageService = messageService;
         this.exceptionHandler = exceptionHandler;
         this.token = telegramBotProperties.getToken();
         this.controllerExecutor = BackpressureExecutors.newBackPressureVirtualThreadPerTaskExecutor("message-controller", MAX_CONSUME_CONCURRENCY);
         this.addExtensions(abilityExtensions);
+
+        this.meterRegistry = meterRegistry;
+        this.messagesProcessedCounter = meterRegistry.counter(MetricsConstants.MESSAGES_PROCESSED);
+        this.unexpectedErrorCounter = meterRegistry.counter(MetricsConstants.ERRORS_UNEXPECTED);
+        this.inFlightGauge = new AtomicInteger(0);
+        meterRegistry.gauge(MetricsConstants.MESSAGES_INFLIGHT, inFlightGauge, AtomicInteger::get);
     }
 
     @Override
@@ -56,14 +73,24 @@ public class MessageController extends AbilityBot implements SpringLongPollingBo
 
     @Override
     public void consume(Update update) {
+        inFlightGauge.incrementAndGet();
+        Timer.Sample sample = Timer.start(meterRegistry);
         try {
             doConsume(update);
+            messagesProcessedCounter.increment();
         } catch (Exception e) {
-            if (e instanceof UserFeedbackException) {
-                exceptionHandler.notifyUserFeedbackException((UserFeedbackException) e);
+            if (e instanceof UserFeedbackException userFeedbackException) {
+                meterRegistry.counter(MetricsConstants.ERRORS,
+                        MetricsConstants.TAG_ERROR_TYPE, e.getClass().getSimpleName())
+                             .increment();
+                exceptionHandler.notifyUserFeedbackException(userFeedbackException);
             } else {
+                unexpectedErrorCounter.increment();
                 LOGGER.error("An unexpected error occurred", e);
             }
+        } finally {
+            sample.stop(meterRegistry.timer(MetricsConstants.MESSAGES_LATENCY));
+            inFlightGauge.decrementAndGet();
         }
     }
 
