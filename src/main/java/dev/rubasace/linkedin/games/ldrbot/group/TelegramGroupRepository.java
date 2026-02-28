@@ -11,8 +11,6 @@ import java.util.stream.Stream;
 
 public interface TelegramGroupRepository extends CrudRepository<TelegramGroup, Long> {
 
-    long countByActiveTrue();
-
     @Query("""
                 SELECT g FROM TelegramGroup g
                 WHERE g.active = true
