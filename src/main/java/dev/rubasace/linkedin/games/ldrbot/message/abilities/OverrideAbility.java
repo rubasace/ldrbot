@@ -105,10 +105,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
     public Ability override() {
         return Ability.builder()
                       .name("override")
-                      .info(UsageFormatUtils.formatUsage(
-                              "/override [@<user> <game> <mm:ss> [<yyyy-MM-dd>]]",
-                              "Manually set or update a user's result (admin-only). Use without arguments for a guided flow."
-                      ))
+                .info("Manually set or update a user's result (admin-only). Use without arguments for a guided flow.")
                       .locality(Locality.GROUP)
                       .privacy(Privacy.GROUP_ADMIN)
                       .reply(this::handleReply, this::shouldHandleReply)

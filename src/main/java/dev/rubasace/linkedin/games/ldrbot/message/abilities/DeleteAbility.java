@@ -17,7 +17,6 @@ import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 import dev.rubasace.linkedin.games.ldrbot.util.InputSanitizer;
 import dev.rubasace.linkedin.games.ldrbot.util.KeyboardMarkupUtils;
 import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
-import dev.rubasace.linkedin.games.ldrbot.util.UsageFormatUtils;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +78,7 @@ public class DeleteAbility extends BaseMessageReplier implements AbilityExtensio
     public Ability delete() {
         return Ability.builder()
                       .name("delete")
-                      .info(UsageFormatUtils.formatUsage("/delete", "Remove your submitted time for a game using an interactive menu."))
+                .info("Remove your submitted time for a game using an interactive menu.")
                       .locality(Locality.GROUP)
                       .privacy(PUBLIC)
                       .action(ctx -> handleDeleteCommand(ctx.update().getMessage(), InputSanitizer.sanitizeArguments(ctx.arguments())))

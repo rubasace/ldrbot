@@ -1,7 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.message.abilities;
 
 import dev.rubasace.linkedin.games.ldrbot.chat.CustomTelegramClient;
-import dev.rubasace.linkedin.games.ldrbot.util.UsageFormatUtils;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.ObjectProvider;
@@ -16,7 +15,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -105,10 +103,7 @@ public class HelpAbility implements AbilityExtension, ApplicationListener<Applic
     private String formatCommandLine(final BotCommand command) {
         String commandName = "/" + command.getCommand();
         String description = command.getDescription();
-        Optional<String> usage = UsageFormatUtils.extractUsage(description);
 
-        return usage
-                .map(u -> (COMMAND_HELP_FORMAT + "\n    usage:  <code>%s</code>").formatted(commandName, UsageFormatUtils.extractDescription(description), u))
-                .orElse(COMMAND_HELP_FORMAT.formatted(commandName, description));
+        return COMMAND_HELP_FORMAT.formatted(commandName, description);
     }
 }
