@@ -55,7 +55,7 @@ public class DeleteAbility extends BaseMessageReplier implements AbilityExtensio
     private final GameNameAdapter gameNameAdapter;
     private final CustomTelegramClient customTelegramClient;
     private final TelegramGroupService telegramGroupService;
-    private final Cache<String, Long> flowOwners; // key: chatId:messageId, value: userId
+    private final Cache<String, Long> flowOwners; // key: chatId:userId, value: userId (flow ownership)
 
     DeleteAbility(final GameSessionService gameSessionService, 
                   final ChatAdapter chatAdapter, 
@@ -94,8 +94,15 @@ public class DeleteAbility extends BaseMessageReplier implements AbilityExtensio
             throw new InvalidUserInputException(INVALID_ARGUMENTS_MESSAGE, message.getChatId());
         }
         
+        Long chatId = message.getChatId();
+        Long userId = message.getFrom().getId();
+        
+        // Store flow ownership keyed by chatId:userId (not messageId)
+        // This prevents race conditions where any user could click first
+        flowOwners.put(chatId + ":" + userId, userId);
+        
         // Show guided keyboard flow
-        showGameSelection(message.getChatId(), message.getFrom().getId(), null);
+        showGameSelection(chatId, userId, null);
     }
 
     private void showGameSelection(Long chatId, Long userId, Integer messageId) {
@@ -123,11 +130,6 @@ public class DeleteAbility extends BaseMessageReplier implements AbilityExtensio
                 customTelegramClient.editMessage(chatId, messageId, "Select the game to delete your record for today:", keyboard);
             }
             
-            // Store flow ownership (will be set when we get the messageId from callback)
-            if (messageId != null) {
-                flowOwners.put(chatId + ":" + messageId, userId);
-            }
-            
         } catch (GroupNotFoundException e) {
             LOGGER.error("Group not found for chatId: {}", chatId, e);
             customTelegramClient.sendErrorMessage("Failed to load tracked games.", chatId);
@@ -140,23 +142,18 @@ public class DeleteAbility extends BaseMessageReplier implements AbilityExtensio
         }
         
         Long chatId = AbilityUtils.getChatId(update);
+        Long callbackUserId = update.getCallbackQuery().getFrom().getId();
         MaybeInaccessibleMessage message = update.getCallbackQuery().getMessage();
         Integer messageId = message.getMessageId();
         String callbackQueryId = update.getCallbackQuery().getId();
-        Long callbackUserId = update.getCallbackQuery().getFrom().getId();
         
-        // Verify user authorization
-        String flowKey = chatId + ":" + messageId;
+        // Verify user authorization using chatId:userId key (not messageId)
+        String flowKey = chatId + ":" + callbackUserId;
         Long flowOwnerId = flowOwners.getIfPresent(flowKey);
         
-        if (flowOwnerId != null && !isAuthorizedUser(update, flowOwnerId)) {
+        if (flowOwnerId == null || !isAuthorizedUser(update, flowOwnerId)) {
             customTelegramClient.answerCallbackQuery(callbackQueryId, "This menu is not for you.", false);
             return;
-        }
-        
-        // Store ownership if not yet stored (first interaction)
-        if (flowOwnerId == null) {
-            flowOwners.put(flowKey, callbackUserId);
         }
         
         // Get the selected game
