@@ -119,9 +119,9 @@ public class DeleteAbility extends BaseMessageReplier implements AbilityExtensio
                             StringUtils.capitalize(gameType.name().toLowerCase())
                     ))
                     .toArray(KeyboardMarkupUtils.ButtonData[]::new);
-            
-            InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(), gameButtons);
-            
+
+            InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createTwoColumnLayoutWithCancel(getPrefix(), gameButtons);
+
             // Send or edit the message
             if (messageId == null) {
                 customTelegramClient.sendMessage(chatId, "Select the game to delete your record for today:", keyboard);
@@ -159,6 +159,13 @@ public class DeleteAbility extends BaseMessageReplier implements AbilityExtensio
         String gameAction = getAction(update);
         
         try {
+            if ("cancel".equals(gameAction)) {
+                customTelegramClient.answerCallbackQuery(callbackQueryId);
+                customTelegramClient.editMessage(chatId, messageId, "Operation cancelled");
+                flowOwners.invalidate(flowKey);
+                return;
+            }
+
             GameType gameType = GameType.valueOf(gameAction);
             ChatInfo chatInfo = new ChatInfo(chatId, null, true);
             UserInfo userInfo = userAdapter.adapt(update.getCallbackQuery().getFrom());

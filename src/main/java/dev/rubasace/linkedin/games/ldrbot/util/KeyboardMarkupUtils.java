@@ -5,12 +5,27 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class KeyboardMarkupUtils {
 
+    // Standard cancel/exit button used across guided flows
+    public static final ButtonData CANCEL_BUTTON = ButtonData.of("cancel", "❌ Cancel");
+
     public static InlineKeyboardMarkup createTwoColumnLayout(final String actionPrefix, final ButtonData... buttonData) {
         return createLayout(actionPrefix, 2, buttonData);
+    }
+
+    public static InlineKeyboardMarkup createTwoColumnLayoutWithCancel(final String actionPrefix, final ButtonData... buttonData) {
+        // Build the base layout first
+        InlineKeyboardMarkup base = createTwoColumnLayout(actionPrefix, buttonData);
+        // Copy existing rows and append a new row containing only the cancel button
+        List<InlineKeyboardRow> rows = new ArrayList<>(base.getKeyboard());
+        InlineKeyboardRow cancelRow = new InlineKeyboardRow();
+        cancelRow.add(createButton(CANCEL_BUTTON, actionPrefix));
+        rows.add(cancelRow);
+        return InlineKeyboardMarkup.builder().keyboard(rows).build();
     }
 
     public static InlineKeyboardMarkup createLayout(final String actionPrefix, final int columns, final ButtonData... buttonData) {
@@ -26,6 +41,17 @@ public class KeyboardMarkupUtils {
             }
             currentRow.add(createButton(button, actionPrefix));
         }
+        return InlineKeyboardMarkup.builder().keyboard(rows).build();
+    }
+
+    public static InlineKeyboardMarkup createLayoutWithCancel(final String actionPrefix, final int columns, final ButtonData... buttonData) {
+        // Build the base layout first
+        InlineKeyboardMarkup base = createLayout(actionPrefix, columns, buttonData);
+        // Copy existing rows and append a new row containing only the cancel button
+        List<InlineKeyboardRow> rows = new ArrayList<>(base.getKeyboard());
+        InlineKeyboardRow cancelRow = new InlineKeyboardRow();
+        cancelRow.add(createButton(CANCEL_BUTTON, actionPrefix));
+        rows.add(cancelRow);
         return InlineKeyboardMarkup.builder().keyboard(rows).build();
     }
 

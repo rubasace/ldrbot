@@ -156,8 +156,8 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
                             user.getUserName()
                     ))
                     .toArray(KeyboardMarkupUtils.ButtonData[]::new);
-            
-            InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(), userButtons);
+
+            InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createTwoColumnLayoutWithCancel(getPrefix(), userButtons);
             String text = "Select the user";
             
             if (messageId == null) {
@@ -193,8 +193,8 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
                             StringUtils.capitalize(gameType.name().toLowerCase())
                     ))
                     .toArray(KeyboardMarkupUtils.ButtonData[]::new);
-            
-            InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(), gameButtons);
+
+            InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createTwoColumnLayoutWithCancel(getPrefix(), gameButtons);
             customTelegramClient.editMessage(
                 state.getChatId(), 
                 state.getMessageId(),
@@ -219,7 +219,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
                 .mapToObj(m -> KeyboardMarkupUtils.ButtonData.of("minute-" + m, String.format("%02d", m)))
                 .toArray(KeyboardMarkupUtils.ButtonData[]::new);
 
-        InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createLayout(getPrefix(), 6, minuteButtons);
+        InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createLayoutWithCancel(getPrefix(), 6, minuteButtons);
         customTelegramClient.editMessage(
                 state.getChatId(),
                 state.getMessageId(),
@@ -235,7 +235,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
                 .mapToObj(s -> KeyboardMarkupUtils.ButtonData.of("second-" + s, String.format("%02d", s)))
                 .toArray(KeyboardMarkupUtils.ButtonData[]::new);
 
-        InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createLayout(getPrefix(), 6, secondButtons);
+        InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createLayoutWithCancel(getPrefix(), 6, secondButtons);
         customTelegramClient.editMessage(
                 state.getChatId(),
                 state.getMessageId(),
@@ -259,9 +259,9 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
                     FormatUtils.formatDate(date)
             ));
         }
-        
-        InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createTwoColumnLayout(
-                getPrefix(), 
+
+        InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createTwoColumnLayoutWithCancel(
+                getPrefix(),
                 dateButtons.toArray(new KeyboardMarkupUtils.ButtonData[0])
         );
         
