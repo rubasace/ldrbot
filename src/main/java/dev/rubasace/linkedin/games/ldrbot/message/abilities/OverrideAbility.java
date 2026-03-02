@@ -21,6 +21,7 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.abilitybots.api.bot.BaseAbilityBot;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
@@ -45,19 +46,12 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import dev.rubasace.linkedin.games.ldrbot.configuration.TelegramBotProperties;
 
+
 @Component
 public class OverrideAbility extends BaseMessageReplier implements AbilityExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OverrideAbility.class);
 
-    public static final String INVALID_ARGUMENT_MESSAGE_TEMPLATE = """
-            Invalid input. Please provide a user mention, a game name, and a time in the format <code>mm:ss</code>.
-            
-            Example usage:
-            <code>/override @%s queens 1:30</code> — to override today's record
-            <code>/override @%s queens 1:30 2024-09-29</code> — to override a record for a specific past date
-            Or use <code>/override</code> without arguments for a guided flow.
-            """;
     public static final String INVALID_TIME_FORMAT_MESSAGE = """
             Invalid time format.
             
@@ -122,44 +116,14 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
                       .build();
     }
 
-    @Override
-    protected boolean shouldHandleReply(Update update) {
-        // Handle text messages for duration input
-        if (update.hasMessage() && !update.getMessage().isCommand()) {
-            Long chatId = update.getMessage().getChatId();
-            Long userId = update.getMessage().getFrom().getId();
-            String flowKey = chatId + ":" + userId;
-            FlowState state = flowStates.getIfPresent(flowKey);
-            if (state != null && state.getCurrentStep() == FlowStep.AWAITING_DURATION) {
-                return true;
-            }
-        }
-        // Handle callback queries
-        return super.shouldHandleReply(update);
-    }
-
     private void handleReply(BaseAbilityBot bot, Update update) {
-        if (update.hasMessage() && !update.getMessage().isCommand()) {
-            handleDurationInput(update);
-        } else if (update.hasCallbackQuery()) {
+        if (update.hasCallbackQuery()) {
             handleCallback(update);
         }
     }
 
     @SneakyThrows
     private void handleOverrideCommand(final Message message, final String[] arguments) {
-        // Only accept no arguments - guided flow only
-        if (arguments.length > 0) {
-            throw new InvalidUserInputException(
-                INVALID_ARGUMENT_MESSAGE_TEMPLATE.formatted(
-                    message.getFrom().getUserName(), 
-                    message.getFrom().getUserName()
-                ), 
-                message.getChatId()
-            );
-        }
-        
-        // Start guided flow
         startGuidedFlow(message);
     }
 
@@ -179,9 +143,8 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
 
     private void showUserSelection(FlowState state, Integer messageId) {
         try {
-            TelegramGroup group = telegramGroupService.findGroupOrThrow(new ChatInfo(state.getChatId(), null, true));
-            Set<TelegramUser> members = group.getMembers();
-            
+            Set<TelegramUser> members = telegramGroupService.findMembers(new ChatInfo(state.getChatId(), null, true));
+
             if (members.isEmpty()) {
                 customTelegramClient.sendMessage("No members found in this group.", state.getChatId());
                 cleanupFlow(state);
@@ -198,7 +161,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
                     .toArray(KeyboardMarkupUtils.ButtonData[]::new);
             
             InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(), userButtons);
-            String text = "Step 1/4: Select the user";
+            String text = "Select the user";
             
             if (messageId == null) {
                 customTelegramClient.sendMessage(state.getChatId(), text, keyboard);
@@ -237,8 +200,8 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
             InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createTwoColumnLayout(getPrefix(), gameButtons);
             customTelegramClient.editMessage(
                 state.getChatId(), 
-                state.getMessageId(), 
-                "Step 2/4: Select the game", 
+                state.getMessageId(),
+                    "Select the game",
                 keyboard
             );
         } catch (GroupNotFoundException e) {
@@ -252,40 +215,36 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         }
     }
 
-    private void promptForDuration(FlowState state) {
-        state.setCurrentStep(FlowStep.AWAITING_DURATION);
+    private void showMinuteSelection(FlowState state) {
+        state.setCurrentStep(FlowStep.MINUTE_SELECTION);
+
+        KeyboardMarkupUtils.ButtonData[] minuteButtons = IntStream.rangeClosed(0, 29)
+                .mapToObj(m -> KeyboardMarkupUtils.ButtonData.of("minute-" + m, String.format("%02d", m)))
+                .toArray(KeyboardMarkupUtils.ButtonData[]::new);
+
+        InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createLayout(getPrefix(), 6, minuteButtons);
         customTelegramClient.editMessage(
-            state.getChatId(), 
-            state.getMessageId(), 
-            "Step 3/4: Enter the duration in mm:ss format (e.g., 1:30 or 12:05)"
+                state.getChatId(),
+                state.getMessageId(),
+                "Select the minutes",
+                keyboard
         );
     }
 
-    private void handleDurationInput(Update update) {
-        Long chatId = update.getMessage().getChatId();
-        Long userId = update.getMessage().getFrom().getId();
-        String flowKey = chatId + ":" + userId;
-        FlowState state = flowStates.getIfPresent(flowKey);
-        
-        if (state == null || state.getCurrentStep() != FlowStep.AWAITING_DURATION) {
-            return;
-        }
-        
-        String durationText = update.getMessage().getText().trim();
-        Optional<Duration> duration = ParseUtils.parseIsolatedDuration(durationText);
-        
-        if (duration.isEmpty()) {
-            customTelegramClient.sendMessage(INVALID_TIME_FORMAT_MESSAGE, chatId);
-            return;
-        }
-        
-        state.setDuration(duration.get());
-        state.setCurrentStep(FlowStep.DATE_SELECTION);
-        
-        // Delete the user's text input message
-        customTelegramClient.deleteMessage(chatId, update.getMessage().getMessageId());
-        
-        showDateSelection(state);
+    private void showSecondSelection(FlowState state) {
+        state.setCurrentStep(FlowStep.SECOND_SELECTION);
+
+        KeyboardMarkupUtils.ButtonData[] secondButtons = IntStream.rangeClosed(0, 59)
+                .mapToObj(s -> KeyboardMarkupUtils.ButtonData.of("second-" + s, String.format("%02d", s)))
+                .toArray(KeyboardMarkupUtils.ButtonData[]::new);
+
+        InlineKeyboardMarkup keyboard = KeyboardMarkupUtils.createLayout(getPrefix(), 6, secondButtons);
+        customTelegramClient.editMessage(
+                state.getChatId(),
+                state.getMessageId(),
+                "Select the seconds",
+                keyboard
+        );
     }
 
     private void showDateSelection(FlowState state) {
@@ -311,8 +270,8 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         
         customTelegramClient.editMessage(
             state.getChatId(), 
-            state.getMessageId(), 
-            "Step 4/4: Select the date", 
+            state.getMessageId(),
+                "Select the date",
             keyboard
         );
     }
@@ -415,6 +374,10 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
             handleUserSelection(state, action, callbackQueryId);
         } else if (action.startsWith("game-")) {
             handleGameSelection(state, action, callbackQueryId);
+        } else if (action.startsWith("minute-")) {
+            handleMinuteSelection(state, action, callbackQueryId);
+        } else if (action.startsWith("second-")) {
+            handleSecondSelection(state, action, callbackQueryId);
         } else if (action.startsWith("date-")) {
             handleDateSelection(state, action, callbackQueryId);
         } else if (action.equals("confirm")) {
@@ -439,7 +402,31 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         state.setSelectedGame(gameType);
         
         customTelegramClient.answerCallbackQuery(callbackQueryId);
-        promptForDuration(state);
+        showMinuteSelection(state);
+    }
+
+    private void handleMinuteSelection(FlowState state, String action, String callbackQueryId) {
+        int selectedMinutes = Integer.parseInt(action.substring("minute-".length()));
+        state.setSelectedMinutes(selectedMinutes);
+
+        customTelegramClient.answerCallbackQuery(callbackQueryId);
+        showSecondSelection(state);
+    }
+
+    private void handleSecondSelection(FlowState state, String action, String callbackQueryId) {
+        int selectedSeconds = Integer.parseInt(action.substring("second-".length()));
+        Duration duration = Duration.ofMinutes(state.getSelectedMinutes()).plusSeconds(selectedSeconds);
+
+        if (duration.isZero()) {
+            customTelegramClient.answerCallbackQuery(callbackQueryId, "Duration must be greater than 0 seconds.", true);
+            return;
+        }
+
+        state.setDuration(duration);
+        state.setCurrentStep(FlowStep.DATE_SELECTION);
+
+        customTelegramClient.answerCallbackQuery(callbackQueryId);
+        showDateSelection(state);
     }
 
     private void handleDateSelection(FlowState state, String action, String callbackQueryId) {
@@ -486,15 +473,6 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
     // Legacy text-argument flow methods
     @SneakyThrows
     private void overrideTime(final Message message, final String[] arguments, boolean pastAllowed) {
-        if (arguments.length < 3 || arguments.length > 4) {
-            throw new InvalidUserInputException(
-                INVALID_ARGUMENT_MESSAGE_TEMPLATE.formatted(
-                    message.getFrom().getUserName(), 
-                    message.getFrom().getUserName()
-                ), 
-                message.getChatId()
-            );
-        }
         GameType gameType = gameNameAdapter.adapt(arguments[1].trim(), message.getChatId());
         Optional<Duration> duration = ParseUtils.parseIsolatedDuration(arguments[2].trim());
         if (duration.isEmpty()) {
@@ -627,6 +605,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         private FlowStep currentStep;
         private Long selectedUserId;
         private GameType selectedGame;
+        private Integer selectedMinutes;
         private Duration duration;
         private LocalDate selectedDate;
     }
@@ -634,7 +613,8 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
     private enum FlowStep {
         USER_SELECTION,
         GAME_SELECTION,
-        AWAITING_DURATION,
+        MINUTE_SELECTION,
+        SECOND_SELECTION,
         DATE_SELECTION,
         CONFIRMATION
     }

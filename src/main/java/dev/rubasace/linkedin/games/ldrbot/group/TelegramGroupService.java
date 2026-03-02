@@ -6,6 +6,7 @@ import dev.rubasace.linkedin.games.ldrbot.session.GameTypeAdapter;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserService;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
+import org.hibernate.Hibernate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -49,6 +50,13 @@ public class TelegramGroupService {
 
     private TelegramGroup findGroupOrThrow(final Long chatId) throws GroupNotFoundException {
         return findGroupOrThrow(new ChatInfo(chatId, null, true));
+    }
+
+    public Set<TelegramUser> findMembers(final ChatInfo chatInfo) throws GroupNotFoundException {
+        Set<TelegramUser> members = findGroupOrThrow(chatInfo)
+                .getMembers();
+        Hibernate.initialize(members);
+        return members;
     }
 
 

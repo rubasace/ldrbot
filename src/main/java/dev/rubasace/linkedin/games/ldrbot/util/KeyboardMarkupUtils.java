@@ -10,13 +10,17 @@ import java.util.List;
 public class KeyboardMarkupUtils {
 
     public static InlineKeyboardMarkup createTwoColumnLayout(final String actionPrefix, final ButtonData... buttonData) {
+        return createLayout(actionPrefix, 2, buttonData);
+    }
+
+    public static InlineKeyboardMarkup createLayout(final String actionPrefix, final int columns, final ButtonData... buttonData) {
         List<InlineKeyboardRow> rows = new ArrayList<>();
         InlineKeyboardRow currentRow = new InlineKeyboardRow();
         rows.add(currentRow);
 
         for (int i = 0; i < buttonData.length; i++) {
             ButtonData button = buttonData[i];
-            if (i > 0 && i % 2 == 0) {
+            if (i > 0 && i % columns == 0) {
                 currentRow = new InlineKeyboardRow();
                 rows.add(currentRow);
             }
