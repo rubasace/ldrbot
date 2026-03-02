@@ -3,6 +3,7 @@ package dev.rubasace.linkedin.games.ldrbot.chat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -91,5 +92,33 @@ public class CustomTelegramClient {
         }
     }
 
+    /**
+     * Answer a callback query to remove the loading spinner on the client side.
+     * 
+     * @param callbackQueryId The callback query ID to answer
+     */
+    public void answerCallbackQuery(String callbackQueryId) {
+        answerCallbackQuery(callbackQueryId, null, false);
+    }
+
+    /**
+     * Answer a callback query with optional text and alert.
+     * 
+     * @param callbackQueryId The callback query ID to answer
+     * @param text Optional text to show (as a toast or alert)
+     * @param showAlert If true, shows an alert instead of a toast notification
+     */
+    public void answerCallbackQuery(String callbackQueryId, String text, boolean showAlert) {
+        AnswerCallbackQuery answer = AnswerCallbackQuery.builder()
+                                                        .callbackQueryId(callbackQueryId)
+                                                        .text(text)
+                                                        .showAlert(showAlert)
+                                                        .build();
+        try {
+            telegramClient.execute(answer);
+        } catch (TelegramApiException e) {
+            LOGGER.error("Error answering callback query", e);
+        }
+    }
 
 }
