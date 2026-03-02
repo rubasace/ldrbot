@@ -19,7 +19,8 @@
 
 ## 💡 Overview
 
-**LDRBot** stands for **LinkedIn Daily (games) Ranking Bot** — a Telegram bot that automates score tracking and leaderboard generation
+**LDRBot** stands for **LinkedIn Daily (games) Ranking Bot** — a Telegram bot that automates score tracking and
+leaderboard generation
 for [LinkedIn's daily puzzle games](https://www.linkedin.com/games) (
 currently, [Queens](https://www.linkedin.com/games/queens), [Tango](https://www.linkedin.com/games/tango), [Zip](https://www.linkedin.com/games/zip),
 [Crossclimb](https://www.linkedin.com/games/crossclimb), and [Mini Sudoku](https://www.linkedin.com/games/mini-sudoku)).
@@ -36,7 +37,8 @@ Each group is treated as a standalone competition — just invite the bot to you
 
 ## ⚙️ How It Works
 
-When you add LDRBot to a Telegram group, that group becomes its own independent leaderboard and competition space. Each day, members of the group can submit their results for
+When you add LDRBot to a Telegram group, that group becomes its own independent leaderboard and competition space. Each
+day, members of the group can submit their results for
 LinkedIn's puzzles (currently: Queens, Tango, Zip, Crossclimb, and Mini Sudoku) in two ways:
 
 1. **Upload a screenshot** of the completion screen — LDRBot uses OCR (powered by OpenCV and Tesseract) to automatically
@@ -45,13 +47,17 @@ LinkedIn's puzzles (currently: Queens, Tango, Zip, Crossclimb, and Mini Sudoku) 
 
 Once processed, the time is recorded for the current day and associated with the correspondent Telegram user ID.
 
-As group members submit their scores, LDRBot keeps track of who’s already participated and waits for everyone to submit. Once all registered players have sent their times, it
-automatically recalculates and publishes the daily leaderboard. Alternatively, any member can run the /ranking command to manually trigger a recalculation at any time.
+As group members submit their scores, LDRBot keeps track of who’s already participated and waits for everyone to submit.
+Once all registered players have sent their times, it
+automatically recalculates and publishes the daily leaderboard. Alternatively, any member can run the /ranking command
+to manually trigger a recalculation at any time.
 
-If not everyone submits, LDRBot will still calculate and publish the results at the end of the day, including only the times that were received. This ensures the competition
+If not everyone submits, LDRBot will still calculate and publish the results at the end of the day, including only the
+times that were received. This ensures the competition
 continues smoothly even if someone forgets to post their score.
 
-Each group maintains its own isolated set of scores, players, and competition history — meaning users can participate in multiple groups independently. Leaderboards reset daily, so
+Each group maintains its own isolated set of scores, players, and competition history — meaning users can participate in
+multiple groups independently. Leaderboards reset daily, so
 every new day is a fresh challenge for members to compete, improve, and (hopefully) brag.
 
 > [!NOTE]
@@ -61,7 +67,8 @@ every new day is a fresh challenge for members to compete, improve, and (hopeful
 ## 🖼️ Screenshots
 
 LDRBot uses OCR to read your submitted screenshots and extract the game and solving time.
-For best results, try to capture the colored square that shows the game result **as clearly as possible**, and avoid overlays like confetti or cropped
+For best results, try to capture the colored square that shows the game result **as clearly as possible**, and avoid
+overlays like confetti or cropped
 images.
 
 ### Mobile Layout Examples
@@ -86,17 +93,17 @@ images.
 
 ## 🛠️ Commands
 
-| Command                                              | Description                                                                                                                                |
-|------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| `/games`                                             | Lists the games being tracked by the bot.                                                                                                  |
-| `/delete <game>`                                     | Removes your score for today's selected game.                                                                                              |
-| `/deleteAll`                                         | Removes all of your submitted results for the current day.                                                                                 |
-| `/override @<username> <game> <time> [<yyyy-MM-dd>]` | Admin only: Override a user’s time (`mm:ss`) for a given game. Optionally specify a date to backfill a past record.                        |                                                                     |
-| `/ranking`                                           | Calculates and displays the current leaderboard for the group. It will be recalculated automatically after all members submit their times. |
-| `/configure`                                         | Configure bot settings such as the tracked games or the group timezone.                                                                    |
-| `/cancel`                                            | Aborts the current configuration operation.                                                                                                |
-| `/about`                                             | Displays information about the bot and its creator.                                                                                        |
-| `/help`                                              | Displays a list of available commands and usage instructions.                                                                              |
+| Command      | Description                                                                                                                                |
+|--------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| `/games`     | Lists the games being tracked by the bot.                                                                                                  |
+| `/delete`    | Removes your score for today's selected game.                                                                                              |
+| `/deleteAll` | Removes all of your submitted results for the current day.                                                                                 |
+| `/override`  | Admin only: Override a user’s time for a given game. Optionally specify a date to backfill a past record.                                  |                                                                     |
+| `/ranking`   | Calculates and displays the current leaderboard for the group. It will be recalculated automatically after all members submit their times. |
+| `/configure` | Configure bot settings such as the tracked games or the group timezone.                                                                    |
+| `/cancel`    | Aborts the current configuration operation.                                                                                                |
+| `/about`     | Displays information about the bot and its creator.                                                                                        |
+| `/help`      | Displays a list of available commands and usage instructions.                                                                              |
 
 ## 🚀 Getting Started
 
@@ -111,7 +118,8 @@ images.
    LDRBot will start tracking scores and players from the moment it's added.
 
 3. **Configure the bot (optional)**  
-   By default the bot will track all games supported. Admins can use `/configure` to choose what to track as well as configure other bot settings.
+   By default the bot will track all games supported. Admins can use `/configure` to choose what to track as well as
+   configure other bot settings.
 
 3. **Submit your LinkedIn score**  
    Upload a screenshot or share the result message from LinkedIn. LDRBot will extract your time and game, and track it
@@ -127,9 +135,11 @@ images.
 ## 💻 Tech Stack
 
 - **Language**: Java 21
-- **OCR Engine**: [Tesseract](https://github.com/tesseract-ocr/tesseract) via [Tess4J](https://github.com/nguyenq/tess4j)
+- **OCR Engine**: [Tesseract](https://github.com/tesseract-ocr/tesseract)
+  via [Tess4J](https://github.com/nguyenq/tess4j)
 - **Image Processing**: [OpenCV](https://github.com/opencv/opencv) via [Bytedeco](https://github.com/bytedeco)
-- **Frameworks**: [Spring Boot](https://github.com/spring-projects/spring-boot) + [TelegramBots](https://github.com/rubenlagus/TelegramBots)
+- **Frameworks
+  **: [Spring Boot](https://github.com/spring-projects/spring-boot) + [TelegramBots](https://github.com/rubenlagus/TelegramBots)
 
 ## 🔮 Future Features
 
