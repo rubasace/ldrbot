@@ -42,7 +42,7 @@ steps:
         path: /tesseract-dist
 
   - name: bake-beta
-    image: plugins/docker
+    image: plugins/kaniko
     settings:
       username:
         from_secret: dockerhub_user
@@ -57,7 +57,7 @@ steps:
         - push
 
   - name: bake-release
-    image: plugins/docker
+    image: plugins/kaniko
     settings:
       username:
         from_secret: dockerhub_user
@@ -114,6 +114,6 @@ trigger:
 hmac:
 ---
 kind: signature
-hmac: 4f2a1fb8fb0a9e5c1c845097657e5c953ddf2eebf7f1dd25df8ef5886e9f5c41
+hmac: 29021291b20785ee236636b840db8f82984be0a920590216462e0204ba3934f0
 
 ...
