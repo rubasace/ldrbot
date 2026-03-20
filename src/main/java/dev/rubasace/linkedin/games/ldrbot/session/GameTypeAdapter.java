@@ -17,6 +17,7 @@ public class GameTypeAdapter {
             case QUEENS -> "👑";
             case CROSSCLIMB -> "🪜";
             case SUDOKU -> "🧩";
+            case PATCHES -> "🧶";
         };
     }
 }

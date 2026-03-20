@@ -31,7 +31,7 @@ public class HelpAbility implements AbilityExtension, ApplicationListener<Applic
             
             📸 <b>How it works</b>
             
-            Send a screenshot of your completed LinkedIn puzzle (Queens, Tango, Zip, or Crossclimb) and I’ll extract your time and track it.
+            Send a screenshot of your completed LinkedIn puzzle (Queens, Tango, Zip, Crossclimb, Mini Sudoku, and Patches) and I’ll extract your time and track it.
             
             🏆 <b>Daily Competition</b>
             

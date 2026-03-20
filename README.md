@@ -23,7 +23,8 @@
 leaderboard generation
 for [LinkedIn's daily puzzle games](https://www.linkedin.com/games) (
 currently, [Queens](https://www.linkedin.com/games/queens), [Tango](https://www.linkedin.com/games/tango), [Zip](https://www.linkedin.com/games/zip),
-[Crossclimb](https://www.linkedin.com/games/crossclimb), and [Mini Sudoku](https://www.linkedin.com/games/mini-sudoku)).
+[Crossclimb](https://www.linkedin.com/games/crossclimb), [Mini Sudoku](https://www.linkedin.com/games/mini-sudoku),
+and [Patches](https://www.linkedin.com/games/patches)).
 
 Each Telegram group becomes its own independent competition. Members can submit their puzzle results either by uploading
 screenshots or by sharing the result message directly from LinkedIn. LDRBot uses OCR to extract solving times from
@@ -39,7 +40,7 @@ Each group is treated as a standalone competition — just invite the bot to you
 
 When you add LDRBot to a Telegram group, that group becomes its own independent leaderboard and competition space. Each
 day, members of the group can submit their results for
-LinkedIn's puzzles (currently: Queens, Tango, Zip, Crossclimb, and Mini Sudoku) in two ways:
+LinkedIn's puzzles (currently: Queens, Tango, Zip, Crossclimb, Mini Sudoku, and Patches) in two ways:
 
 1. **Upload a screenshot** of the completion screen — LDRBot uses OCR (powered by OpenCV and Tesseract) to automatically
    scan and extract the game type and solving time.
