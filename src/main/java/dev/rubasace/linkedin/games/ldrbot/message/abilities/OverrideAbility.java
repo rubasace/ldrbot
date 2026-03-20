@@ -150,7 +150,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
             
             KeyboardMarkupUtils.ButtonData[] userButtons = members.stream()
                     .filter(user -> !telegramBotProperties.getUsername().equals(user.getUserName()))
-                    .sorted(Comparator.comparing(TelegramUser::getUserName))
+                    .sorted(Comparator.comparing(FormatUtils::formatUserName))
                     .map(user -> KeyboardMarkupUtils.ButtonData.of(
                             "user-" + user.getId(),
                             FormatUtils.formatUserName(user)
