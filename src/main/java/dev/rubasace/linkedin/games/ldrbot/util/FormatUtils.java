@@ -1,5 +1,6 @@
 package dev.rubasace.linkedin.games.ldrbot.util;
 
+import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
 
 import java.time.Duration;
@@ -16,6 +17,18 @@ public class FormatUtils {
                 fullName += " " + userInfo.lastName();
             }
             return "<a href=\"tg://user?id=" + userInfo.id() + "\">" + fullName + "</a>";
+        }
+    }
+
+    public static String formatUserName(final TelegramUser telegramUser) {
+        if (telegramUser.getUserName() != null) {
+            return telegramUser.getUserName();
+        } else {
+            String fullName = telegramUser.getFirstName();
+            if (telegramUser.getLastName() != null) {
+                fullName += " " + telegramUser.getLastName();
+            }
+            return fullName;
         }
     }
 
