@@ -105,7 +105,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
     public Ability override() {
         return Ability.builder()
                       .name("override")
-                .info("Manually set or update a user's result (admin-only). Use without arguments for a guided flow.")
+                .info("Admin-only guided flow to override a result: select user, game, duration, and date.")
                       .locality(Locality.GROUP)
                       .privacy(Privacy.GROUP_ADMIN)
                       .reply(this::handleReply, this::shouldHandleReply)
@@ -251,7 +251,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
         dateButtons.add(KeyboardMarkupUtils.ButtonData.of("date-today", "Today"));
         
         // Add last 7 days
-        LocalDate today = LocalDate.now();
+        LocalDate today = LinkedinTimeUtils.todayGameDay();
         for (int i = 1; i <= 3; i++) {
             LocalDate date = today.minusDays(i);
             dateButtons.add(KeyboardMarkupUtils.ButtonData.of(
@@ -428,7 +428,7 @@ public class OverrideAbility extends BaseMessageReplier implements AbilityExtens
 
     private void handleDateSelection(FlowState state, String action, String callbackQueryId) {
         String dateStr = action.substring("date-".length());
-        LocalDate selectedDate = dateStr.equals("today") ? LocalDate.now() : LocalDate.parse(dateStr);
+        LocalDate selectedDate = dateStr.equals("today") ? LinkedinTimeUtils.todayGameDay() : LocalDate.parse(dateStr);
         state.setSelectedDate(selectedDate);
         
         customTelegramClient.answerCallbackQuery(callbackQueryId);
