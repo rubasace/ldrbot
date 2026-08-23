@@ -1,6 +1,7 @@
 package dev.rubasace.linkedin.games.ldrbot.session;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -25,4 +26,10 @@ public interface GameSessionRepository extends JpaRepository<GameSession, UUID> 
 
     @Transactional
     void deleteByUserIdAndGroupChatIdAndGameDay(Long UserId, Long chatId, LocalDate gameDay);
+
+    // REQUIRES_NEW is deliberate: it is the AC15 mechanism (issue #7) — record detection gets its own
+    // transaction so a failure here cannot roll back the caller's registering transaction. Any second
+    // caller must re-decide it: this suspends the caller's transaction and takes a second connection.
+    @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
+    Optional<GameSession> getTop1ByGroupChatIdAndGameAndIdNotOrderByDurationAsc(Long chatId, GameType game, UUID id);
 }

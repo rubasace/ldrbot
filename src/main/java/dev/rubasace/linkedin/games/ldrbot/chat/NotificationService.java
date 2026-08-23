@@ -8,6 +8,7 @@ import dev.rubasace.linkedin.games.ldrbot.group.UserJoinedGroupEvent;
 import dev.rubasace.linkedin.games.ldrbot.group.UserLeftGroupEvent;
 import dev.rubasace.linkedin.games.ldrbot.ranking.GroupDailyScoreCreatedEvent;
 import dev.rubasace.linkedin.games.ldrbot.session.GameInfo;
+import dev.rubasace.linkedin.games.ldrbot.session.GameRecordEstablishedEvent;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionDeletionEvent;
 import dev.rubasace.linkedin.games.ldrbot.session.GameSessionRegistrationEvent;
 import dev.rubasace.linkedin.games.ldrbot.summary.GroupDailyScore;
@@ -37,6 +38,10 @@ public class NotificationService {
     private static final String ALL_SESSION_DELETION_MESSAGE_TEMPLATE = "All %s results for today games have been deleted";
     private static final String USER_JOIN_MESSAGE_TEMPLATE = "%s joined this group";
     private static final String USER_LEAVE_MESSAGE_TEMPLATE = "User %s left this group";
+    private static final String FIRST_RECORD_MESSAGE_TEMPLATE =
+            "🏆 New record! %s set the group's first %s %s record with a time of %s";
+    private static final String RECORD_BROKEN_MESSAGE_TEMPLATE =
+            "🏆 New record! %s beat the group's best %s %s record with a time of %s, ahead of the next best time of %s";
 
     private static final String GROUP_GREETING_MESSAGE = """
             👋 Hello everyone, I’m LDRBot 🤖!
@@ -96,6 +101,23 @@ public class NotificationService {
                                                                                gameSessionRegistrationEvent.getGameInfo().name(),
                                                                                FormatUtils.formatDuration(gameSessionRegistrationEvent.getDuration())),
                                          gameSessionRegistrationEvent.getChatInfo().chatId());
+    }
+
+    @Order(USER_INTERACTION_NOTIFICATION_ORDER)
+    @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void handleRecordEstablished(final GameRecordEstablishedEvent event) {
+        String message = event.getBestOtherDuration() == null
+                ? FIRST_RECORD_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(event.getUserInfo()),
+                                                          event.getGameInfo().icon(),
+                                                          event.getGameInfo().name(),
+                                                          FormatUtils.formatDuration(event.getDuration()))
+                : RECORD_BROKEN_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(event.getUserInfo()),
+                                                           event.getGameInfo().icon(),
+                                                           event.getGameInfo().name(),
+                                                           FormatUtils.formatDuration(event.getDuration()),
+                                                           FormatUtils.formatDuration(event.getBestOtherDuration()));
+        customTelegramClient.sendMessage(message, event.getChatInfo().chatId());
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)
