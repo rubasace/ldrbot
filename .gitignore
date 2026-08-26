@@ -12,7 +12,8 @@
 !vue/**
 !.drone.yml
 !.gitignore
-!CLAUDE.md
+!.claude
+!.claude/CLAUDE.md
 !Dockerfile
 !LICENSE
 !pom.xml
