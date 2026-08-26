@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Optional;
 
 @Component
@@ -32,11 +33,11 @@ class ImageDurationExtractor {
     Duration extractDuration(final Mat image, String[] gameColors) throws DurationOCRException {
         Optional<Rect> resultsBox = imageHelper.findLargestRegionOfColor(image, RESULTS_COLOR, MIN_RESULTS_SIZE)
                 .or(() -> Arrays.stream(gameColors)
-                        .map(gameColor -> imageHelper.findLargestRegionOfColor(image, gameColor, MIN_RESULTS_SIZE)
-                                .map(this::cropPotentialPhoneHeader))
+                        .map(gameColor -> imageHelper.findLargestRegionOfColor(image, gameColor, MIN_RESULTS_SIZE))
                         .filter(Optional::isPresent)
-                        .findFirst()
-                        .orElse(Optional.empty()));
+                        .map(Optional::get)
+                        .max(Comparator.comparingLong(region -> (long) region.width() * region.height()))
+                        .map(this::cropPotentialPhoneHeader));
         if (resultsBox.isEmpty()) {
             throw new DurationOCRException("Couldn't find the results area on the image");
         }
