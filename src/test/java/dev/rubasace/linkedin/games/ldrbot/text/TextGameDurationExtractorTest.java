@@ -324,4 +324,59 @@ class TextGameDurationExtractorTest {
         assertRecorded("Queens\t#553 | 0:18", GameType.QUEENS, 18);
         assertRecorded("Patches n.º 161 | 0:19 🧶", GameType.PATCHES, 19);
     }
+
+    // ---------------------------------------------------------------------
+    // Catastrophic backtracking. The pattern opens with a lazy (.+?) under
+    // DOTALL, so input that can never match used to make it explore an
+    // exponential number of paths. Message text is attacker-controlled: any
+    // group member can send ~4.096 characters, and the bot serves every group
+    // from one process, so a single stall degrades everyone.
+    // ---------------------------------------------------------------------
+
+    /** Telegram's per-message limit, which bounds what an attacker can send. */
+    private static final int TELEGRAM_MESSAGE_LIMIT = 4096;
+
+    @Test
+    void shouldRejectHostileInputWithoutCatastrophicBacktracking() {
+        // Before the pre-check this single input took over four minutes of CPU.
+        String bomb = "\n".repeat(TELEGRAM_MESSAGE_LIMIT);
+        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> assertIgnored(bomb));
+    }
+
+    @Test
+    void shouldRejectHostileInputThatCarriesAnOrdinalMarker() {
+        // A marker-only pre-check would be defeated by exactly this: the marker
+        // is present, so the guard passes and the pattern still explodes.
+        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
+            assertIgnored("\n".repeat(TELEGRAM_MESSAGE_LIMIT - 1) + "#");
+            assertIgnored("\n".repeat(TELEGRAM_MESSAGE_LIMIT - 8) + "#1 | 0:1");
+            assertIgnored("Queens" + "\n".repeat(TELEGRAM_MESSAGE_LIMIT - 6));
+        });
+    }
+
+    @Test
+    void shouldRejectHostileInputBuiltFromMixedUnicodeSpaces() {
+        // Widening the space class widened what an attacker can build runs from.
+        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
+            assertIgnored(("\n" + NBSP).repeat(TELEGRAM_MESSAGE_LIMIT / 2));
+            assertIgnored(("\n" + NBSP + " ").repeat(TELEGRAM_MESSAGE_LIMIT / 3));
+            assertIgnored("\t".repeat(TELEGRAM_MESSAGE_LIMIT));
+        });
+    }
+
+    /**
+     * The pre-check is a second place recognition can say no, so if it were ever
+     * stricter than the pattern it guards, real results would be dropped silently
+     * — the very failure this whole change exists to fix. It is built from the
+     * same shared sub-pattern, and this pins that property against inputs whose
+     * shape makes the two disagree if the flags drift apart.
+     */
+    @Test
+    void preCheckMustNeverRejectAResultThePatternWouldAccept() {
+        assertRecorded("Queens\n\n#553 | 0:18", GameType.QUEENS, 18);
+        assertRecorded("Queens #553 |\r\n0:18", GameType.QUEENS, 18);
+        assertRecorded("\nQueens #553 | 0:18", GameType.QUEENS, 18);
+        assertRecorded("Queens n.º" + NBSP + "647\n0:31", GameType.QUEENS, 31);
+        assertRecorded("Mini Sudoku # 100\n1:23", GameType.SUDOKU, 83);
+    }
 }

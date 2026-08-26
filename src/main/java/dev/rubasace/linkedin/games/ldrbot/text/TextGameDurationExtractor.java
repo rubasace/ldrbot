@@ -22,6 +22,17 @@ public class TextGameDurationExtractor {
      */
     private static final String SPACE_LIKE = "[\\s\\p{Zs}]";
 
+    /**
+     * Everything a result line requires from the ordinal marker onwards.
+     * <p>
+     * Both patterns below are built from this, so the marker set is written down
+     * exactly once and the pre-check can never drift into being stricter than the
+     * pattern it guards.
+     */
+    private static final String RESULT_LINE_TAIL =
+            "(?:#|n\\.º)" + SPACE_LIKE + "*+(\\d++)"
+                          + SPACE_LIKE + "*(?:\\||\\n)"
+                          + SPACE_LIKE + "*+(\\d{1,2}:\\d{2})";
 
     /**
      * Pattern to match LinkedIn game messages in the format:
@@ -37,14 +48,39 @@ public class TextGameDurationExtractor {
      * <p>
      * Every separator position accepts any {@link #SPACE_LIKE} character, not just
      * ASCII space, so a share whose spacing uses U+00A0 or U+202F is still matched.
+     * <p>
+     * The space-like runs are possessive everywhere they are followed by something
+     * that cannot itself be space-like, which costs nothing and prunes doomed
+     * search paths. The run before {@code (?:\||\n)} is deliberately NOT
+     * possessive: in the multi-line shape it must give the newline back so the
+     * separator can consume it.
      */
-    private static final String RESULT_MESSAGE_FORMAT = "^(.+?)" + SPACE_LIKE + "+(?:#|n\\.º)" + SPACE_LIKE + "*(\\d+)" + SPACE_LIKE + "*(?:\\||\\n)" + SPACE_LIKE + "*(\\d{1,2}:\\d{2}).*";
+    private static final String RESULT_MESSAGE_FORMAT = "^(.+?)" + SPACE_LIKE + "++" + RESULT_LINE_TAIL;
 
     private static final Pattern MESSAGE_PATTERN = Pattern.compile(RESULT_MESSAGE_FORMAT, Pattern.MULTILINE | Pattern.DOTALL);
+
+    /**
+     * Linear-time necessary condition for {@link #MESSAGE_PATTERN}: any character,
+     * one space-like character, then the result-line tail.
+     * <p>
+     * {@link #MESSAGE_PATTERN} opens with a lazy {@code (.+?)} under {@code DOTALL},
+     * which backtracks catastrophically on long input that can never match: a
+     * 4096-character message of newlines cost minutes of CPU, and any group member
+     * can send one. Checking this first means the backtracking pattern only ever
+     * sees input that could actually match.
+     * <p>
+     * Needs {@code DOTALL} so its leading {@code .} can match a newline, and must
+     * not have {@code MULTILINE}.
+     */
+    private static final Pattern RESULT_LINE_PRECHECK = Pattern.compile("." + SPACE_LIKE + RESULT_LINE_TAIL, Pattern.DOTALL);
 
 
     public Optional<GameDuration> extractGameDuration(final String message) {
         if (message == null || message.isEmpty()) {
+            return Optional.empty();
+        }
+
+        if (!RESULT_LINE_PRECHECK.matcher(message).find()) {
             return Optional.empty();
         }
 
@@ -60,4 +96,3 @@ public class TextGameDurationExtractor {
 
     }
 }
-
