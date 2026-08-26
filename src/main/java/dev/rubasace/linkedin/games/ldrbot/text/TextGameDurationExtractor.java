@@ -12,6 +12,16 @@ import java.util.regex.Pattern;
 @Component
 public class TextGameDurationExtractor {
 
+    /**
+     * ASCII whitespace plus every Unicode space separator (general category Zs).
+     * <p>
+     * Java's {@code \s} is only {@code [ \t\n\x0B\f\r]}, so it does not match the
+     * no-break space (U+00A0) that Spanish typography places between an ordinal
+     * abbreviation and its numeral. LinkedIn's Spanish share templates emit one,
+     * which made those results go unrecognised entirely (issue #35).
+     */
+    private static final String SPACE_LIKE = "[\\s\\p{Zs}]";
+
 
     /**
      * Pattern to match LinkedIn game messages in the format:
@@ -24,8 +34,11 @@ public class TextGameDurationExtractor {
      * <game> # <number>
      * <mm:ss> [emoji]
      * Example: "Queens # 647\n0:31 👑"
+     * <p>
+     * Every separator position accepts any {@link #SPACE_LIKE} character, not just
+     * ASCII space, so a share whose spacing uses U+00A0 or U+202F is still matched.
      */
-    private static final String RESULT_MESSAGE_FORMAT = "^(.+?)\\s+(?:#|n\\.º)\\s*(\\d+)\\s*(?:\\||\\n)\\s*(\\d{1,2}:\\d{2}).*";
+    private static final String RESULT_MESSAGE_FORMAT = "^(.+?)" + SPACE_LIKE + "+(?:#|n\\.º)" + SPACE_LIKE + "*(\\d+)" + SPACE_LIKE + "*(?:\\||\\n)" + SPACE_LIKE + "*(\\d{1,2}:\\d{2}).*";
 
     private static final Pattern MESSAGE_PATTERN = Pattern.compile(RESULT_MESSAGE_FORMAT, Pattern.MULTILINE | Pattern.DOTALL);
 
