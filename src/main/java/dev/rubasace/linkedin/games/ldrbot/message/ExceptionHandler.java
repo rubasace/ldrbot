@@ -4,10 +4,12 @@ import dev.rubasace.linkedin.games.ldrbot.chat.ChatConstants;
 import dev.rubasace.linkedin.games.ldrbot.chat.CustomTelegramClient;
 import dev.rubasace.linkedin.games.ldrbot.chat.UserFeedbackException;
 import dev.rubasace.linkedin.games.ldrbot.image.GameDurationExtractionException;
+import dev.rubasace.linkedin.games.ldrbot.metrics.MetricsConstants;
 import dev.rubasace.linkedin.games.ldrbot.session.GameNameNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.session.SessionAlreadyRegisteredException;
 import dev.rubasace.linkedin.games.ldrbot.user.UserNotFoundException;
 import dev.rubasace.linkedin.games.ldrbot.util.FormatUtils;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,12 +27,18 @@ class ExceptionHandler {
     public static final String GAME_NOT_FOUND_EXCEPTION_MESSAGE = "'%s' is not a valid game name.";
 
     private final CustomTelegramClient customTelegramClient;
+    private final MeterRegistry meterRegistry;
 
-    ExceptionHandler(final CustomTelegramClient customTelegramClient) {
+    ExceptionHandler(final CustomTelegramClient customTelegramClient, final MeterRegistry meterRegistry) {
         this.customTelegramClient = customTelegramClient;
+        this.meterRegistry = meterRegistry;
     }
 
     void notifyUserFeedbackException(final UserFeedbackException userFeedbackException) {
+        meterRegistry.counter(MetricsConstants.ERRORS,
+                MetricsConstants.TAG_ERROR_TYPE, userFeedbackException.getClass().getSimpleName())
+                     .increment();
+
         if (userFeedbackException instanceof UnknownCommandException unknownCommandException) {
             customTelegramClient.sendErrorMessage(UNKNOWN_COMMAND_MESSAGE_TEMPLATE.formatted(unknownCommandException.getCommand()), unknownCommandException.getChatId());
         } else if (userFeedbackException instanceof SessionAlreadyRegisteredException sessionAlreadyRegisteredException) {
