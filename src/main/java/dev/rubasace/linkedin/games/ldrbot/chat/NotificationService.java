@@ -2,6 +2,7 @@ package dev.rubasace.linkedin.games.ldrbot.chat;
 
 import dev.rubasace.linkedin.games.ldrbot.configuration.ExecutorsConfiguration;
 import dev.rubasace.linkedin.games.ldrbot.group.GroupCreatedEvent;
+import dev.rubasace.linkedin.games.ldrbot.group.PlayerParticipationChangedEvent;
 import dev.rubasace.linkedin.games.ldrbot.group.TimezoneChangedEvent;
 import dev.rubasace.linkedin.games.ldrbot.group.TrackedGamesChangedEvent;
 import dev.rubasace.linkedin.games.ldrbot.group.UserJoinedGroupEvent;
@@ -38,6 +39,11 @@ public class NotificationService {
     private static final String ALL_SESSION_DELETION_MESSAGE_TEMPLATE = "All %s results for today games have been deleted";
     private static final String USER_JOIN_MESSAGE_TEMPLATE = "%s joined this group";
     private static final String USER_LEAVE_MESSAGE_TEMPLATE = "User %s left this group";
+    private static final String PLAYER_PARKED_MESSAGE_TEMPLATE =
+            "%s is no longer taking part in this group's daily games. Nothing has been deleted — they come back automatically the next time they submit a result.";
+    private static final String LAST_PLAYER_PARKED_MESSAGE_TEMPLATE =
+            "Nobody in this group is taking part in the daily games now — %s was the last one. No ranking will be published until somebody comes back.";
+    private static final String PLAYER_TAKING_PART_MESSAGE_TEMPLATE = "%s is taking part in this group's daily games again.";
     private static final String FIRST_RECORD_MESSAGE_TEMPLATE =
             "🏆 New record! %s set the group's first %s %s record with a time of %s";
     private static final String RECORD_BROKEN_MESSAGE_TEMPLATE =
@@ -149,6 +155,29 @@ public class NotificationService {
     void handleUserLeave(final UserLeftGroupEvent userLeftGroupEvent) {
         customTelegramClient.sendMessage(USER_LEAVE_MESSAGE_TEMPLATE.formatted(FormatUtils.formatUserMention(userLeftGroupEvent.getUserInfo())),
                                          userLeftGroupEvent.getChatInfo().chatId());
+    }
+
+    /**
+     * Announces a participation change, whichever way it was triggered — an admin parking or bringing back a player, a
+     * player returning by submitting a result, or a departure from the group. Exactly one message either way.
+     * <p>
+     * When the parked player was the last one taking part the group is told so instead, error-styled, because its
+     * competition really is switched off. That sentence leads with the group-level condition on purpose: the error
+     * styling prepends ❌, and a player-first sentence would put the error glyph immediately before the mention of the
+     * person an admin just acted on, in a message the whole group reads.
+     */
+    @Order(USER_INTERACTION_NOTIFICATION_ORDER)
+    @Async(ExecutorsConfiguration.NOTIFICATION_LISTENER_EXECUTOR_NAME)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void handlePlayerParticipationChanged(final PlayerParticipationChangedEvent playerParticipationChangedEvent) {
+        String player = FormatUtils.formatUserMention(playerParticipationChangedEvent.getPlayer());
+        if (!playerParticipationChangedEvent.isParked()) {
+            customTelegramClient.sendMessage(PLAYER_TAKING_PART_MESSAGE_TEMPLATE.formatted(player), playerParticipationChangedEvent.getChatId());
+        } else if (playerParticipationChangedEvent.getPlayersTakingPart() == 0) {
+            customTelegramClient.sendErrorMessage(LAST_PLAYER_PARKED_MESSAGE_TEMPLATE.formatted(player), playerParticipationChangedEvent.getChatId());
+        } else {
+            customTelegramClient.sendMessage(PLAYER_PARKED_MESSAGE_TEMPLATE.formatted(player), playerParticipationChangedEvent.getChatId());
+        }
     }
 
     @Order(USER_INTERACTION_NOTIFICATION_ORDER)

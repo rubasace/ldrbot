@@ -53,7 +53,7 @@ public class GroupRankingService {
 
     @Transactional
     public void createDailyRanking(final TelegramGroup telegramGroup, final LocalDate gameDay) {
-        Set<Long> userIds = telegramGroup.getMembers().stream()
+        Set<Long> userIds = telegramGroup.getParticipatingMembers(gameDay).stream()
                                          .map(TelegramUser::getId)
                                          .collect(Collectors.toSet());
 

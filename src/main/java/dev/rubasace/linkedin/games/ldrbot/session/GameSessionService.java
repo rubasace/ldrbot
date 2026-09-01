@@ -85,8 +85,13 @@ public class GameSessionService {
         saveSession(chatInfo, userInfo, gameDay, gameSession, gameInfo, telegramGroup, isNew, previousOwnDuration);
     }
 
-    private void saveSession(final ChatInfo chatInfo, final UserInfo userInfo, final LocalDate gameDay, final GameSession gameSession, final GameInfo gameInfo, final TelegramGroup telegramGroup, final boolean isNew, final Duration previousOwnDuration) {
+    private void saveSession(final ChatInfo chatInfo, final UserInfo userInfo, final LocalDate gameDay, final GameSession gameSession, final GameInfo gameInfo, final TelegramGroup telegramGroup, final boolean isNew, final Duration previousOwnDuration) throws GroupNotFoundException {
         gameSessionRepository.saveAndFlush(gameSession);
+        // Inline and in this transaction, on the path that actually persists a session and before the registration
+        // event is published. An AFTER_COMMIT listener would race the readiness check, which could then read the still
+        // open period and publish a ranking omitting the very submission that triggered it; and a call placed before
+        // the SessionAlreadyRegisteredException would un-park a player whose duplicate submission was just rejected.
+        telegramGroupService.unparkPlayerForResult(telegramGroup.getChatId(), userInfo.id(), gameDay);
         applicationEventPublisher.publishEvent(new GameSessionRegistrationEvent(this, chatInfo, userInfo, gameInfo, gameSession.getDuration(), gameDay,
                                                                                 telegramGroup.getChatId()));
 
