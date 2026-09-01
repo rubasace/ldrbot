@@ -44,7 +44,10 @@ class DailyGameScoreCalculator {
         dailyGameScore.setGame(session.getGame());
         dailyGameScore.setGameSession(session);
         dailyGameScore.setPosition(position);
-        dailyGameScore.setPoints(calculatePoints(position, group.getMembers().size()));
+        // The participating count is taken at the game day of the session being scored — never at todayGameDay(), and
+        // never at a day supplied by the caller's clock. Reading it off the session rather than off a parameter also
+        // means each score is computed at its own session's day, so no homogeneity of the batch is assumed.
+        dailyGameScore.setPoints(calculatePoints(position, group.getParticipatingMembers(session.getGameDay()).size()));
         return dailyGameScore;
     }
 

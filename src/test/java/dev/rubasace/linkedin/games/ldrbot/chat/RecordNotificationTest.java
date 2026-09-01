@@ -1,6 +1,7 @@
 package dev.rubasace.linkedin.games.ldrbot.chat;
 
 import dev.rubasace.linkedin.games.ldrbot.group.ChatInfo;
+import dev.rubasace.linkedin.games.ldrbot.group.PlayerParticipationChangedEvent;
 import dev.rubasace.linkedin.games.ldrbot.session.GameInfo;
 import dev.rubasace.linkedin.games.ldrbot.session.GameRecordEstablishedEvent;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
@@ -92,13 +93,68 @@ class RecordNotificationTest {
         assertTrue(message.contains("@ada"), message);
     }
 
+    // AC-5, NF-5 — parking a player while others are still taking part: one plain group message, naming them, and
+    // saying that nothing has been deleted and that they come back on their own.
+    @Test
+    void shouldAnnounceAParkedPlayerWhenOthersAreStillTakingPart() {
+        notificationService.handlePlayerParticipationChanged(participationEvent(true, 2));
+
+        String message = capturedMessage();
+        assertAll(
+                () -> assertTrue(message.contains("@ada"), message),
+                () -> assertTrue(message.contains("is no longer taking part in this group's daily games"), message),
+                () -> assertTrue(message.contains("Nothing has been deleted"), message),
+                () -> assertTrue(message.contains("the next time they submit a result"), message)
+        );
+        verifyNoMoreInteractions(customTelegramClient);
+    }
+
+    // AC-5, AC-16, NF-5 — parking the last player still taking part is error-styled, and it leads with the group-level
+    // condition so the ❌ that sendErrorMessage prepends never lands immediately before the person's mention.
+    @Test
+    void shouldAnnounceParkingTheLastPlayerAsAnError() {
+        notificationService.handlePlayerParticipationChanged(participationEvent(true, 0));
+
+        String message = capturedErrorMessage();
+        assertAll(
+                () -> assertTrue(message.startsWith("Nobody in this group is taking part in the daily games now"), message),
+                () -> assertTrue(message.contains("@ada"), message),
+                () -> assertTrue(message.contains("No ranking will be published until somebody comes back."), message)
+        );
+        verifyNoMoreInteractions(customTelegramClient);
+    }
+
+    // AC-5, NF-5 — a player brought back, whichever trigger did it: one plain group message naming them.
+    @Test
+    void shouldAnnounceAPlayerTakingPartAgain() {
+        notificationService.handlePlayerParticipationChanged(participationEvent(false, 3));
+
+        String message = capturedMessage();
+        assertAll(
+                () -> assertTrue(message.contains("@ada"), message),
+                () -> assertTrue(message.contains("is taking part in this group's daily games again."), message),
+                () -> assertFalse(message.contains("no longer"), message)
+        );
+        verifyNoMoreInteractions(customTelegramClient);
+    }
+
     private GameRecordEstablishedEvent recordEvent(final UserInfo userInfo, final Duration duration, final Duration bestOtherDuration) {
         return new GameRecordEstablishedEvent(this, CHAT_INFO, userInfo, GAME_INFO, duration, bestOtherDuration);
+    }
+
+    private PlayerParticipationChangedEvent participationEvent(final boolean parked, final int playersTakingPart) {
+        return new PlayerParticipationChangedEvent(this, CHAT_ID, USER_WITH_USERNAME, parked, playersTakingPart);
     }
 
     private String capturedMessage() {
         ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
         verify(customTelegramClient).sendMessage(messageCaptor.capture(), eq(CHAT_ID));
+        return messageCaptor.getValue();
+    }
+
+    private String capturedErrorMessage() {
+        ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(customTelegramClient).sendErrorMessage(messageCaptor.capture(), eq(CHAT_ID));
         return messageCaptor.getValue();
     }
 

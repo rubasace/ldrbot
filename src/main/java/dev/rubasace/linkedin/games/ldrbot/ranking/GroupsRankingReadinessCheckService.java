@@ -54,7 +54,7 @@ class GroupsRankingReadinessCheckService {
     }
 
     public boolean allMembersDone(TelegramGroup telegramGroup, final LocalDate gameDay) {
-        return telegramGroup.getMembers()
+        return telegramGroup.getParticipatingMembers(gameDay)
                             .stream().allMatch(member -> this.submittedAllGames(member, telegramGroup, gameDay));
 
     }

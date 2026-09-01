@@ -48,10 +48,14 @@ LinkedIn's puzzles (currently: Queens, Tango, Zip, Crossclimb, Mini Sudoku, and 
 
 Once processed, the time is recorded for the current day and associated with the correspondent Telegram user ID.
 
-As group members submit their scores, LDRBot keeps track of who’s already participated and waits for everyone to submit.
-Once all registered players have sent their times, it
+As group members submit their scores, LDRBot keeps track of who’s already participated and waits only for the players
+taking part. Once all of them have sent their times, it
 automatically recalculates and publishes the daily leaderboard. Alternatively, any member can run the /ranking command
 to manually trigger a recalculation at any time.
+
+Anyone who is away for a while can be parked by an admin from /configure. A parked player is not waited for, is not
+reminded, and is not counted when points are awarded, so the rest of the group keeps competing without them. Nothing of
+theirs is deleted, and they start taking part again on their own the next time they submit a result.
 
 If not everyone submits, LDRBot will still calculate and publish the results at the end of the day, including only the
 times that were received. This ensures the competition
@@ -101,7 +105,7 @@ images.
 | `/deleteAll` | Removes all of your submitted results for the current day.                                                                                 |
 | `/override`  | Admin only: Override a user’s time for a given game. Optionally specify a date to backfill a past record.                                  |                                                                     |
 | `/ranking`   | Calculates and displays the current leaderboard for the group. It will be recalculated automatically after all members submit their times. |
-| `/configure` | Configure bot settings such as the tracked games or the group timezone.                                                                    |
+| `/configure` | Configure bot settings such as the tracked games, the group timezone, or which players are taking part.                                    |
 | `/cancel`    | Aborts the current configuration operation.                                                                                                |
 | `/about`     | Displays information about the bot and its creator.                                                                                        |
 | `/help`      | Displays a list of available commands and usage instructions.                                                                              |

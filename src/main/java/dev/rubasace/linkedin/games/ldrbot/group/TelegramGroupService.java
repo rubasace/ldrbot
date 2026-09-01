@@ -4,8 +4,10 @@ import dev.rubasace.linkedin.games.ldrbot.session.GameInfo;
 import dev.rubasace.linkedin.games.ldrbot.session.GameType;
 import dev.rubasace.linkedin.games.ldrbot.session.GameTypeAdapter;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUser;
+import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserAdapter;
 import dev.rubasace.linkedin.games.ldrbot.user.TelegramUserService;
 import dev.rubasace.linkedin.games.ldrbot.user.UserInfo;
+import dev.rubasace.linkedin.games.ldrbot.util.LinkedinTimeUtils;
 import org.hibernate.Hibernate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -28,12 +31,14 @@ public class TelegramGroupService {
     private final TelegramUserService telegramUserService;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final GameTypeAdapter gameTypeAdapter;
+    private final TelegramUserAdapter telegramUserAdapter;
 
-    TelegramGroupService(final TelegramGroupRepository telegramGroupRepository, final TelegramUserService telegramUserService, final ApplicationEventPublisher applicationEventPublisher, final GameTypeAdapter gameTypeAdapter) {
+    TelegramGroupService(final TelegramGroupRepository telegramGroupRepository, final TelegramUserService telegramUserService, final ApplicationEventPublisher applicationEventPublisher, final GameTypeAdapter gameTypeAdapter, final TelegramUserAdapter telegramUserAdapter) {
         this.telegramGroupRepository = telegramGroupRepository;
         this.telegramUserService = telegramUserService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.gameTypeAdapter = gameTypeAdapter;
+        this.telegramUserAdapter = telegramUserAdapter;
     }
 
     public Optional<TelegramGroup> findGroup(final Long chatId) {
@@ -90,6 +95,11 @@ public class TelegramGroupService {
             return;
         }
         telegramGroup.getMembers().remove(telegramUser.get());
+        // Close, never purge. Deleting the history would put the player back into the participation set of every past
+        // day they were parked on, so a later recalculation of one of those days would run at a different denominator
+        // as soon as they rejoined. After the close there is no open period, so they are taking part on the day they
+        // come back and on every day after it.
+        closeOpenPeriods(telegramGroup, telegramUser.get().getId(), LinkedinTimeUtils.todayGameDay());
         telegramGroupRepository.save(telegramGroup);
         applicationEventPublisher.publishEvent(new UserLeftGroupEvent(this, chatInfo, userInfo));
     }
@@ -97,6 +107,93 @@ public class TelegramGroupService {
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Stream<TelegramGroup> findGroupsWithMissingScores(final LocalDate gameDay) {
         return telegramGroupRepository.findGroupsWithMissingScores(gameDay);
+    }
+
+    /**
+     * The ids of the group's members who were parked on {@code gameDay}. Returns a computed set, never a live
+     * collection and never anything holding an entity, so the caller needs no transaction of its own and no period ever
+     * escapes this one.
+     */
+    public Set<Long> listPlayersParkedOn(final Long chatId, final LocalDate gameDay) throws GroupNotFoundException {
+        return findGroup(chatId)
+                .map(telegramGroup -> telegramGroup.getMembers().stream()
+                                                   .map(TelegramUser::getId)
+                                                   .filter(userId -> telegramGroup.isParkedOn(userId, gameDay))
+                                                   .collect(Collectors.toSet()))
+                .orElseThrow(() -> new GroupNotFoundException(new ChatInfo(chatId, null, true)));
+    }
+
+    /**
+     * Parks the player if they are taking part on today's game day, and brings them back if they are not. It carries no
+     * desired state on purpose: two admins acting on a stale list converge on the state the later tap asked for.
+     * <p>
+     * Parking opens a period at today's game day; bringing a player back closes every open period of theirs at today's
+     * game day. No period is ever removed — the history is what keeps past days computed with the participation that
+     * was in force on them.
+     */
+    @Transactional
+    public void togglePlayerParticipation(final Long chatId, final Long userId) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatId);
+        Optional<TelegramUser> member = telegramGroup.getMembers().stream()
+                                                     .filter(telegramUser -> telegramUser.getId().equals(userId))
+                                                     .findFirst();
+        // The player left the group between the list being drawn and the button being tapped: no orphan period, and no
+        // announcement of a change that did not happen.
+        if (member.isEmpty()) {
+            return;
+        }
+        LocalDate todayGameDay = LinkedinTimeUtils.todayGameDay();
+        boolean parked = !telegramGroup.isParkedOn(userId, todayGameDay);
+        if (parked) {
+            telegramGroup.getParkedPeriods().add(new ParkedPeriod(telegramGroup, userId, todayGameDay));
+        } else {
+            closeOpenPeriods(telegramGroup, userId, todayGameDay);
+        }
+        telegramGroupRepository.save(telegramGroup);
+        applicationEventPublisher.publishEvent(new PlayerParticipationChangedEvent(this, chatId, telegramUserAdapter.adapt(member.get()), parked,
+                                                                                   telegramGroup.getParticipatingMembers(todayGameDay).size()));
+    }
+
+    /**
+     * Brings a player back because they submitted a result for {@code gameDay}: closes every open period of theirs that
+     * started on or before that day. A result for a day strictly before the parking changes nothing and announces
+     * nothing, and neither does a result that lands inside an already-closed period — re-opening, splitting or
+     * shortening one would write a boundary for a day other than today and retroactively change that day's
+     * participation set.
+     */
+    @Transactional
+    public void unparkPlayerForResult(final Long chatId, final Long userId, final LocalDate gameDay) throws GroupNotFoundException {
+        TelegramGroup telegramGroup = findGroupOrThrow(chatId);
+        if (!closeOpenPeriods(telegramGroup, userId, gameDay)) {
+            return;
+        }
+        telegramGroupRepository.save(telegramGroup);
+        LocalDate todayGameDay = LinkedinTimeUtils.todayGameDay();
+        telegramUserService.find(userId)
+                           .ifPresent(telegramUser -> applicationEventPublisher.publishEvent(
+                                   new PlayerParticipationChangedEvent(this, chatId, telegramUserAdapter.adapt(telegramUser), false,
+                                                                        telegramGroup.getParticipatingMembers(todayGameDay).size())));
+    }
+
+    /**
+     * Closes, at today's game day, every open period of {@code userId} that started on or before
+     * {@code startedOnOrBefore}. Returns whether anything was closed.
+     * <p>
+     * The end boundary is always {@code todayGameDay()} and never {@code startedOnOrBefore}: closing at the day of the
+     * result would write a boundary into the past and silently change that day's participation set. Since every
+     * {@code startGameDay} is itself written as {@code todayGameDay()} at the moment of the write, {@code start <= today}
+     * always holds, so the close can never invert a period — and the two close-all callers pass {@code todayGameDay()},
+     * which for the same reason closes every open period.
+     */
+    private boolean closeOpenPeriods(final TelegramGroup telegramGroup, final Long userId, final LocalDate startedOnOrBefore) {
+        LocalDate todayGameDay = LinkedinTimeUtils.todayGameDay();
+        List<ParkedPeriod> openPeriods = telegramGroup.getParkedPeriods().stream()
+                                                       .filter(parkedPeriod -> parkedPeriod.getUserId().equals(userId))
+                                                       .filter(ParkedPeriod::isOpen)
+                                                       .filter(parkedPeriod -> !startedOnOrBefore.isBefore(parkedPeriod.getStartGameDay()))
+                                                       .toList();
+        openPeriods.forEach(parkedPeriod -> parkedPeriod.setEndGameDay(todayGameDay));
+        return !openPeriods.isEmpty();
     }
 
     private TelegramGroup udpateGroupData(final TelegramGroup telegramGroup, final ChatInfo chatInfo) {
