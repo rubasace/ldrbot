@@ -2,6 +2,8 @@
 import {computed, defineProps, onMounted, ref, watch} from 'vue'
 import {usePrimeVue} from 'primevue/config'
 import Select from 'primevue/select'
+import {formatDuration} from '../utils/duration.js'
+import {calculatePosition, getPositionStyle} from '../utils/leaderboard.js'
 
 const leaderboard = ref(null)
 const loading = ref(true)
@@ -28,31 +30,6 @@ watch(viewMode, () => {
   }
 }, {immediate: true})
 
-
-const getPositionStyle = (index) => {
-  switch (index) {
-    case 0:
-      return 'first'
-    case 1:
-      return 'second'
-    case 2:
-      return 'third'
-    default:
-      return 'rest'
-  }
-}
-
-const calculatePosition = (index) =>
-    ['1st', '2nd', '3rd'][index] || `${index + 1}th`
-
-const formatDuration = (seconds) => {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = seconds % 60
-  return [h ? `${h}h` : '', m ? `${m}m` : '', (!h && !m) || s ? `${s}s` : '']
-      .filter(Boolean)
-      .join(' ')
-}
 
 async function loadLeaderboard() {
   if (!props.group?.groupId) return

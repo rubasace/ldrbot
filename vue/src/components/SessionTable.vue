@@ -1,5 +1,6 @@
 <script setup>
 import {onMounted, ref} from 'vue'
+import {formatDuration} from '../utils/duration.js'
 
 const props = defineProps({
   group: {
@@ -10,18 +11,6 @@ const props = defineProps({
 
 const sessions = ref([])
 const loading = ref(true)
-
-//TODO extract common factor
-const formatDuration = (seconds) => {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = seconds % 60
-  return [
-    h ? `${h}h` : '',
-    m ? `${m}m` : '',
-    (!h && !m) || s ? `${s}s` : ''
-  ].filter(Boolean).join(' ')
-}
 
 onMounted(async () => {
   try {
