@@ -12,6 +12,9 @@ mvn package -Dtesseract.data-path=$(pwd)/tessdata -Dtesseract.lib-path=/usr/loca
 Adjust `tesseract.lib-path` to wherever `libtesseract.so` lives locally. CI
 stages the libraries from the `franky1/tesseract:5.5.0` image; see `.drone.yml`.
 
+`mvn package` also runs the Vue test suite (`vitest run`) in the `test`
+phase, so `-DskipTests` skips the frontend tests along with the Java ones.
+
 ## CI
 
 Builds run on **Drone**. Use the `drone-ci` skill to query build status, read
