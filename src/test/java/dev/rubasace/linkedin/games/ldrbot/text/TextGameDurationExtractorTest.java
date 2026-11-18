@@ -109,6 +109,20 @@ class TextGameDurationExtractorTest {
     }
 
     @Test
+    void shouldExtractGameNameAndDurationFromSumbreakMessage() {
+        String message = """
+                Sumbreak #1 | 0:04 🔢
+                With no hints & no backtracks
+                🥇 Day One Original! Solved LinkedIn's new math game on launch day. Your turn.
+                lnkd.in/sumbreak.""";
+        Optional<GameDuration> result = extractor.extractGameDuration(message);
+
+        assertTrue(result.isPresent());
+        assertEquals(GameType.SUMBREAK, result.get().type());
+        assertEquals(Duration.ofSeconds(4), result.get().duration());
+    }
+
+    @Test
     void shouldReturnEmptyIfNoGameName() {
         String message = "No game here 0:18";
         Optional<GameDuration> result = extractor.extractGameDuration(message);
@@ -249,6 +263,7 @@ class TextGameDurationExtractorTest {
         assertRecorded("Mini Sudoku n.º" + NBSP + "100 | 1:23", GameType.SUDOKU, 83);
         assertRecorded("Zip n.º" + NBSP + "326 | 0:12", GameType.ZIP, 12);
         assertRecorded("Patches n.º" + NBSP + "161 | 0:19", GameType.PATCHES, 19);
+        assertRecorded("Sumbreak n.º" + NBSP + "1 | 0:04", GameType.SUMBREAK, 4);
     }
 
     @Test

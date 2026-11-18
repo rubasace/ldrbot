@@ -18,6 +18,7 @@ public class GameTypeAdapter {
             case CROSSCLIMB -> "🪜";
             case SUDOKU -> "🧩";
             case PATCHES -> "🧶";
+            case SUMBREAK -> "🔢";
         };
     }
 }
