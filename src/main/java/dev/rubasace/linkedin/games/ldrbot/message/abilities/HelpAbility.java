@@ -31,7 +31,7 @@ public class HelpAbility implements AbilityExtension, ApplicationListener<Applic
             
             📸 <b>How it works</b>
             
-            Send a screenshot of your completed LinkedIn puzzle (Queens, Tango, Zip, Crossclimb, Mini Sudoku, and Patches) and I’ll extract your time and track it.
+            Send a screenshot of your completed LinkedIn puzzle (Queens, Tango, Zip, Crossclimb, Mini Sudoku, and Patches) and I’ll extract your time and track it. For Sumbreak, share the result text from LinkedIn instead — its screenshots are not supported yet.
             
             🏆 <b>Daily Competition</b>
             
@@ -41,7 +41,7 @@ public class HelpAbility implements AbilityExtension, ApplicationListener<Applic
             
             %s
             
-            💡 <b>Tip:</b> I only process screenshots or commands in group messages. Private chat support is coming soon!
+            💡 <b>Tip:</b> I only process screenshots, shared results, or commands in group messages. Private chat support is coming soon!
             """;
 
     public static final String COMMAND_HELP_FORMAT = "<b>%s</b> – %s";
