@@ -46,9 +46,6 @@ LinkedIn's puzzles (currently: Queens, Tango, Zip, Crossclimb, Mini Sudoku, Patc
    scan and extract the game type and solving time.
 2. **Share the result message** directly from LinkedIn — LDRBot parses the text to extract the same information.
 
-Sumbreak is recognized from the shared result message only (with **Read From Messages** enabled, the default); its
-screenshots are not supported yet.
-
 Once processed, the time is recorded for the current day and associated with the correspondent Telegram user ID.
 
 As group members submit their scores, LDRBot keeps track of who’s already participated and waits only for the players

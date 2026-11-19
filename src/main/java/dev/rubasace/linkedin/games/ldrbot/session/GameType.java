@@ -13,8 +13,7 @@ public enum GameType {
     SUDOKU("Mini Sudoku", "#399767", "#42B96D", "#46C674"),
     ZIP("Zip", "#EE5C14"),
     PATCHES("Patches", "#FF4848", "#EB4141", "#952426"),
-    // No colours: accepted from the shared text only; screenshots are not supported yet.
-    SUMBREAK("Sumbreak");
+    SUMBREAK("Sumbreak", "#502759");
 
     private final String name;
     private final String[] colors;
