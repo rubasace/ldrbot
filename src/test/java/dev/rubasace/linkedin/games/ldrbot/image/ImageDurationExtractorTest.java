@@ -54,7 +54,10 @@ class ImageDurationExtractorTest {
             "20.jpg,PATCHES,16s",
             "21.jpg,PATCHES,40s",
             "22.png,PATCHES,57s",
-            "23.png,PATCHES,19s"
+            "23.png,PATCHES,19s",
+            "24.png,SUMBREAK,4s",
+            "25.png,SUMBREAK,2s",
+            "26.png,SUMBREAK,4s"
     })
     @ParameterizedTest
     void shouldExtractDuration(final String imageName, final GameType game, @ConvertWith(
@@ -68,7 +71,7 @@ class ImageDurationExtractorTest {
         );
     }
 
-    @ValueSource(strings = {"a.png", "b.png", "c.png", "d.png", "e.png", "f.png", "g.png", "h.png", "sumbreak.png"})
+    @ValueSource(strings = {"a.png", "b.png", "c.png", "d.png", "e.png", "f.png", "g.png", "h.png"})
     @ParameterizedTest
     void shouldNotDetectFalsePositives(final String imageName) throws GameDurationExtractionException {
         File imageFile = new File("src/test/resources/images/notMatches/" + imageName);
